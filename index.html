@@ -262,38 +262,109 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 
 <!-- MODO FOCO -->
 <div id="p-foco" class="page">
-  <div class="alert al-s"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 13a3.5 3.5 0 0 0-3.5 3.5v1a3.5 3.5 0 0 0 7 0v-1.8"/><path d="M8.5 13a3.5 3.5 0 0 1 3.5 3.5v1a3.5 3.5 0 0 1-7 0v-1.8"/><path d="M17.5 11a3.5 3.5 0 1 0-3.5-3.5"/><path d="M6.5 11a3.5 3.5 0 1 1 3.5-3.5"/><path d="M12 14.5v-9"/></svg> Modo Foco ativo — Uma tarefa de cada vez. Você consegue!</div>
+  <div class="alert al-s mb12">🧠 Modo Foco ativo — Selecione as tarefas que quer trabalhar agora e vá concluindo uma por uma.</div>
+
   <div class="g2 gap12 mb12">
+    <!-- COLUNA ESQUERDA: Selecionar tarefas -->
+    <div class="card">
+      <div class="ct">📋 Selecionar tarefas para o foco</div>
+      <div class="f10 cm mb10">Marque as que quer trabalhar agora. Elas aparecem na fila ao lado.</div>
+
+      <!-- Lista de pendentes do dia -->
+      <div id="foco-pool">
+        <div class="ti" id="fp-1" style="cursor:pointer;" onclick="toggleFocoSelect('fp-1','Responder OS-000029 — Reclame Aqui','tag-u','🔴 Urgente','20min')">
+          <div class="chk" id="fpc-1"></div>
+          <div class="f1 mw0"><div class="tt f12">Responder OS-000029 — Reclame Aqui</div><div class="tm"><span class="tag tag-u">🔴 Urgente</span><span class="ttime">20min</span></div></div>
+        </div>
+        <div class="ti" id="fp-2" style="cursor:pointer;" onclick="toggleFocoSelect('fp-2','Validar estornos APPMAX','tag-u','🔴 Urgente','30min')">
+          <div class="chk" id="fpc-2"></div>
+          <div class="f1 mw0"><div class="tt f12">Validar estornos APPMAX</div><div class="tm"><span class="tag tag-u">🔴 Urgente</span><span class="ttime">30min</span></div></div>
+        </div>
+        <div class="ti" id="fp-3" style="cursor:pointer;" onclick="toggleFocoSelect('fp-3','Input diário — ML e Shopee','tag-n','🟡 Normal','15min')">
+          <div class="chk" id="fpc-3"></div>
+          <div class="f1 mw0"><div class="tt f12">Input diário — ML e Shopee</div><div class="tm"><span class="tag tag-n">🟡 Normal</span><span class="ttime">15min</span></div></div>
+        </div>
+      </div>
+
+      <!-- Adicionar tarefa rápida ao foco -->
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+        <div class="f10 cm mb8">Adicionar tarefa rápida ao foco:</div>
+        <div class="fx gap6">
+          <input type="text" id="foco-new-txt" placeholder="Ex: Responder WhatsApp — urgente..." style="flex:1;font-size:11px;">
+          <button class="btn-p" style="font-size:10px;padding:4px 10px;" onclick="focoAddNew()">➕ Adicionar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLUNA DIREITA: Fila de foco + timer -->
+    <div class="card">
+      <div class="ct">🎯 Fila de foco</div>
+
+      <!-- Tarefa atual em destaque -->
+      <div id="foco-atual-wrap" style="display:none;margin-bottom:10px;">
+        <div style="background:rgba(124,92,252,.1);border:1px solid rgba(124,92,252,.25);border-radius:8px;padding:12px;">
+          <div class="f10 fw6 cp mb6">▶ EM FOCO AGORA</div>
+          <div class="f12 fw6 mb6" style="color:var(--text);" id="foco-atual-txt">—</div>
+          <div class="tm mb10" id="foco-atual-meta"></div>
+          <div class="fx gap6">
+            <button class="btn-p" style="flex:1;justify-content:center;font-size:11px;" onclick="focoConcluir()">✓ Concluir e avançar</button>
+            <button class="btn" style="font-size:10px;" onclick="focoPular()">⏭ Pular</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fila restante -->
+      <div id="foco-fila-list" style="margin-bottom:10px;">
+        <div class="f11 cm" id="foco-empty-msg">Selecione tarefas ao lado para começar o foco.</div>
+      </div>
+
+      <!-- Progresso -->
+      <div id="foco-prog-wrap" style="display:none;padding-top:10px;border-top:1px solid var(--border);">
+        <div class="fx jb f10 mb6"><span class="cm">Progresso da sessão</span><span class="cc" id="foco-prog-txt">0 / 0</span></div>
+        <div class="prog" style="height:6px;"><div class="pf" id="foco-prog-bar" style="width:0%;transition:width .4s;"></div></div>
+      </div>
+
+      <!-- Concluído -->
+      <div id="foco-done-wrap" style="display:none;text-align:center;padding:20px;">
+        <div style="font-size:32px;margin-bottom:8px;">🎉</div>
+        <div class="f13 fw6 cs mb6">Sessão concluída!</div>
+        <div class="f11 cm">Todas as tarefas foram concluídas.</div>
+        <button class="btn" style="margin-top:10px;" onclick="focoReset()">↩ Nova sessão</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pomodoro + extras -->
+  <div class="g3 gap10">
     <div class="focus-wrap">
       <div class="f11 cm mb10">Técnica Pomodoro</div>
       <div class="timer" id="tmr">25:00</div>
       <div class="f11 cm" id="tmr-l" style="margin:6px 0 12px;">Foco total — sem distrações</div>
       <div class="fx gap8 ic" style="justify-content:center;flex-wrap:wrap;">
-        <button class="btn-c" onclick="startTimer()" id="btn-st"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Iniciar</button>
-        <button class="btn" onclick="resetTimer()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Reset</button>
-        <button class="btn" onclick="shortBreak()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg> Pausa 5min</button>
+        <button class="btn-c" onclick="startTimer()" id="btn-st">▶ Iniciar</button>
+        <button class="btn" onclick="resetTimer()">↺ Reset</button>
+        <button class="btn" onclick="shortBreak()">☕ Pausa 5min</button>
       </div>
       <div class="fx gap12 ic" style="justify-content:center;margin-top:14px;">
         <div style="text-align:center;"><div class="mv cc" id="pomo-c">0</div><div class="f10 cdim">pomodoros hoje</div></div>
         <div style="text-align:center;"><div class="mv cs">3</div><div class="f10 cdim">meta do dia</div></div>
       </div>
     </div>
-    <div class="card">
-      <div class="ct"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> Tarefa em foco</div>
-      <div style="background:rgba(124,92,252,.08);border:1px solid rgba(124,92,252,.2);border-radius:8px;padding:10px;margin-bottom:10px;">
-        <div class="f12 fw6 mb10" style="color:var(--text);">Responder OS-000029 — Reclame Aqui</div>
-        <div class="f11 cm">Estimativa: 20min · Canal: RA</div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:28px;margin-bottom:6px;">🙂</div>
+      <div class="f12 fw6 mb10" style="color:var(--text);">Como estou agora?</div>
+      <div class="fx ic" style="justify-content:center;gap:10px;font-size:22px;">
+        <span style="cursor:pointer;" onclick="pickMood(this)">😴</span>
+        <span style="cursor:pointer;" onclick="pickMood(this)">😐</span>
+        <span style="cursor:pointer;" onclick="pickMood(this)">🙂</span>
+        <span style="cursor:pointer;" onclick="pickMood(this)">🔥</span>
       </div>
-      <div class="f11 cm mb8">Na fila:</div>
-      <div class="ti mb6"><div class="f1 mw0"><div class="tt f12">Validar estornos APPMAX</div><div class="tm"><span class="tag tag-u">🔴 Urgente</span><span class="ttime">30min</span></div></div></div>
-      <div class="ti"><div class="f1 mw0"><div class="tt f12">Input diário — ML e Shopee</div><div class="tm"><span class="tag tag-n">🟡 Normal</span><span class="ttime">15min</span></div></div></div>
-      <button class="btn" style="width:100%;justify-content:center;margin-top:10px;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Concluir e avançar</button>
     </div>
-  </div>
-  <div class="g3 gap10">
-    <div class="card" style="text-align:center;"><div style="font-size:28px;margin-bottom:6px;"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div><div class="f12 fw6 mb10" style="color:var(--text);">Como estou agora?</div><div class="fx ic" style="justify-content:center;gap:10px;font-size:22px;"><span style="cursor:pointer;" onclick="pickMood(this)">😴</span><span style="cursor:pointer;" onclick="pickMood(this)">😐</span><span style="cursor:pointer;" onclick="pickMood(this)">🙂</span><span style="cursor:pointer;" onclick="pickMood(this)">🔥</span></div></div>
-    <div class="card" style="text-align:center;"><div style="font-size:28px;margin-bottom:6px;"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg></div><div class="f12 fw6 mb10" style="color:var(--text);">Dica do dia</div><div class="f11 cm" style="line-height:1.5;">"Uma tarefa por vez. Ao terminar, respira, anota, avança."</div></div>
-    <div class="card" style="text-align:center;"><div style="font-size:28px;margin-bottom:6px;"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 6 2 6 2 12 8 12"/><polyline points="16 6 22 6 22 12 16 12"/><path d="M12 17c-2.76 0-5-4.93-5-11h10c0 6.07-2.24 11-5 11z"/><line x1="8" y1="22" x2="16" y2="22"/><line x1="12" y1="17" x2="12" y2="22"/></svg></div><div class="f12 fw6 mb10" style="color:var(--text);">Conquistas</div><div class="f11 cm">43 tarefas · 91% no prazo</div><div style="margin-top:6px;font-size:20px;">🏅⭐🎯</div></div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:28px;margin-bottom:6px;">💡</div>
+      <div class="f12 fw6 mb10" style="color:var(--text);">Dica do dia</div>
+      <div class="f11 cm" style="line-height:1.5;">"Uma tarefa por vez. Ao terminar, respira, anota, avança."</div>
+    </div>
   </div>
 </div>
 
@@ -776,86 +847,157 @@ function changeInterval(v){if(autoTmr)clearInterval(autoTmr);if(v==='0')return;a
 
 function updTimer(){const m=Math.floor(timerSec/60),s=timerSec%60;document.getElementById('tmr').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
 function startTimer(){if(timerOn){clearInterval(timerInt);timerOn=false;document.getElementById('btn-st').textContent='▶ Retomar';return;}timerOn=true;document.getElementById('btn-st').textContent='⏸ Pausar';timerInt=setInterval(()=>{if(timerSec<=0){clearInterval(timerInt);timerOn=false;pomoDone++;document.getElementById('pomo-c').textContent=pomoDone;document.getElementById('tmr-l').textContent='Concluído! Faça uma pausa.';document.getElementById('btn-st').textContent='▶ Iniciar';timerSec=25*60;updTimer();return;}timerSec--;updTimer();},1000);}
-// ── MODO FOCO - TAREFAS ──
-let focoTotal = 3;
-let focoConcluidas = 0;
-const FOCO_TAREFAS = [
-  {id:'foco-t1', txt:'Validar estornos APPMAX', tag:'🔴 Urgente', time:'30min'},
-  {id:'foco-t2', txt:'Input diário — ML e Shopee', tag:'🟡 Normal', time:'15min'},
-];
+// ── MODO FOCO ──
+let focoFila = []; // {id, txt, tagClass, tagLabel, time, concluida}
+let focoSelecionados = new Set();
+let focoAtualIdx = 0;
+let focoConcluidasCount = 0;
 
-function focoCheckAtual(){
-  focoAvancar();
-}
-
-function focoCheckFila(rowId, chk){
+function toggleFocoSelect(rowId, txt, tagClass, tagLabel, time) {
+  const chk = document.getElementById('fpc-' + rowId.replace('fp-',''));
   const row = document.getElementById(rowId);
-  if(!row) return;
-  const done = chk.classList.contains('done');
-  if(done){
+  if (focoSelecionados.has(rowId)) {
     // Desmarcar
+    focoSelecionados.delete(rowId);
     chk.classList.remove('done');
-    chk.innerHTML='';
-    const tt = row.querySelector('.tt');
-    if(tt) tt.classList.remove('struck');
-    focoConcluidas = Math.max(0, focoConcluidas - 1);
+    chk.innerHTML = '';
+    row.style.background = '';
+    focoFila = focoFila.filter(t => t.id !== rowId);
   } else {
     // Marcar
+    focoSelecionados.add(rowId);
     chk.classList.add('done');
-    chk.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
-    const tt = row.querySelector('.tt');
-    if(tt) tt.classList.add('struck');
-    row.style.opacity='0.6';
-    focoConcluidas++;
+    chk.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+    row.style.background = 'rgba(124,92,252,0.08)';
+    focoFila.push({id: rowId, txt, tagClass, tagLabel, time, concluida: false});
   }
-  focoUpdateProg();
+  focoUpdateFila();
 }
 
-function focoAvancar(){
-  // Marcar atual como concluída
-  const chkAtual = document.getElementById('foco-chk-atual');
-  if(chkAtual){
-    chkAtual.classList.add('done');
-    chkAtual.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+function focoAddNew() {
+  const input = document.getElementById('foco-new-txt');
+  const txt = input.value.trim();
+  if (!txt) return;
+  const newId = 'fp-' + Date.now();
+  // Adicionar na pool
+  const pool = document.getElementById('foco-pool');
+  const div = document.createElement('div');
+  div.className = 'ti';
+  div.id = newId;
+  div.style.cursor = 'pointer';
+  div.onclick = () => toggleFocoSelect(newId, txt, 'tag-n', '🟡 Normal', '—');
+  div.innerHTML = `<div class="chk" id="fpc-${newId.replace('fp-','')}"></div><div class="f1 mw0"><div class="tt f12">${txt}</div><div class="tm"><span class="tag tag-n">🟡 Normal</span></div></div>`;
+  pool.insertBefore(div, pool.firstChild);
+  // Selecionar automaticamente
+  toggleFocoSelect(newId, txt, 'tag-n', '🟡 Normal', '—');
+  input.value = '';
+}
+
+function focoUpdateFila() {
+  const list = document.getElementById('foco-fila-list');
+  const emptyMsg = document.getElementById('foco-empty-msg');
+  const atualWrap = document.getElementById('foco-atual-wrap');
+  const progWrap = document.getElementById('foco-prog-wrap');
+  const doneWrap = document.getElementById('foco-done-wrap');
+
+  const pendentes = focoFila.filter(t => !t.concluida);
+
+  if (focoFila.length === 0) {
+    emptyMsg.style.display = 'block';
+    atualWrap.style.display = 'none';
+    progWrap.style.display = 'none';
+    doneWrap.style.display = 'none';
+    list.innerHTML = '<div class="f11 cm">Selecione tarefas ao lado para começar o foco.</div>';
+    return;
   }
-  focoConcluidas++;
-  // Pegar próxima da fila (primeira não concluída)
-  const fila = document.getElementById('foco-fila');
-  const proxRow = fila ? fila.querySelector('.ti:not([style*="opacity"])') : null;
-  if(proxRow){
-    const titulo = proxRow.querySelector('.tt');
-    const meta = proxRow.querySelector('.ttime');
-    const tag = proxRow.querySelector('.tag');
-    if(titulo) document.getElementById('foco-titulo-atual').textContent = titulo.textContent;
-    if(meta) document.getElementById('foco-meta-atual').textContent = (tag?tag.textContent+' · ':'')+meta.textContent;
-    // Marcar essa da fila como concluída também
-    const chkFila = proxRow.querySelector('.chk');
-    if(chkFila){ chkFila.classList.add('done'); chkFila.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';}
-    proxRow.style.opacity='0.6';
-    const tt = proxRow.querySelector('.tt');
-    if(tt) tt.classList.add('struck');
-    // Reset chk atual para nova tarefa
-    if(chkAtual){chkAtual.classList.remove('done');chkAtual.innerHTML='';}
+
+  emptyMsg.style.display = 'none';
+  progWrap.style.display = 'block';
+
+  if (pendentes.length === 0) {
+    // Todas concluídas
+    atualWrap.style.display = 'none';
+    doneWrap.style.display = 'block';
+    list.innerHTML = '';
   } else {
-    // Sem mais tarefas
-    document.getElementById('foco-atual').style.display='none';
-    document.getElementById('foco-vazio').style.display='block';
-    pomoDone++;
-    document.getElementById('pomo-c').textContent = pomoDone;
+    doneWrap.style.display = 'none';
+    // Mostrar atual
+    const atual = pendentes[0];
+    atualWrap.style.display = 'block';
+    document.getElementById('foco-atual-txt').textContent = atual.txt;
+    document.getElementById('foco-atual-meta').innerHTML = `<span class="tag ${atual.tagClass}">${atual.tagLabel}</span><span class="ttime" style="margin-left:6px;">⏱ ${atual.time}</span>`;
+
+    // Fila restante (sem a atual)
+    const resto = pendentes.slice(1);
+    if (resto.length === 0) {
+      list.innerHTML = '<div class="f10 cm" style="padding:6px 0;">Sem mais tarefas na fila.</div>';
+    } else {
+      list.innerHTML = '<div class="f10 cm mb6">Na fila:</div>' + resto.map(t => `
+        <div class="ti" style="margin-bottom:4px;">
+          <div class="f1 mw0"><div class="tt f11">${t.txt}</div><div class="tm"><span class="tag ${t.tagClass}" style="font-size:9px;">${t.tagLabel}</span><span class="ttime">${t.time}</span></div></div>
+          <button onclick="focoRemoverDaFila('${t.id}')" style="background:transparent;border:none;color:var(--dim);cursor:pointer;font-size:12px;" title="Remover da fila">✕</button>
+        </div>`).join('');
+    }
   }
-  focoUpdateProg();
+
+  // Atualizar progresso
+  const total = focoFila.length;
+  const concluidas = focoFila.filter(t => t.concluida).length;
+  const pct = total > 0 ? Math.round((concluidas/total)*100) : 0;
+  document.getElementById('foco-prog-bar').style.width = pct + '%';
+  document.getElementById('foco-prog-txt').textContent = concluidas + ' / ' + total + ' tarefas';
 }
 
-function focoUpdateProg(){
-  const total = focoTotal;
-  const pct = total > 0 ? Math.round((focoConcluidas/total)*100) : 0;
-  const bar = document.getElementById('foco-prog-bar');
-  const txt = document.getElementById('foco-prog-txt');
-  if(bar) bar.style.width = pct+'%';
-  if(txt) txt.textContent = focoConcluidas+' / '+total+' tarefas';
+function focoConcluir() {
+  const pendentes = focoFila.filter(t => !t.concluida);
+  if (pendentes.length === 0) return;
+  pendentes[0].concluida = true;
+  focoConcluidasCount++;
+  // Marcar como concluída na lista principal (Meu Dia)
+  const rowId = pendentes[0].id;
+  const mainRow = document.getElementById(rowId);
+  if (mainRow) {
+    const chk = mainRow.querySelector('.chk');
+    const tt = mainRow.querySelector('.tt');
+    if (chk) { chk.classList.add('done'); chk.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>'; }
+    if (tt) tt.classList.add('struck');
+    setTimeout(() => { mainRow.style.opacity = '0.5'; }, 200);
+  }
+  focoUpdateFila();
 }
 
-function resetTimer(){clearInterval(timerInt);timerOn=false;timerSec=25*60;updTimer();document.getElementById('btn-st').textContent='▶ Iniciar';document.getElementById('tmr-l').textContent='Foco total — sem distrações';}
+function focoPular() {
+  const pendentes = focoFila.filter(t => !t.concluida);
+  if (pendentes.length <= 1) return;
+  // Mover primeiro para o final
+  const first = pendentes[0];
+  focoFila = focoFila.filter(t => t.id !== first.id);
+  focoFila.push(first);
+  focoUpdateFila();
+}
+
+function focoRemoverDaFila(id) {
+  focoFila = focoFila.filter(t => t.id !== id);
+  focoSelecionados.delete(id);
+  // Desmarcar na pool
+  const chkEl = document.getElementById('fpc-' + id.replace('fp-',''));
+  const rowEl = document.getElementById(id);
+  if (chkEl) { chkEl.classList.remove('done'); chkEl.innerHTML = ''; }
+  if (rowEl) rowEl.style.background = '';
+  focoUpdateFila();
+}
+
+function focoReset() {
+  focoFila = [];
+  focoSelecionados.clear();
+  focoConcluidasCount = 0;
+  // Limpar seleções na pool
+  document.querySelectorAll('#foco-pool .chk').forEach(c => { c.classList.remove('done'); c.innerHTML = ''; });
+  document.querySelectorAll('#foco-pool .ti').forEach(r => r.style.background = '');
+  focoUpdateFila();
+}
+
+function resetTimer(){function resetTimer(){clearInterval(timerInt);timerOn=false;timerSec=25*60;updTimer();document.getElementById('btn-st').textContent='▶ Iniciar';document.getElementById('tmr-l').textContent='Foco total — sem distrações';}
 function shortBreak(){clearInterval(timerInt);timerOn=false;timerSec=5*60;updTimer();document.getElementById('tmr-l').textContent='Pausa de 5 minutos — respira!';}
 
 function toggleCadForm(){const f=document.getElementById('cad-form');f.style.display=f.style.display==='none'?'block':'none';}
@@ -1150,7 +1292,9 @@ function checkAlarms() {
   const now = new Date();
   const hh = now.getHours();
   const mm = now.getMinutes();
-  if (hh === 0 && mm === 0) ALARMS.forEach(a => a.disparado = false);
+  const ss = now.getSeconds();
+  // Reset diário
+  if (hh === 0 && mm === 0 && ss < 15) ALARMS.forEach(a => a.disparado = false);
   ALARMS.forEach((a, i) => {
     if (!a.ativo || a.disparado) return;
     const parts = a.hora.split(':');
@@ -1158,11 +1302,19 @@ function checkAlarms() {
     const ah = parseInt(parts[0], 10);
     const am = parseInt(parts[1], 10);
     if(isNaN(ah)||isNaN(am)) return;
+    // Verificar se estamos no minuto exato do alarme (ignora segundos)
+    if (hh === ah && mm === am) {
+      console.log(`[ALARME DISPARANDO] ${a.hora} - ${a.msg}`);
+      a.disparado = true;
+      showAlarm(a.msg);
+      return;
+    }
+    // Janela de recuperação: se passou até 4 minutos e não disparou ainda
     const alarmTotal = ah * 60 + am;
     const nowTotal = hh * 60 + mm;
     const diff = nowTotal - alarmTotal;
-    console.log(`[Alarm ${i}] ${a.hora} | agora: ${hh}:${String(mm).padStart(2,'0')} | diff: ${diff}min | ativo:${a.ativo} | disparado:${a.disparado}`);
-    if (diff >= 0 && diff <= 3) {
+    if (diff > 0 && diff <= 4) {
+      console.log(`[ALARME RECUPERADO] ${a.hora} - passou ${diff}min - ${a.msg}`);
       a.disparado = true;
       showAlarm(a.msg);
     }
@@ -1171,10 +1323,10 @@ function checkAlarms() {
 
 function startAlarmSystem() {
   if (alarmCheckInterval) clearInterval(alarmCheckInterval);
-  // Verificar a cada 15 segundos
-  alarmCheckInterval = setInterval(checkAlarms, 15000);
+  // Verificar a cada 10 segundos para não perder o minuto exato
+  alarmCheckInterval = setInterval(checkAlarms, 10000);
   checkAlarms();
-  console.log('[Alarm System] Iniciado. Verificando a cada 15 seg. Total alarmes:', ALARMS.length);
+  console.log('[Alarm System] Iniciado. Verificando a cada 10s.');
 }
 
 // Renderizar alarmes na tela de config
@@ -1200,11 +1352,10 @@ function saveAlarm(i){
   ALARMS[i].msg=m.value;
   ALARMS[i].disparado=false;
   ALARMS[i].ativo=true;
-  // Forçar toggle como ativo visualmente
   const tog=document.getElementById('alarm-tog-'+i);
   if(tog)tog.classList.add('on');
-  showToast('Lembrete salvo e ativado! ✓');
-  // Verificar imediatamente se deve disparar agora
+  console.log('[Alarme salvo]', ALARMS[i].hora, ALARMS[i].msg);
+  showToast('Lembrete salvo! Próximo check em até 10 segundos. ✓');
   checkAlarms();
 }
 
