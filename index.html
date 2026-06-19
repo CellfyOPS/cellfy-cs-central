@@ -535,26 +535,39 @@ function ckTask(e,id,chk){
     chk.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
     const tt=row.querySelector('.tt');if(tt)tt.classList.add('struck');
     setTimeout(()=>{
-      row.style.transition='opacity .4s,height .4s,margin .4s,padding .4s';
-      row.style.opacity='0';
-      row.style.height='0';
-      row.style.overflow='hidden';
-      row.style.marginBottom='0';
-      row.style.padding='0';
-      setTimeout(()=>{
-        const done=document.getElementById('h-done');
-        if(done){
-          const clone=document.createElement('div');
-          clone.className='ti';
-          clone.style.opacity='.6';
-          const title=tt?tt.textContent:'Tarefa';
-          clone.innerHTML='<div class="chk done"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"11\" height=\"11\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"3\"><polyline points=\"20 6 9 17 4 12\"/></svg></div><div class=\"f1 mw0\"><div class=\"tt struck\">'+title+'</div><div class=\"tm\"><span class=\"tag tag-d\">Concluída</span></div></div>';
-          done.prepend(clone);
-        }
-        row.remove();
-      },400);
-    },600);
+      const done=document.getElementById('h-done');
+      if(done){
+        const title=tt?tt.textContent:'Tarefa';
+        const doneId='done-'+Date.now();
+        const clone=document.createElement('div');
+        clone.className='ti';
+        clone.id=doneId;
+        clone.style.opacity='.85';
+        clone.innerHTML=`<div class="chk done"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="f1 mw0"><div class="tt struck">${title}</div>
+          <div class="tm"><span class="tag tag-d">Concluída</span></div></div>
+          <button onclick="undoTask('${doneId}','${title}')" style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:#fcd34d;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;white-space:nowrap;font-family:inherit;" title="Mover de volta para pendentes">↩ Desfazer</button>`;
+        done.prepend(clone);
+      }
+      row.style.transition='opacity .3s,height .3s,margin .3s,padding .3s';
+      row.style.opacity='0';row.style.height='0';row.style.overflow='hidden';row.style.marginBottom='0';row.style.padding='0';
+      setTimeout(()=>row.remove(),300);
+    },500);
   }
+}
+
+function undoTask(doneId, title){
+  const doneRow=document.getElementById(doneId);
+  if(doneRow)doneRow.remove();
+  const pend=document.getElementById('h-pend');
+  if(!pend)return;
+  const newId='t'+Date.now();
+  const div=document.createElement('div');
+  div.className='ti';div.id=newId;
+  div.innerHTML=`<div class="chk" onclick="ckTask(event,'${newId}',this)"></div>
+    <div class="f1 mw0"><div class="tt">${title}</div>
+    <div class="tm"><span class="tag tag-n">🟡 Normal</span><span style="font-size:10px;color:var(--warn);margin-left:4px;">↩ Restaurada</span></div></div>`;
+  pend.prepend(div);
 }
 
 function toggleAdd(){const p=document.getElementById('add-panel');p.style.display=p.style.display==='none'?'block':'none';if(p.style.display==='block')setTimeout(()=>document.getElementById('nt-d').focus(),50);}
@@ -890,13 +903,43 @@ function renderAlarms() {
   const wrap = document.getElementById('alarm-list');
   if (!wrap) return;
   wrap.innerHTML = ALARMS.map((a,i) => `
-    <div class="fx ic gap8" style="background:var(--card2);border-radius:6px;padding:7px 10px;">
-      <input type="time" value="${a.hora}" onchange="ALARMS[${i}].hora=this.value;ALARMS[${i}].disparado=false;" style="width:80px;padding:4px 6px;font-size:11px;">
-      <input type="text" value="${a.msg}" onchange="ALARMS[${i}].msg=this.value;" style="flex:1;font-size:11px;padding:4px 8px;">
-      <div class="tog ${a.ativo?'on':''}" onclick="ALARMS[${i}].ativo=!ALARMS[${i}].ativo;this.classList.toggle('on');"></div>
-      <button onclick="testAlarm(${i})" style="background:rgba(0,212,200,.1);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;">▶ Testar</button>
-      <button onclick="ALARMS.splice(${i},1);renderAlarms();" style="background:transparent;border:none;color:var(--err);cursor:pointer;font-size:14px;">✕</button>
+    <div style="background:var(--card2);border-radius:7px;padding:8px 10px;display:flex;align-items:center;gap:7px;margin-bottom:5px;">
+      <input type="time" value="${a.hora}" id="alarm-time-${i}" style="width:85px;padding:4px 7px;font-size:12px;background:var(--card3);border:1px solid var(--border2);border-radius:5px;color:var(--text);">
+      <input type="text" value="${a.msg}" id="alarm-msg-${i}" style="flex:1;font-size:11px;padding:4px 8px;background:var(--card3);border:1px solid var(--border2);border-radius:5px;color:var(--text);">
+      <div class="tog ${a.ativo?'on':''}" id="alarm-tog-${i}" onclick="toggleAlarm(${i})"></div>
+      <button onclick="saveAlarm(${i})" style="background:rgba(0,212,200,.12);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;white-space:nowrap;">💾 Salvar</button>
+      <button onclick="testAlarm(${i})" style="background:rgba(124,92,252,.12);border:1px solid var(--purple);color:#a78bfa;border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;white-space:nowrap;">▶ Testar</button>
+      <button onclick="removeAlarm(${i})" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:3px 7px;font-size:11px;cursor:pointer;">✕</button>
     </div>`).join('');
+}
+
+function saveAlarm(i){
+  const h=document.getElementById('alarm-time-'+i);
+  const m=document.getElementById('alarm-msg-'+i);
+  if(!h||!m)return;
+  ALARMS[i].hora=h.value;
+  ALARMS[i].msg=m.value;
+  ALARMS[i].disparado=false;
+  showToast('Lembrete salvo! ✓');
+}
+
+function toggleAlarm(i){
+  ALARMS[i].ativo=!ALARMS[i].ativo;
+  const tog=document.getElementById('alarm-tog-'+i);
+  if(tog)tog.classList.toggle('on');
+}
+
+function removeAlarm(i){
+  if(!confirm('Remover este lembrete?'))return;
+  ALARMS.splice(i,1);
+  renderAlarms();
+}
+
+function showToast(msg){
+  let t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;bottom:20px;right:20px;background:var(--ok);color:white;padding:8px 16px;border-radius:7px;font-size:12px;font-weight:600;z-index:9998;transition:opacity .3s;';document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity='1';
+  setTimeout(()=>t.style.opacity='0',2500);
 }
 
 function testAlarm(i) {
@@ -906,10 +949,32 @@ function testAlarm(i) {
 }
 
 function addAlarm() {
-  ALARMS.push({ hora:'09:00', msg:'Novo lembrete...', ativo:true, disparado:false });
+  ALARMS.push({ hora:'09:00', msg:'Novo lembrete — edite aqui...', ativo:true, disparado:false });
   renderAlarms();
+  showToast('Lembrete adicionado! Configure o horário e a mensagem.');
 }
 
+function trocarSenha(){
+  const atual=document.getElementById('pwd-atual').value;
+  const nova=document.getElementById('pwd-nova').value;
+  const conf=document.getElementById('pwd-conf').value;
+  const msg=document.getElementById('pwd-msg');
+  if(!atual||!nova||!conf){showPwdMsg('Preencha todos os campos.','var(--warn)');return;}
+  const user=USERS.find(u=>u.email.toLowerCase()===currentUser.email.toLowerCase());
+  if(!user||user.senha!==atual){showPwdMsg('Senha atual incorreta.','var(--err)');return;}
+  if(nova.length<6){showPwdMsg('Nova senha precisa ter no mínimo 6 caracteres.','var(--warn)');return;}
+  if(nova!==conf){showPwdMsg('As senhas não coincidem.','var(--err)');return;}
+  user.senha=nova;
+  currentUser.senha=nova;
+  ['pwd-atual','pwd-nova','pwd-conf'].forEach(id=>document.getElementById(id).value='');
+  showPwdMsg('Senha alterada com sucesso! ✓','var(--ok)');
+}
+function showPwdMsg(txt,cor){
+  const el=document.getElementById('pwd-msg');
+  if(!el)return;
+  el.textContent=txt;el.style.color=cor;el.style.display='block';
+  setTimeout(()=>el.style.display='none',3500);
+}
 setTimeout(renderCadList,100);
 </script>
 </body>
