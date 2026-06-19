@@ -167,7 +167,18 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
       </div>
     </div>
     <div class="fx ic gap8">
-      <div style="position:relative;cursor:pointer;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><div style="position:absolute;top:-2px;right:-2px;width:7px;height:7px;background:var(--err);border-radius:50%;"></div></div>
+      <div style="position:relative;cursor:pointer;" onclick="toggleNotifPanel()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div id="notif-dot" style="position:absolute;top:-2px;right:-2px;width:7px;height:7px;background:var(--err);border-radius:50%;"></div>
+      </div>
+      <!-- PAINEL DE NOTIFICAÇÕES -->
+      <div id="notif-panel" style="display:none;position:absolute;top:52px;right:80px;width:320px;background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:999;overflow:hidden;">
+        <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:12px;font-weight:700;color:var(--text);">🔔 Notificações</span>
+          <button onclick="clearNotifs()" style="font-size:10px;color:var(--muted);background:transparent;border:none;cursor:pointer;">Limpar tudo</button>
+        </div>
+        <div id="notif-list" style="max-height:300px;overflow-y:auto;"></div>
+      </div></div>
       <button class="btn-p" onclick="toggleAdd()" style="font-size:11px;padding:5px 12px;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nova tarefa</button>
     </div>
   </div>
@@ -185,7 +196,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
       </div>
       <div class="sb-sec">
         <span class="sb-lbl">Time</span>
-        <div class="ni" id="n-canal" onclick="sp('canal')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Canal CS <span class="nb">2</span></div>
+        <div class="ni" id="n-canal" onclick="sp('canal');markCanalRead()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Canal CS <span class="nb" id="canal-badge" style="display:none;">0</span>
+        </div>
       </div>
       <div class="sb-sec" id="ns-master" style="display:none;">
         <span class="sb-lbl">Gestão</span>
@@ -383,11 +397,71 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 
 <!-- CANAL -->
 <div id="p-canal" class="page">
-  <div class="fx jb ic mb12"><div class="f11 cm">Feed do time CS</div><button class="btn-p" id="btn-post" style="display:none;font-size:10px;padding:4px 10px;" onclick="togglePF()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo post</button></div>
-  <div id="pf" style="display:none;" class="mb12"><div class="card"><div class="ct"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Novo post</div><select style="width:160px;margin-bottom:8px;"><option>📢 Informativo</option><option>⚠️ Urgente</option><option>🎉 Reconhecimento</option><option>📋 Procedimento</option><option>❓ Dúvida</option></select><textarea placeholder="Escreva para o time..." style="height:65px;resize:none;margin-bottom:8px;"></textarea><button class="btn-c" style="font-size:10px;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Publicar</button></div></div>
-  <div class="post"><div class="fx ic gap8 mb8"><div class="p-av" style="background:linear-gradient(135deg,var(--purple),var(--cyan));">RS</div><div class="f1"><div class="f12 fw6" style="color:var(--text);">Rafa Souza</div><div class="f10 cdim">hoje, 08:15</div></div><span class="tag" style="background:rgba(245,158,11,.15);color:#fcd34d;"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Fixado</span><span class="tag tag-i">📢 Info</span></div><div class="p-body">Equipe, lembrando que o SLA para Reclame Aqui é de 24h. Priorizem as respostas mais antigas! Qualquer dúvida me chamem. Vamos juntas! 💙</div><div class="fx gap6"><button class="react on" onclick="this.classList.toggle('on')">👍 3</button><button class="react" onclick="this.classList.toggle('on')">❤️ 1</button><button class="react" onclick="toggleReply(this)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Responder</button></div><div class="reply-area" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;"><input placeholder="Resposta..."></div></div>
-  <div class="post"><div class="fx ic gap8 mb8"><div class="p-av" style="background:linear-gradient(135deg,var(--purple),var(--cyan));">RS</div><div class="f1"><div class="f12 fw6" style="color:var(--text);">Rafa Souza</div><div class="f10 cdim">ontem, 17:00</div></div><span class="tag tag-l">🎉 Reconhecimento</span></div><div class="p-body">Larissa, parabéns pela semana incrível! Zero atrasadas. É isso aí! 🌟</div><div class="fx gap6"><button class="react on" onclick="this.classList.toggle('on')">👍 2</button><button class="react on" onclick="this.classList.toggle('on')">❤️ 3</button><button class="react" onclick="toggleReply(this)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Responder</button></div><div class="reply-area" style="display:block;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;"><div style="background:var(--card3);border-radius:6px;padding:7px;margin-bottom:6px;font-size:11px;color:var(--muted);"><span class="fw6" style="color:var(--text);">Larissa:</span> Obrigada Rafa!! 🥹❤️</div><input placeholder="Resposta..."></div></div>
-  <div class="post"><div class="fx ic gap8 mb8"><div class="p-av" style="background:linear-gradient(135deg,#ec4899,#7c5cfc);">RS</div><div class="f1"><div class="f12 fw6" style="color:var(--text);">Roseane</div><div class="f10 cdim">ontem, 14:30</div></div><span class="tag tag-n">❓ Dúvida</span></div><div class="p-body">Quando o cliente pede reembolso no ML sem protocolo, qual o fluxo?</div><div class="fx gap6 mb8"><button class="react" onclick="toggleReply(this)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Responder</button></div><div class="reply-area" style="display:block;border-top:1px solid var(--border);padding-top:8px;"><div style="background:var(--card3);border-radius:6px;padding:7px;margin-bottom:6px;font-size:11px;color:var(--muted);"><span class="fw6 cc">Rafa:</span> Usa o SAC Backoffice! Campo "Tipo: Reembolso ML". Vou criar POP essa semana.</div></div></div>
+  <div class="fx jb ic mb12">
+    <div class="f11 cm">Feed do time CS</div>
+    <div class="fx gap6 ic">
+      <button class="btn" style="font-size:10px;padding:4px 9px;" onclick="markCanalRead()">✓ Marcar tudo como lido</button>
+      <button class="btn-p" id="btn-post" style="display:none;font-size:10px;padding:4px 10px;" onclick="togglePF()">➕ Novo post</button>
+    </div>
+  </div>
+  <div id="pf" style="display:none;" class="mb12"><div class="card"><div class="ct">✏️ Novo post</div><select style="width:160px;margin-bottom:8px;"><option>📢 Informativo</option><option>⚠️ Urgente</option><option>🎉 Reconhecimento</option><option>📋 Procedimento</option><option>❓ Dúvida</option></select><textarea placeholder="Escreva para o time..." style="height:65px;resize:none;margin-bottom:8px;"></textarea><button class="btn-c" style="font-size:10px;" onclick="publishPost()">📤 Publicar</button></div></div>
+
+  <div id="canal-feed">
+    <div class="post" id="post-1" data-lido="false">
+      <div class="fx ic gap8 mb8">
+        <div class="p-av" style="background:linear-gradient(135deg,var(--purple),var(--cyan));">RS</div>
+        <div class="f1"><div class="f12 fw6" style="color:var(--text);">Rafa Souza</div><div class="f10 cdim">hoje, 08:15</div></div>
+        <div id="lido-1" style="width:8px;height:8px;border-radius:50%;background:var(--purple);flex-shrink:0;" title="Não lido"></div>
+        <span class="tag" style="background:rgba(245,158,11,.15);color:#fcd34d;">📌 Fixado</span>
+        <span class="tag tag-i">📢 Info</span>
+      </div>
+      <div class="p-body">Equipe, lembrando que o SLA para Reclame Aqui é de 24h. Priorizem as respostas mais antigas! Qualquer dúvida me chamem. Vamos juntas! 💙</div>
+      <div class="fx gap6">
+        <button class="react on" onclick="this.classList.toggle('on')">👍 3</button>
+        <button class="react" onclick="this.classList.toggle('on')">❤️ 1</button>
+        <button class="react" onclick="toggleReply(this)">💬 Responder</button>
+        <button class="react" onclick="markPostRead('post-1','lido-1')" id="btn-lido-1" style="margin-left:auto;">✓ Marcar como lido</button>
+      </div>
+      <div class="reply-area" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;"><input placeholder="Resposta..."></div>
+    </div>
+
+    <div class="post" id="post-2" data-lido="false">
+      <div class="fx ic gap8 mb8">
+        <div class="p-av" style="background:linear-gradient(135deg,var(--purple),var(--cyan));">RS</div>
+        <div class="f1"><div class="f12 fw6" style="color:var(--text);">Rafa Souza</div><div class="f10 cdim">ontem, 17:00</div></div>
+        <div id="lido-2" style="width:8px;height:8px;border-radius:50%;background:var(--purple);flex-shrink:0;" title="Não lido"></div>
+        <span class="tag tag-l">🎉 Reconhecimento</span>
+      </div>
+      <div class="p-body">Larissa, parabéns pela semana incrível! Zero atrasadas. É isso aí! 🌟</div>
+      <div class="fx gap6">
+        <button class="react on" onclick="this.classList.toggle('on')">👍 2</button>
+        <button class="react on" onclick="this.classList.toggle('on')">❤️ 3</button>
+        <button class="react" onclick="toggleReply(this)">💬 Responder</button>
+        <button class="react" onclick="markPostRead('post-2','lido-2')" id="btn-lido-2" style="margin-left:auto;">✓ Marcar como lido</button>
+      </div>
+      <div class="reply-area" style="display:block;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;">
+        <div style="background:var(--card3);border-radius:6px;padding:7px;margin-bottom:6px;font-size:11px;color:var(--muted);"><span class="fw6" style="color:var(--text);">Larissa:</span> Obrigada Rafa!! 🥹❤️</div>
+        <input placeholder="Resposta...">
+      </div>
+    </div>
+
+    <div class="post" id="post-3" data-lido="true">
+      <div class="fx ic gap8 mb8">
+        <div class="p-av" style="background:linear-gradient(135deg,#ec4899,#7c5cfc);">RS</div>
+        <div class="f1"><div class="f12 fw6" style="color:var(--text);">Roseane</div><div class="f10 cdim">ontem, 14:30</div></div>
+        <span class="tag tag-n">❓ Dúvida</span>
+      </div>
+      <div class="p-body">Quando o cliente pede reembolso no ML sem protocolo, qual o fluxo?</div>
+      <div class="fx gap6 mb8">
+        <button class="react" onclick="toggleReply(this)">💬 Responder</button>
+      </div>
+      <div class="reply-area" style="display:block;border-top:1px solid var(--border);padding-top:8px;">
+        <div style="background:var(--card3);border-radius:6px;padding:7px;margin-bottom:6px;font-size:11px;color:var(--muted);">
+          <span class="fw6 cc">Rafa:</span> Usa o SAC Backoffice! Campo "Tipo: Reembolso ML". Vou criar POP essa semana.
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- VISÃO GERAL -->
@@ -583,6 +657,80 @@ function undoTask(doneId, title){
 function toggleAdd(){const p=document.getElementById('add-panel');p.style.display=p.style.display==='none'?'block':'none';if(p.style.display==='block')setTimeout(()=>document.getElementById('nt-d').focus(),50);}
 function toggleTF(){const f=document.getElementById('tf');f.style.display=f.style.display==='none'?'block':'none';}
 function togglePF(){const f=document.getElementById('pf');f.style.display=f.style.display==='none'?'block':'none';}
+// ── CANAL CS ──
+let canalUnread = 2; // posts 1 e 2 não lidos
+
+function updateCanalBadge(){
+  const badge = document.getElementById('canal-badge');
+  if(!badge) return;
+  if(canalUnread > 0){
+    badge.textContent = canalUnread;
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function markPostRead(postId, lidoId){
+  const post = document.getElementById(postId);
+  const dot = document.getElementById(lidoId);
+  const btn = document.getElementById('btn-'+lidoId);
+  if(post && post.dataset.lido === 'false'){
+    post.dataset.lido = 'true';
+    if(dot) dot.style.display = 'none';
+    if(btn) { btn.textContent = '✓ Lido'; btn.style.color = 'var(--ok)'; btn.disabled = true; }
+    canalUnread = Math.max(0, canalUnread - 1);
+    updateCanalBadge();
+  }
+}
+
+function markCanalRead(){
+  document.querySelectorAll('.post[data-lido="false"]').forEach(post => {
+    const postId = post.id;
+    const lidoId = 'lido-' + postId.replace('post-','');
+    markPostRead(postId, lidoId);
+  });
+}
+
+function publishPost(){
+  const textarea = document.querySelector('#pf textarea');
+  const select = document.querySelector('#pf select');
+  if(!textarea || !textarea.value.trim()) return;
+  const tipo = select ? select.value : '📢 Informativo';
+  const now = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const init = document.getElementById('sb-av').textContent;
+  const nome = document.getElementById('sb-nm').textContent;
+  const feed = document.getElementById('canal-feed');
+  const newId = 'post-' + Date.now();
+  const lidoId = 'lido-' + Date.now();
+  const div = document.createElement('div');
+  div.className = 'post';
+  div.id = newId;
+  div.dataset.lido = 'false';
+  div.innerHTML = `
+    <div class="fx ic gap8 mb8">
+      <div class="p-av" style="background:linear-gradient(135deg,var(--purple),var(--cyan));">${init}</div>
+      <div class="f1"><div class="f12 fw6" style="color:var(--text);">${nome}</div><div class="f10 cdim">agora, ${now}</div></div>
+      <div id="${lidoId}" style="width:8px;height:8px;border-radius:50%;background:var(--purple);flex-shrink:0;"></div>
+      <span class="tag tag-i">${tipo}</span>
+    </div>
+    <div class="p-body">${textarea.value}</div>
+    <div class="fx gap6">
+      <button class="react" onclick="this.classList.toggle('on')">👍 0</button>
+      <button class="react" onclick="toggleReply(this)">💬 Responder</button>
+      <button class="react" onclick="markPostRead('${newId}','${lidoId}')" id="btn-${lidoId}" style="margin-left:auto;">✓ Marcar como lido</button>
+    </div>
+    <div class="reply-area" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;"><input placeholder="Resposta..."></div>`;
+  feed.insertBefore(div, feed.firstChild);
+  textarea.value = '';
+  document.getElementById('pf').style.display = 'none';
+  canalUnread++;
+  updateCanalBadge();
+}
+
+// Inicializar badge
+setTimeout(updateCanalBadge, 200);
+
 function toggleReply(btn){const ra=btn.closest('.post').querySelector('.reply-area');if(ra)ra.style.display=ra.style.display==='none'?'block':'none';}
 
 function createTask(){
@@ -617,6 +765,85 @@ function changeInterval(v){if(autoTmr)clearInterval(autoTmr);if(v==='0')return;a
 
 function updTimer(){const m=Math.floor(timerSec/60),s=timerSec%60;document.getElementById('tmr').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
 function startTimer(){if(timerOn){clearInterval(timerInt);timerOn=false;document.getElementById('btn-st').textContent='▶ Retomar';return;}timerOn=true;document.getElementById('btn-st').textContent='⏸ Pausar';timerInt=setInterval(()=>{if(timerSec<=0){clearInterval(timerInt);timerOn=false;pomoDone++;document.getElementById('pomo-c').textContent=pomoDone;document.getElementById('tmr-l').textContent='Concluído! Faça uma pausa.';document.getElementById('btn-st').textContent='▶ Iniciar';timerSec=25*60;updTimer();return;}timerSec--;updTimer();},1000);}
+// ── MODO FOCO - TAREFAS ──
+let focoTotal = 3;
+let focoConcluidas = 0;
+const FOCO_TAREFAS = [
+  {id:'foco-t1', txt:'Validar estornos APPMAX', tag:'🔴 Urgente', time:'30min'},
+  {id:'foco-t2', txt:'Input diário — ML e Shopee', tag:'🟡 Normal', time:'15min'},
+];
+
+function focoCheckAtual(){
+  focoAvancar();
+}
+
+function focoCheckFila(rowId, chk){
+  const row = document.getElementById(rowId);
+  if(!row) return;
+  const done = chk.classList.contains('done');
+  if(done){
+    // Desmarcar
+    chk.classList.remove('done');
+    chk.innerHTML='';
+    const tt = row.querySelector('.tt');
+    if(tt) tt.classList.remove('struck');
+    focoConcluidas = Math.max(0, focoConcluidas - 1);
+  } else {
+    // Marcar
+    chk.classList.add('done');
+    chk.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+    const tt = row.querySelector('.tt');
+    if(tt) tt.classList.add('struck');
+    row.style.opacity='0.6';
+    focoConcluidas++;
+  }
+  focoUpdateProg();
+}
+
+function focoAvancar(){
+  // Marcar atual como concluída
+  const chkAtual = document.getElementById('foco-chk-atual');
+  if(chkAtual){
+    chkAtual.classList.add('done');
+    chkAtual.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+  }
+  focoConcluidas++;
+  // Pegar próxima da fila (primeira não concluída)
+  const fila = document.getElementById('foco-fila');
+  const proxRow = fila ? fila.querySelector('.ti:not([style*="opacity"])') : null;
+  if(proxRow){
+    const titulo = proxRow.querySelector('.tt');
+    const meta = proxRow.querySelector('.ttime');
+    const tag = proxRow.querySelector('.tag');
+    if(titulo) document.getElementById('foco-titulo-atual').textContent = titulo.textContent;
+    if(meta) document.getElementById('foco-meta-atual').textContent = (tag?tag.textContent+' · ':'')+meta.textContent;
+    // Marcar essa da fila como concluída também
+    const chkFila = proxRow.querySelector('.chk');
+    if(chkFila){ chkFila.classList.add('done'); chkFila.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';}
+    proxRow.style.opacity='0.6';
+    const tt = proxRow.querySelector('.tt');
+    if(tt) tt.classList.add('struck');
+    // Reset chk atual para nova tarefa
+    if(chkAtual){chkAtual.classList.remove('done');chkAtual.innerHTML='';}
+  } else {
+    // Sem mais tarefas
+    document.getElementById('foco-atual').style.display='none';
+    document.getElementById('foco-vazio').style.display='block';
+    pomoDone++;
+    document.getElementById('pomo-c').textContent = pomoDone;
+  }
+  focoUpdateProg();
+}
+
+function focoUpdateProg(){
+  const total = focoTotal;
+  const pct = total > 0 ? Math.round((focoConcluidas/total)*100) : 0;
+  const bar = document.getElementById('foco-prog-bar');
+  const txt = document.getElementById('foco-prog-txt');
+  if(bar) bar.style.width = pct+'%';
+  if(txt) txt.textContent = focoConcluidas+' / '+total+' tarefas';
+}
+
 function resetTimer(){clearInterval(timerInt);timerOn=false;timerSec=25*60;updTimer();document.getElementById('btn-st').textContent='▶ Iniciar';document.getElementById('tmr-l').textContent='Foco total — sem distrações';}
 function shortBreak(){clearInterval(timerInt);timerOn=false;timerSec=5*60;updTimer();document.getElementById('tmr-l').textContent='Pausa de 5 minutos — respira!';}
 
@@ -881,7 +1108,7 @@ function showAlarm(msg) {
   document.getElementById('alarm-msg').textContent = msg;
   document.getElementById('alarm-popup').style.display = 'block';
   playAlarmSound();
-  // Auto-fechar após 30 seg
+  addNotif('🔔 ' + msg, 'info');
   setTimeout(() => { document.getElementById('alarm-popup').style.display = 'none'; }, 30000);
 }
 
@@ -891,11 +1118,21 @@ function closeAlarm() {
 
 function checkAlarms() {
   const now = new Date();
-  const hhmm = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
-  // Reset disparado à meia-noite
-  if (hhmm === '00:00') ALARMS.forEach(a => a.disparado = false);
+  const hh = now.getHours();
+  const mm = now.getMinutes();
+  if (hh === 0 && mm === 0) ALARMS.forEach(a => a.disparado = false);
   ALARMS.forEach(a => {
-    if (a.ativo && a.hora === hhmm && !a.disparado) {
+    if (!a.ativo || a.disparado) return;
+    const parts = a.hora.split(':');
+    if(parts.length < 2) return;
+    const ah = parseInt(parts[0], 10);
+    const am = parseInt(parts[1], 10);
+    if(isNaN(ah)||isNaN(am)) return;
+    const alarmTotal = ah * 60 + am;
+    const nowTotal = hh * 60 + mm;
+    const diff = nowTotal - alarmTotal;
+    // Janela de 3 minutos de tolerância
+    if (diff >= 0 && diff <= 3) {
       a.disparado = true;
       showAlarm(a.msg);
     }
@@ -904,8 +1141,8 @@ function checkAlarms() {
 
 function startAlarmSystem() {
   if (alarmCheckInterval) clearInterval(alarmCheckInterval);
-  alarmCheckInterval = setInterval(checkAlarms, 30000); // verifica a cada 30 seg
-  checkAlarms(); // verifica imediatamente
+  alarmCheckInterval = setInterval(checkAlarms, 20000); // verifica a cada 20 seg
+  checkAlarms();
 }
 
 // Renderizar alarmes na tela de config
@@ -930,7 +1167,13 @@ function saveAlarm(i){
   ALARMS[i].hora=h.value;
   ALARMS[i].msg=m.value;
   ALARMS[i].disparado=false;
-  showToast('Lembrete salvo! ✓');
+  ALARMS[i].ativo=true;
+  // Forçar toggle como ativo visualmente
+  const tog=document.getElementById('alarm-tog-'+i);
+  if(tog)tog.classList.add('on');
+  showToast('Lembrete salvo e ativado! ✓');
+  // Verificar imediatamente se deve disparar agora
+  checkAlarms();
 }
 
 function toggleAlarm(i){
@@ -944,6 +1187,68 @@ function removeAlarm(i){
   ALARMS.splice(i,1);
   renderAlarms();
 }
+
+// ── SISTEMA DE NOTIFICAÇÕES ──
+let NOTIFS = [
+  {id:1, msg:'Tarefa atrasada: Responder OS-000029 — Reclame Aqui', tempo:'há 2h', tipo:'danger', lida:false},
+  {id:2, msg:'Lembrete: Reunião OPS Leaders às 14h', tempo:'há 30min', tipo:'info', lida:false},
+];
+
+function renderNotifPanel(){
+  const list = document.getElementById('notif-list');
+  if(!list) return;
+  if(!NOTIFS.length){
+    list.innerHTML='<div style="padding:20px;text-align:center;font-size:12px;color:var(--dim);">Nenhuma notificação</div>';
+    return;
+  }
+  list.innerHTML = NOTIFS.map(n=>`
+    <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:${n.lida?'transparent':'rgba(124,92,252,0.05)'};display:flex;align-items:flex-start;gap:8px;" id="notif-${n.id}">
+      <div style="width:8px;height:8px;border-radius:50%;background:${n.tipo==='danger'?'var(--err)':n.tipo==='warn'?'var(--warn)':'var(--info)'};flex-shrink:0;margin-top:4px;"></div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:11px;color:var(--text);line-height:1.4;margin-bottom:2px;">${n.msg}</div>
+        <div style="font-size:10px;color:var(--dim);">${n.tempo}</div>
+      </div>
+      <button onclick="markRead(${n.id})" style="background:transparent;border:none;color:var(--dim);cursor:pointer;font-size:16px;padding:0;line-height:1;" title="Marcar como lida">✕</button>
+    </div>`).join('');
+  // Atualizar dot
+  const unread = NOTIFS.filter(n=>!n.lida).length;
+  const dot = document.getElementById('notif-dot');
+  if(dot) dot.style.display = unread > 0 ? 'block' : 'none';
+}
+
+function toggleNotifPanel(){
+  const panel = document.getElementById('notif-panel');
+  if(!panel) return;
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  if(!isOpen) renderNotifPanel();
+}
+
+function markRead(id){
+  NOTIFS = NOTIFS.filter(n=>n.id!==id);
+  renderNotifPanel();
+}
+
+function clearNotifs(){
+  NOTIFS = [];
+  renderNotifPanel();
+  document.getElementById('notif-panel').style.display='none';
+}
+
+function addNotif(msg, tipo='info'){
+  NOTIFS.unshift({id:Date.now(), msg, tempo:'agora', tipo, lida:false});
+  const dot=document.getElementById('notif-dot');
+  if(dot) dot.style.display='block';
+}
+
+// Fechar painel ao clicar fora
+document.addEventListener('click', function(e){
+  const panel=document.getElementById('notif-panel');
+  if(!panel||panel.style.display==='none') return;
+  if(!panel.contains(e.target) && !e.target.closest('[onclick="toggleNotifPanel()"]')){
+    panel.style.display='none';
+  }
+});
 
 function showToast(msg){
   let t=document.getElementById('toast');
