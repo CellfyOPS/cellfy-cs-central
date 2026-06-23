@@ -136,10 +136,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 .lm .card,.lm .post,.lm .ti,.lm .m-row,.lm .tc,.lm .mc,.lm .card2,.lm .note{background:#f8fafc !important;border-color:rgba(100,130,200,.18) !important;}
 .lm .ti:hover,.lm .tc:hover{background:#f0f4f8 !important;}
 .lm input,.lm select,.lm textarea{background:#f8fafc;border-color:rgba(100,130,200,.3);color:#1e293b;}
-
-/* Garantir que páginas inativas não ocupam espaço */
-.page { margin:0!important; padding:0!important; height:0!important; overflow:hidden!important; }
-.page.act { height:auto!important; overflow:visible!important; }
 </style>
 </head>
 <body>
@@ -553,6 +549,10 @@ function saveSession(user, role) {
 }
 async function carregarDados() {
   // Carregar tarefas do Sheets
+  // Garantir scroll no topo ao carregar
+  const contentEl = document.querySelector('.content');
+  if(contentEl) contentEl.scrollTop = 0;
+
   // Limpar listas antes de popular com dados reais
   const hPendEl = document.getElementById('h-pend');
   const hDoneEl = document.getElementById('h-done');
@@ -789,8 +789,10 @@ function sp(p){
   const ni=document.getElementById('n-'+p);if(ni)ni.classList.add('act');
   document.getElementById('pt').textContent=PGS[p]||p;
   document.getElementById('add-panel').style.display='none';
-  const content=document.querySelector('.content');
-  if(content) content.scrollTop=0;
+  requestAnimationFrame(()=>{
+    const content=document.querySelector('.content');
+    if(content) content.scrollTop=0;
+  });
   if(p==='pdi') renderPdi();
   if(p==='config') renderAlarms();
   if(p==='hoje') renderFixasDia();
