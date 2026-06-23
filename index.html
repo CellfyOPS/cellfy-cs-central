@@ -212,7 +212,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
       <div class="content">
 
 <!-- ADD TAREFA -->
-<div id="add-panel" style="display:none;" class="mb14">
+<div id="add-panel" style="position:absolute;visibility:hidden;height:0;overflow:hidden;pointer-events:none;">
   <div class="card">
     <div class="ct"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nova tarefa</div>
     <div class="mb10"><label class="lbl">Descrição</label><input id="nt-d" placeholder="Ex: Responder tickets WhatsApp — tarde..."></div>
@@ -241,7 +241,20 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
     <div class="mc"><div class="ml">Urgentes</div><div class="mv cd" id="cnt-urgentes">0</div><div class="ms">urgentes</div></div>
     <div class="mc"><div class="ml">Tempo rest.</div><div class="mv cc" id="cnt-tempo">—</div><div class="ms">estimado</div></div>
   </div>
-  <div class="g2 gap12">
+  
+    <!-- TAREFAS FIXAS -->
+    <div class="card" style="margin-bottom:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div class="ct" style="margin-bottom:0;">📌 Tarefas Fixas do Dia</div>
+        <button class="btn" style="font-size:10px;padding:3px 8px;" onclick="toggleGerenciarFixas()">⚙️ Gerenciar</button>
+      </div>
+      <div id="fixas-list"></div>
+      <div id="fixas-empty" class="f11 cm" style="padding:10px;text-align:center;color:var(--dim);">
+        Nenhuma tarefa fixa ainda. Clique em "Gerenciar" para adicionar.
+      </div>
+    </div>
+
+<div class="g2 gap12">
     <div class="card">
       <div class="ct"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg> Urgentes / Pendentes</div>
       <div id="h-pend">
@@ -253,9 +266,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
     <div class="card">
       <div class="ct"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Concluídas hoje</div>
       <div id="h-done">
-        </div>
-        <div class="ti" style="opacity:.6;"><div class="chk done"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="f1 mw0"><div class="tt struck">Auditoria CS — 3 atendimentos</div><div class="tm"><span class="tag tag-d">Concluída</span><span class="ttime">Real: 40min</span></div></div></div>
-        <div class="ti" style="opacity:.6;"><div class="chk done"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="f1 mw0"><div class="tt struck">PDI Rose — revisão e envio</div><div class="tm"><span class="tag tag-d">Concluída</span><span class="ttime">Real: 1h10</span></div></div></div>
+        <div class="f11 cm" id="h-done-empty" style="padding:20px;text-align:center;color:var(--dim);">Nenhuma concluída hoje ainda.</div>
       </div>
     </div>
     </div><!-- /g2 -->
@@ -546,14 +557,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
   </div><!-- /wrap -->
 
 <!-- ALARME POPUP -->
-<div id="alarm-popup" style="display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:9999;background:linear-gradient(135deg,var(--purple),var(--cyan));border-radius:12px;padding:16px 24px;min-width:320px;max-width:480px;box-shadow:0 8px 32px rgba(0,0,0,.4);">
-  <div class="fx ic jb mb8">
-    <div class="fx ic gap8"><span style="font-size:20px;">🔔</span><span style="font-size:14px;font-weight:700;color:white;" id="alarm-title">Lembrete</span></div>
-    <button onclick="closeAlarm()" style="background:rgba(255,255,255,.2);border:none;color:white;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;">✕</button>
-  </div>
-  <div style="font-size:13px;color:rgba(255,255,255,.9);line-height:1.5;" id="alarm-msg">Mensagem do lembrete</div>
-  <button onclick="closeAlarm()" style="margin-top:12px;background:white;border:none;border-radius:6px;padding:6px 16px;font-size:12px;font-weight:700;color:var(--purple);cursor:pointer;width:100%;">✓ Entendido</button>
-</div>
 </div><!-- /app -->
 
 <script>
@@ -566,6 +569,12 @@ function saveSession(user, role) {
 }
 async function carregarDados() {
   // Carregar tarefas do Sheets
+  // Limpar listas antes de popular com dados reais
+  const hPendEl = document.getElementById('h-pend');
+  const hDoneEl = document.getElementById('h-done');
+  if(hPendEl) hPendEl.innerHTML = '<div class="f11 cm" style="padding:20px;text-align:center;color:var(--dim);">✅ Nenhuma tarefa pendente!</div>';
+  if(hDoneEl) hDoneEl.innerHTML = '<div class="f11 cm" style="padding:20px;text-align:center;color:var(--dim);">Nenhuma concluída hoje ainda.</div>';
+
   const res = await apiGet('getTarefas', {email: currentUser.email});
   if(res && res.ok && res.tarefas.length > 0) {
     const pend = document.getElementById('h-pend');
@@ -848,7 +857,16 @@ function undoTask(doneId, title){
   pend.prepend(div);
 }
 
-function toggleAdd(){const p=document.getElementById('add-panel');p.style.display=p.style.display==='none'?'block':'none';if(p.style.display==='block')setTimeout(()=>document.getElementById('nt-d').focus(),50);}
+function toggleAdd(){
+  const p=document.getElementById('add-panel');
+  const isHidden = p.style.visibility==='hidden' || p.style.height==='0';
+  if(isHidden){
+    p.style.cssText='position:relative;visibility:visible;height:auto;overflow:visible;margin-bottom:14px;';
+    setTimeout(()=>{const i=document.getElementById('nt-d');if(i)i.focus();},50);
+  } else {
+    p.style.cssText='position:absolute;visibility:hidden;height:0;overflow:hidden;pointer-events:none;';
+  }
+}
 function toggleTF(){const f=document.getElementById('tf');f.style.display=f.style.display==='none'?'block':'none';}
 function togglePF(){const f=document.getElementById('pf');f.style.display=f.style.display==='none'?'block':'none';}
 // ── TAREFAS FIXAS DIÁRIAS ──
@@ -918,8 +936,12 @@ function toggleGerenciarFixas() {
   const modal = document.getElementById('modal-fixas');
   if(!modal) return;
   const isOpen = modal.style.display === 'flex';
-  modal.style.display = isOpen ? 'none' : 'flex';
-  if(!isOpen) renderFixasGerenciar();
+  if(isOpen) {
+    modal.style.display = 'none';
+  } else {
+    modal.style.cssText = 'display:flex;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;align-items:center;justify-content:center;';
+    renderFixasGerenciar();
+  }
 }
 
 function renderFixasGerenciar() {
@@ -1527,24 +1549,45 @@ function playAlarmSound() {
 }
 
 function showAlarm(msg) {
-  console.log('[showAlarm] Iniciando disparo:', msg);
+  console.log('[ALARME DISPARADO]', new Date().toLocaleTimeString(), msg);
+  const popup = document.getElementById('alarm-popup');
+  const msgEl = document.getElementById('alarm-msg');
+  if(popup && msgEl) {
+    msgEl.textContent = msg;
+    // Forçar visibilidade máxima independente de qualquer CSS pai
+    popup.removeAttribute('style');
+    popup.style.cssText = [
+      'display:block',
+      'position:fixed',
+      'top:24px',
+      'left:50%',
+      'transform:translateX(-50%)',
+      'z-index:2147483647',
+      'background:linear-gradient(135deg,#7c5cfc,#00d4c8)',
+      'border-radius:14px',
+      'padding:18px 24px',
+      'min-width:320px',
+      'max-width:90vw',
+      'box-shadow:0 12px 40px rgba(0,0,0,.6)',
+      'font-family:system-ui,sans-serif'
+    ].join(';');
+    setTimeout(() => { if(popup) popup.style.display = 'none'; }, 30000);
+  }
+  // Som
   try {
-    const popup = document.getElementById('alarm-popup');
-    const msgEl = document.getElementById('alarm-msg');
-    console.log('[showAlarm] popup:', popup ? 'encontrado' : 'NULL', '| msgEl:', msgEl ? 'encontrado' : 'NULL');
-    if(popup && msgEl) {
-      msgEl.textContent = msg;
-      popup.style.display = 'block';
-      popup.style.zIndex = '99999';
-      console.log('[showAlarm] Popup exibido!');
-      setTimeout(() => { popup.style.display = 'none'; }, 30000);
-    } else {
-      // Fallback: alert nativo se popup não encontrado
-      console.warn('[showAlarm] Popup não encontrado, usando alert');
-      alert('🔔 Lembrete: ' + msg);
-    }
-  } catch(e) { console.error('[showAlarm] Erro popup:', e); }
-  try { playAlarmSound(); } catch(e) { console.warn('[showAlarm] Som bloqueado:', e); }
+    const ctx = getAudioCtx();
+    if(ctx.state === 'suspended') ctx.resume();
+    [523,659,784,659,784].forEach((freq,i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = freq; o.type = 'sine';
+      const t = ctx.currentTime + i*0.18;
+      g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(0.4,t+0.05);
+      g.gain.linearRampToValueAtTime(0,t+0.15);
+      o.start(t); o.stop(t+0.15);
+    });
+  } catch(e) { console.warn('Som:', e); }
   try { addNotif('🔔 ' + msg, 'info'); } catch(e) {}
 }
 
@@ -1764,5 +1807,44 @@ setTimeout(renderCadList,100);
   </div>
   <div id="notif-list" style="max-height:280px;overflow-y:auto;"></div>
 </div>
+
+<!-- ALARME POPUP - fora de qualquer container -->
+<div id="alarm-popup" style="display:none;position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:2147483647;background:linear-gradient(135deg,#7c5cfc,#00d4c8);border-radius:14px;padding:18px 24px;min-width:320px;max-width:90vw;box-shadow:0 12px 40px rgba(0,0,0,.6);font-family:system-ui,sans-serif;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="font-size:24px;">🔔</span>
+      <span style="font-size:15px;font-weight:700;color:white;">Lembrete</span>
+    </div>
+    <button onclick="closeAlarm()" style="background:rgba(255,255,255,.25);border:none;color:white;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button>
+  </div>
+  <div style="font-size:13px;color:rgba(255,255,255,.95);line-height:1.5;margin-bottom:14px;" id="alarm-msg">Mensagem do lembrete</div>
+  <button onclick="closeAlarm()" style="width:100%;padding:8px;border-radius:8px;border:none;background:white;color:#7c5cfc;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">✓ Entendido</button>
+</div>
+
+<!-- MODAL GERENCIAR FIXAS -->
+<div id="modal-fixas" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;align-items:center;justify-content:center;">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;width:520px;max-width:95%;max-height:80vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div class="ct" style="margin-bottom:0;">📌 Gerenciar Tarefas Fixas</div>
+      <button onclick="toggleGerenciarFixas()" style="background:transparent;border:none;color:var(--muted);font-size:18px;cursor:pointer;">✕</button>
+    </div>
+    <div class="f10 cm mb12">Tarefas fixas aparecem todo dia automaticamente no topo do Meu Dia.</div>
+    <div style="background:var(--card2);border-radius:8px;padding:10px;margin-bottom:12px;">
+      <div class="f10 fw6" style="color:var(--cyan);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">➕ Nova tarefa fixa</div>
+      <div class="g2 mb8">
+        <div><label class="lbl">Descrição</label><input type="text" id="fixa-titulo" placeholder="Ex: Input diário ML..."></div>
+        <div><label class="lbl">Categoria</label><select id="fixa-cat"><option>SAC</option><option>Reclame Aqui</option><option>Operação</option><option>Social Media</option><option>Financeiro</option><option>RMA / Garantia</option><option>Gestão</option></select></div>
+      </div>
+      <div class="g2 mb10">
+        <div><label class="lbl">Urgência</label><select id="fixa-urg"><option value="normal">🟡 Normal</option><option value="urgente">🔴 Urgente</option><option value="baixa">🟢 Baixa</option></select></div>
+        <div><label class="lbl">Escopo</label><select id="fixa-escopo"><option value="geral">🌐 Geral (todo o time)</option><option value="pessoal">👤 Só para mim</option></select></div>
+      </div>
+      <button class="btn-p" style="font-size:11px;" onclick="adicionarFixa()">➕ Adicionar</button>
+    </div>
+    <div class="f10 fw6" style="color:var(--cyan);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">📋 Cadastradas</div>
+    <div id="fixas-gerenciar-list"></div>
+  </div>
+</div>
+
 </body>
 </html>
