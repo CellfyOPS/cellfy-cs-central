@@ -43,7 +43,7 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0;}
 .pgbar{background:var(--nav);border-bottom:1px solid var(--border);padding:0 18px;height:42px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .pg-t{font-size:14px;font-weight:600;color:var(--text);}
 .pg-s{font-size:11px;color:var(--muted);}
-.content{flex:1;overflow:hidden;padding:0;display:flex;flex-direction:column;}
+.content{flex:1;overflow-y:auto;padding:16px;}
 .ref-bar{display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--card2);border:1px solid var(--border);border-radius:7px;}
 .sync-b{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:20px;}
 .s-ok{background:rgba(16,185,129,0.15);color:#6ee7b7;}
@@ -124,7 +124,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 .bl{font-size:9px;color:var(--dim);margin-top:3px;}
 #v-login{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;}
 .lb{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px 24px;width:320px;max-width:95%;}
-.page{display:none;}.page.act{display:flex;flex-direction:column;flex:1;overflow-y:auto;padding:16px;}
+.page{display:none;}.page.act{display:block;}
 .pdi-tab{display:none;}.pdi-tab.act{display:block;}
 .mb6{margin-bottom:6px;}.mb8{margin-bottom:8px;}.mb10{margin-bottom:10px;}.mb12{margin-bottom:12px;}.mb14{margin-bottom:14px;}
 .mt8{margin-top:8px;}.mt10{margin-top:10px;}
@@ -477,18 +477,69 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 
 <!-- PDI MASTER -->
 <div id="p-pdi-master" class="page">
-  <div class="g3 gap10 mb12">
-    <div class="card" style="cursor:pointer;"><div class="fx ic gap8 mb10"><div class="m-av" style="background:linear-gradient(135deg,var(--purple),var(--cyan));">RS</div><div><div class="f12 fw6" style="color:var(--text);">Roseane</div><div class="f10 cm">CS Ops</div></div></div><div class="f10 cm mb6">PDI: 68%</div><div class="prog"><div class="pf" style="width:68%;"></div></div><div class="fx gap6 mt8"><span class="tag tag-l">SLA ✓</span><span class="tag tag-n">Qualidade 55%</span></div></div>
-    <div class="card" style="cursor:pointer;"><div class="fx ic gap8 mb10"><div class="m-av" style="background:linear-gradient(135deg,#ec4899,#7c5cfc);">LA</div><div><div class="f12 fw6" style="color:var(--text);">Larissa</div><div class="f10 cm">CS Specialist</div></div></div><div class="f10 cm mb6">PDI: 82%</div><div class="prog"><div class="pf" style="width:82%;background:var(--ok);"></div></div><div class="fx gap6 mt8"><span class="tag tag-l">Excelente</span></div></div>
-    <div class="card" style="cursor:pointer;"><div class="fx ic gap8 mb10"><div class="m-av" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">SA</div><div><div class="f12 fw6" style="color:var(--text);">Sarah</div><div class="f10 cm">CS Analyst · Saindo</div></div></div><div class="f10 cm mb6">PDI: 40%</div><div class="prog"><div class="pf" style="width:40%;background:var(--warn);"></div></div><div class="fx gap6 mt8"><span class="tag tag-u">Transição</span></div></div>
+  <!-- Lista de colaboradoras -->
+  <div id="pdi-master-index">
+    <div class="fx jb ic mb12">
+      <div class="f11 cm">Clique em uma colaboradora para gerenciar o PDI dela.</div>
+    </div>
+    <div class="g3 gap10" id="pdi-master-list"></div>
   </div>
-  <div class="card"><div class="ct"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Próximas 1:1</div>
-    <div class="m-row"><div style="background:rgba(124,92,252,.12);border-radius:6px;padding:5px 10px;text-align:center;flex-shrink:0;"><div class="f13 fw6 cp">15</div><div class="f10 cdim">JUL</div></div><div class="f1 mw0" style="margin-left:10px;"><div class="f12 fw6" style="color:var(--text);">1:1 Rafa × Rose</div><div class="f10 cm">PDI · SLA Q2 · Treino garantias</div></div><button class="btn-p" style="font-size:10px;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Preparar</button></div>
-    <div class="m-row"><div style="background:rgba(0,212,200,.1);border-radius:6px;padding:5px 10px;text-align:center;flex-shrink:0;"><div class="f13 fw6 cc">18</div><div class="f10 cdim">JUL</div></div><div class="f1 mw0" style="margin-left:10px;"><div class="f12 fw6" style="color:var(--text);">1:1 Rafa × Larissa</div><div class="f10 cm">Reconhecimento · Próximos objetivos</div></div><button class="btn-p" style="font-size:10px;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Preparar</button></div>
+
+  <!-- Editor de PDI de uma colaboradora -->
+  <div id="pdi-master-editor" style="display:none;">
+    <div class="fx ic gap8 mb14">
+      <button class="btn" onclick="voltarPdiMaster()" style="font-size:11px;">← Voltar</button>
+      <div class="f1">
+        <div class="f13 fw6" id="pdi-editor-nome" style="color:var(--text);"></div>
+        <div class="f10 cm" id="pdi-editor-cargo"></div>
+      </div>
+      <div style="background:rgba(0,212,200,.1);border:1px solid var(--cyan);border-radius:8px;padding:6px 14px;text-align:center;">
+        <div class="f10 cm">Progresso geral</div>
+        <div class="f14 fw6 cc" id="pdi-editor-prog">0%</div>
+      </div>
+    </div>
+
+    <!-- Objetivos existentes -->
+    <div id="pdi-editor-objs"></div>
+
+    <!-- Botão adicionar novo objetivo -->
+    <button class="btn" style="width:100%;justify-content:center;margin-bottom:14px;" onclick="abrirFormObjetivoPara()" id="btn-novo-obj">
+      ➕ Adicionar objetivo (máx. 3)
+    </button>
+
+    <!-- Form novo objetivo -->
+    <div id="form-obj-para" style="display:none;" class="card mb14">
+      <div class="ct">📋 Novo objetivo</div>
+      <div class="g2 mb8">
+        <div><label class="lbl">Título do objetivo</label><input id="obj-titulo" placeholder="Ex: Dominar SLA no Reclame Aqui"></div>
+        <div><label class="lbl">Prazo de entrega</label><input type="date" id="obj-prazo"></div>
+      </div>
+      <div class="mb8"><label class="lbl">Descrição / meta</label>
+        <textarea id="obj-meta" style="height:60px;resize:none;" placeholder="Ex: Responder 100% das RAs em até 24h por 3 meses consecutivos."></textarea>
+      </div>
+      <div class="mb10">
+        <label class="lbl">Progresso inicial: <span id="obj-prog-lbl">0%</span></label>
+        <input type="range" id="obj-prog" min="0" max="100" value="0"
+          oninput="document.getElementById('obj-prog-lbl').textContent=this.value+'%'"
+          style="width:100%;accent-color:var(--cyan);">
+      </div>
+      <div class="fx gap6">
+        <button class="btn-p" style="font-size:11px;" onclick="salvarObjetivoPara()">✓ Salvar objetivo</button>
+        <button class="btn" style="font-size:11px;" onclick="document.getElementById('form-obj-para').style.display='none'">✕ Cancelar</button>
+      </div>
+    </div>
+
+    <!-- Anotações -->
+    <div class="card">
+      <div class="ct">📝 Anotações colaborativas</div>
+      <div class="f10 cm mb8">Visíveis apenas para você e <span id="pdi-editor-nome2"></span></div>
+      <div id="pdi-editor-notas"></div>
+      <textarea id="pdi-editor-nota-nova" placeholder="Adicione uma anotação..." style="height:55px;resize:none;margin-top:8px;margin-bottom:7px;"></textarea>
+      <button class="btn-p" style="font-size:10px;" onclick="salvarNotaPara()">➕ Adicionar nota</button>
+    </div>
   </div>
 </div>
 
-<!-- CONFIG -->
 <div id="p-config" class="page">
   <div class="g2 gap12">
     <div class="card">
@@ -649,6 +700,12 @@ async function carregarDados() {
       el('dash-atrasadas', dashRes.atrasadas);
     }
   }
+
+  // Atualizar listas que dependem de USERS
+  renderTimeCS();
+  renderPdiMaster();
+  renderCadList();
+  atualizarSeletores();
 }
 
 function renderCanalFeed(posts) {
@@ -790,6 +847,8 @@ function sp(p){
   if(p==='config') renderAlarms();
   if(p==='hoje') renderFixasDia();
   if(p==='time') renderTimeCS();
+  if(p==='cadastro') renderCadList();
+  if(p==='pdi-master') renderPdiMaster();
 }
 function tMode(){isDark=!isDark;document.body.classList.toggle('lm',!isDark);document.getElementById('ml').textContent=isDark?'Claro':'Escuro';}
 
@@ -1083,9 +1142,48 @@ async function createTask(){
   if(hist){const now=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});const row=document.createElement('div');row.className='hist-r';row.style.cssText='background:rgba(124,92,252,.05);border-radius:6px;padding:8px;';row.innerHTML='<div class="m-av" style="background:linear-gradient(135deg,var(--purple),var(--cyan));width:28px;height:28px;font-size:10px;">'+document.getElementById('sb-av').textContent+'</div><div class="f1 mw0" style="margin-left:8px;"><div class="f12 fw6 mb6" style="color:var(--text);"><span class="cc">'+currentUser.nome.split(' ')[0]+'</span> → <span style="color:#a78bfa;">'+FORM[forVal]+'</span> — &quot;'+desc+'&quot;</div><div class="tm"><span class="tag '+URC[urg]+'">'+URM[urg]+'</span><span class="ttime">agora '+now+'</span><span class="tag tag-c">Pendente</span></div></div>';hist.insertBefore(row,hist.firstChild);}
   ['nt-d','nt-t','nt-o'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('nt-u').value='normal';document.getElementById('nt-f').value='eu';
-  document.getElementById('add-panel').style.display='none';sp('hoje');
+    // Atualizar aba Tarefas - all-tasks
+  const allTasks = document.getElementById('all-tasks');
+  if(allTasks) {
+    const emptyMsg = allTasks.querySelector('.f11.cm');
+    if(emptyMsg && emptyMsg.textContent.includes('Nenhuma')) emptyMsg.remove();
+    const atDiv = document.createElement('div');
+    atDiv.className='ti';atDiv.id='at'+tid;
+    atDiv.innerHTML='<div class="chk" onclick="ckTask(event,\'at'+tid+'\',this)"></div><div class="f1 mw0"><div class="tt">'+desc+'</div><div class="tm"><span class="tag '+URC[urg]+'">'+URM[urg]+'</span><span class="ttime">'+time+'</span></div></div>';
+    allTasks.prepend(atDiv);
+  }
+
+  // Atualizar Modo Foco - foco-pool
+  const focoPool = document.getElementById('foco-pool');
+  if(focoPool) {
+    const emptyFoco = document.getElementById('foco-pool-empty');
+    if(emptyFoco) emptyFoco.style.display='none';
+    const fid = 'fp-'+tid;
+    const fDiv = document.createElement('div');
+    fDiv.className='ti'; fDiv.id=fid; fDiv.style.cursor='pointer';
+    fDiv.onclick = () => toggleFocoSelect(fid, desc, URC[urg], URM[urg], time);
+    fDiv.innerHTML='<div class="chk" id="fpc-'+tid+'"></div><div class="f1 mw0"><div class="tt f12">'+desc+'</div><div class="tm"><span class="tag '+URC[urg]+'">'+URM[urg]+'</span><span class="ttime">'+time+'</span></div></div>';
+    focoPool.prepend(fDiv);
+  }
+
+  // Remover mensagem de "nenhuma tarefa pendente" se existir
+  const pendEmpty = document.getElementById('h-pend-empty');
+  if(pendEmpty) pendEmpty.style.display='none';
+
+  document.getElementById('add-panel').style.display='none';
+  sp('hoje');
+
   // Salvar no Sheets
-  apiPost('salvarTarefa',{usuario_email:currentUser.email,titulo:desc,urgencia:urg,categoria:document.getElementById('nt-c').value,tempo:time,observacao:obs,criado_por:currentUser.email,criado_por_nome:currentUser.nome,designado_para:forVal==='eu'?currentUser.email:forVal+'@cellfy.com.br'});
+  const cat = document.getElementById('nt-c').value;
+  const designadoPara = forVal==='eu' ? currentUser.email : forVal;
+  apiPost('salvarTarefa',{
+    usuario_email: currentUser.email,
+    titulo: desc, urgencia: urg, categoria: cat,
+    tempo: time, observacao: obs,
+    criado_por: currentUser.email,
+    criado_por_nome: currentUser.nome,
+    designado_para: designadoPara
+  });
 }
 
 function openTool(n){document.getElementById('ifr-t').textContent=n;document.getElementById('ifr').style.display='block';document.getElementById('ifr').scrollIntoView({behavior:'smooth',block:'start'});}
@@ -1262,6 +1360,211 @@ function resetTimer(){clearInterval(timerInt);timerOn=false;timerSec=25*60;updTi
 function shortBreak(){clearInterval(timerInt);timerOn=false;timerSec=5*60;updTimer();document.getElementById('tmr-l').textContent='Pausa de 5 minutos — respira!';}
 
 function toggleCadForm(){const f=document.getElementById('cad-form');f.style.display=f.style.display==='none'?'block':'none';}
+function renderPdiMaster(){
+  const list = document.getElementById('pdi-master-list');
+  if(!list) return;
+  document.getElementById('pdi-master-index').style.display='block';
+  document.getElementById('pdi-master-editor').style.display='none';
+
+  const membros = USERS.filter(u=>u.nivel==='membro');
+  if(!membros.length){
+    list.innerHTML='<div class="f11 cm" style="padding:16px;text-align:center;color:var(--dim);">Nenhuma colaboradora cadastrada.</div>';
+    return;
+  }
+  const cols=['linear-gradient(135deg,#7c5cfc,#00d4c8)','linear-gradient(135deg,#ec4899,#7c5cfc)','linear-gradient(135deg,#f59e0b,#ef4444)','linear-gradient(135deg,#10b981,#3b82f6)'];
+  list.innerHTML = membros.map((u,i)=>{
+    const init=u.nome.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+    const pdi=PDI_DATA[u.email.toLowerCase()];
+    const nObjs=pdi?pdi.objetivos.length:0;
+    const prog=pdi&&nObjs>0?Math.round(pdi.objetivos.reduce((s,o)=>s+o.progresso,0)/nObjs):0;
+    const cor=prog>=75?'var(--ok)':prog>=40?'var(--warn)':'var(--err)';
+    return `<div class="card" style="cursor:pointer;transition:all .15s;" onclick="abrirPdiColaboradora('${u.email}')"
+      onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div class="fx ic gap10 mb10">
+        <div class="m-av" style="background:${cols[i%cols.length]};width:38px;height:38px;">${init}</div>
+        <div class="f1 mw0">
+          <div class="f13 fw6" style="color:var(--text);">${u.nome}</div>
+          <div class="f10 cm">${u.cargo}</div>
+        </div>
+        <span class="tag ${nObjs>0?'tag-l':'tag-n'}">${nObjs} objetivo${nObjs!==1?'s':''}</span>
+      </div>
+      <div class="fx jb f10 mb5"><span class="cm">Progresso geral</span><span style="color:${cor};">${prog}%</span></div>
+      <div class="prog"><div class="pf" style="width:${prog}%;background:${cor};"></div></div>
+      <div class="f10 cdim mt8">Clique para editar o PDI ›</div>
+    </div>`;
+  }).join('');
+}
+
+let pdiEditandoEmail = '';
+
+function abrirPdiColaboradora(email){
+  pdiEditandoEmail = email.toLowerCase();
+  const u = USERS.find(x=>x.email.toLowerCase()===pdiEditandoEmail);
+  if(!u) return;
+
+  if(!PDI_DATA[pdiEditandoEmail]){
+    PDI_DATA[pdiEditandoEmail]={nome:u.nome,progresso:0,objetivos:[],notas:[],reunioes:[],feedbacks:[]};
+  }
+
+  document.getElementById('pdi-master-index').style.display='none';
+  document.getElementById('pdi-master-editor').style.display='block';
+  document.getElementById('pdi-editor-nome').textContent='PDI — '+u.nome;
+  document.getElementById('pdi-editor-nome2').textContent=u.nome.split(' ')[0];
+  document.getElementById('pdi-editor-cargo').textContent=u.cargo+' · '+u.email;
+
+  renderEditorPdi();
+}
+
+function voltarPdiMaster(){
+  document.getElementById('pdi-master-index').style.display='block';
+  document.getElementById('pdi-master-editor').style.display='none';
+  renderPdiMaster();
+}
+
+function renderEditorPdi(){
+  const data=PDI_DATA[pdiEditandoEmail];
+  if(!data) return;
+
+  // Progresso geral
+  const prog=data.objetivos.length>0
+    ?Math.round(data.objetivos.reduce((s,o)=>s+o.progresso,0)/data.objetivos.length):0;
+  document.getElementById('pdi-editor-prog').textContent=prog+'%';
+
+  // Botão adicionar - desabilitar se já tem 3
+  const btnNovo=document.getElementById('btn-novo-obj');
+  if(btnNovo){
+    btnNovo.disabled=data.objetivos.length>=3;
+    btnNovo.style.opacity=data.objetivos.length>=3?'0.4':'1';
+    btnNovo.title=data.objetivos.length>=3?'Máximo de 3 objetivos atingido':'';
+  }
+
+  // Objetivos
+  const objsEl=document.getElementById('pdi-editor-objs');
+  objsEl.innerHTML = data.objetivos.length===0
+    ? '<div class="f11 cm mb12" style="text-align:center;padding:16px;background:var(--card2);border-radius:8px;color:var(--dim);">Nenhum objetivo ainda. Adicione o primeiro abaixo.</div>'
+    : data.objetivos.map((o,i)=>`
+      <div class="card mb10" style="border-left:3px solid ${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};">
+        <div class="fx ic jb mb8">
+          <div class="f12 fw6" style="color:var(--text);">🎯 ${o.titulo}</div>
+          <div class="fx gap5">
+            <button onclick="editarObjPara(${i})" style="background:rgba(0,212,200,.1);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">✏️ Editar</button>
+            <button onclick="excluirObjPara(${i})" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">🗑</button>
+          </div>
+        </div>
+        <div class="f11 cm mb6">${o.meta}</div>
+        <div class="fx ic gap12 mb8">
+          <span class="f10 cdim">📅 Prazo: <strong style="color:var(--text);">${o.prazo||'—'}</strong></span>
+          <span class="f10 cdim">Progresso: <strong style="color:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};">${o.progresso}%</strong></span>
+        </div>
+        <div class="prog"><div class="pf" style="width:${o.progresso}%;background:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};"></div></div>
+
+        <!-- Form editar inline -->
+        <div id="edit-obj-para-${i}" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+          <div class="g2 mb8">
+            <div><label class="lbl">Título</label><input id="eopt-${i}" value="${o.titulo}"></div>
+            <div><label class="lbl">Prazo de entrega</label><input type="date" id="eopp-${i}" value="${o.prazo||''}"></div>
+          </div>
+          <div class="mb8"><label class="lbl">Meta / descrição</label>
+            <textarea id="eopm-${i}" style="height:55px;resize:none;">${o.meta}</textarea>
+          </div>
+          <div class="mb10"><label class="lbl">Progresso: <span id="eoppr-lbl-${i}">${o.progresso}%</span></label>
+            <input type="range" id="eoppr-${i}" min="0" max="100" value="${o.progresso}"
+              oninput="document.getElementById('eoppr-lbl-${i}').textContent=this.value+'%'"
+              style="width:100%;accent-color:var(--cyan);">
+          </div>
+          <div class="fx gap6">
+            <button class="btn-p" style="font-size:10px;" onclick="confirmarEdicaoObjPara(${i})">💾 Salvar</button>
+            <button class="btn" style="font-size:10px;" onclick="document.getElementById('edit-obj-para-${i}').style.display='none'">✕</button>
+          </div>
+        </div>
+      </div>`).join('');
+
+  // Notas
+  const notasEl=document.getElementById('pdi-editor-notas');
+  notasEl.innerHTML=(data.notas||[]).length===0
+    ?'<div class="f11 cm mb8">Sem anotações ainda.</div>'
+    :(data.notas||[]).map(n=>`
+      <div style="background:var(--card2);border-left:2px solid ${n.tipo==='master'?'var(--cyan)':'var(--purple)'};border-radius:0 6px 6px 0;padding:8px 10px;margin-bottom:6px;">
+        <div class="f10 fw6" style="color:${n.tipo==='master'?'var(--cyan)':'var(--purple)'};">${n.autor} · ${n.data}</div>
+        <div class="f11 cm" style="margin-top:3px;">${n.texto}</div>
+      </div>`).join('');
+}
+
+function abrirFormObjetivoPara(){
+  const f=document.getElementById('form-obj-para');
+  if(f) f.style.display=f.style.display==='none'?'block':'none';
+  document.getElementById('obj-titulo').value='';
+  document.getElementById('obj-meta').value='';
+  document.getElementById('obj-prazo').value='';
+  document.getElementById('obj-prog').value=0;
+  document.getElementById('obj-prog-lbl').textContent='0%';
+}
+
+function salvarObjetivoPara(){
+  const data=PDI_DATA[pdiEditandoEmail];
+  if(!data) return;
+  if(data.objetivos.length>=3){alert('Máximo de 3 objetivos por PDI.');return;}
+  const titulo=document.getElementById('obj-titulo').value.trim();
+  const meta=document.getElementById('obj-meta').value.trim();
+  const prazo=document.getElementById('obj-prazo').value;
+  const prog=parseInt(document.getElementById('obj-prog').value);
+  if(!titulo||!meta){alert('Preencha título e meta.');return;}
+
+  // Formatar prazo para exibição
+  const prazoFmt=prazo?new Date(prazo+'T12:00:00').toLocaleDateString('pt-BR'):'';
+
+  data.objetivos.push({titulo,meta,prazo:prazoFmt,progresso:prog});
+  document.getElementById('form-obj-para').style.display='none';
+  renderEditorPdi();
+  apiPost('salvarPdiObjetivo',{usuario_email:pdiEditandoEmail,titulo,meta,prazo:prazoFmt,progresso:prog});
+  showToast('Objetivo adicionado! ✓');
+}
+
+function editarObjPara(i){
+  document.querySelectorAll('[id^="edit-obj-para-"]').forEach(el=>el.style.display='none');
+  const f=document.getElementById('edit-obj-para-'+i);
+  if(f) f.style.display='block';
+}
+
+function confirmarEdicaoObjPara(i){
+  const data=PDI_DATA[pdiEditandoEmail];
+  if(!data||!data.objetivos[i]) return;
+  const titulo=document.getElementById('eopt-'+i).value.trim();
+  const meta=document.getElementById('eopm-'+i).value.trim();
+  const prazoRaw=document.getElementById('eopp-'+i).value;
+  const prog=parseInt(document.getElementById('eoppr-'+i).value);
+  if(!titulo||!meta){alert('Preencha título e meta.');return;}
+  const prazo=prazoRaw?new Date(prazoRaw+'T12:00:00').toLocaleDateString('pt-BR'):'';
+  data.objetivos[i]={titulo,meta,prazo,progresso:prog};
+  renderEditorPdi();
+  apiPost('salvarPdiObjetivo',{usuario_email:pdiEditandoEmail,titulo,meta,prazo,progresso:prog,index:i});
+  showToast('Objetivo atualizado! ✓');
+}
+
+function excluirObjPara(i){
+  if(!confirm('Excluir este objetivo?')) return;
+  PDI_DATA[pdiEditandoEmail].objetivos.splice(i,1);
+  renderEditorPdi();
+  showToast('Objetivo excluído.');
+}
+
+function salvarNotaPara(){
+  const txt=document.getElementById('pdi-editor-nota-nova').value.trim();
+  if(!txt) return;
+  const data=PDI_DATA[pdiEditandoEmail];
+  if(!data) return;
+  data.notas.push({
+    autor:currentUser.nome.split(' ')[0],
+    tipo:'master',
+    texto:txt,
+    data:new Date().toLocaleDateString('pt-BR')
+  });
+  document.getElementById('pdi-editor-nota-nova').value='';
+  renderEditorPdi();
+  apiPost('salvarNota',{usuario_email:pdiEditandoEmail,tipo:'Anotação',notas:txt,envolvidos:currentUser.nome});
+}
+
+
 function renderTimeCS(){
   const list = document.getElementById('time-list');
   if(!list) return;
@@ -1411,72 +1714,145 @@ const PDI_DATA = {
 
 function renderPdi() {
   const email = currentUser.email.toLowerCase();
-  const data = PDI_DATA[email];
   const isMaster = role === 'master';
-
-  // Título com nome
-  document.querySelector('#p-pdi .tab-bar').style.display = 'flex';
+  const data = PDI_DATA[email];
+  const wrap = document.getElementById('pdi-obj-wrap');
+  if(!wrap) return;
 
   if (!data) {
-    document.getElementById('pdi-obj-wrap').innerHTML = '<div class="card"><div class="f12 cm">Nenhum PDI cadastrado ainda.</div></div>';
+    wrap.innerHTML = `<div class="card" style="grid-column:1/-1;">
+      <div class="f12 cm" style="text-align:center;padding:20px;">Nenhum PDI cadastrado ainda.</div>
+      <div style="text-align:center;">
+        <button class="btn-p" onclick="abrirNovoObjetivo()">➕ Adicionar primeiro objetivo</button>
+      </div>
+    </div>`;
     return;
   }
 
-  // Tab 1 - Objetivos + Notas
-  const objHtml = data.objetivos.map(o => `
-    <div style="margin-bottom:12px;">
-      <div style="font-size:10px;font-weight:700;color:var(--purple);margin-bottom:6px;display:flex;align-items:center;gap:4px;border-bottom:1px solid var(--border);padding-bottom:5px;">🎯 ${o.titulo}</div>
-      <div class="note">${o.meta}<div class="f10 cdim" style="margin-top:2px;">Prazo: ${o.prazo}</div></div>
-      <div class="fx jb f10 mt8"><span class="cm">Progresso</span><span style="color:${o.cor};">${o.prog}%</span></div>
-      <div class="prog mt8"><div class="pf" style="width:${o.prog}%;background:${o.cor};"></div></div>
+  // Calcular progresso geral
+  const progGeral = data.objetivos.length > 0
+    ? Math.round(data.objetivos.reduce((s,o)=>s+o.progresso,0)/data.objetivos.length)
+    : 0;
+
+  const objHtml = data.objetivos.length === 0
+    ? '<div class="f11 cm" style="padding:12px;text-align:center;color:var(--dim);">Nenhum objetivo ainda.</div>'
+    : data.objetivos.map((o,i) => `
+    <div style="background:var(--card2);border-radius:8px;padding:12px;margin-bottom:10px;border-left:3px solid ${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};">
+      <div class="fx ic jb mb6">
+        <div class="f12 fw6" style="color:var(--text);">🎯 ${o.titulo}</div>
+        <div class="fx gap5">
+          <button onclick="editarObjetivo(${i})" style="background:rgba(0,212,200,.1);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">✏️ Editar</button>
+          <button onclick="excluirObjetivo(${i})" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">🗑</button>
+        </div>
+      </div>
+      <div class="f11 cm mb8">${o.meta}</div>
+      <div class="f10 cdim mb8">Prazo: ${o.prazo}</div>
+      <div class="fx ic jb f10 mb5"><span class="cm">Progresso</span><span style="color:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};">${o.progresso}%</span></div>
+      <div class="prog"><div class="pf" style="width:${o.progresso}%;background:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};"></div></div>
+      <div id="edit-obj-${i}" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+        <div class="g2 mb8">
+          <div><label class="lbl">Título</label><input id="eot-${i}" value="${o.titulo}"></div>
+          <div><label class="lbl">Prazo</label><input id="eop-${i}" value="${o.prazo}"></div>
+        </div>
+        <div class="mb8"><label class="lbl">Meta / descrição</label><textarea id="eom-${i}" style="height:50px;resize:none;">${o.meta}</textarea></div>
+        <div class="mb10"><label class="lbl">Progresso: <span id="eopr-lbl-${i}">${o.progresso}%</span></label>
+          <input type="range" id="eopr-${i}" min="0" max="100" value="${o.progresso}" oninput="document.getElementById('eopr-lbl-${i}').textContent=this.value+'%'" style="width:100%;accent-color:var(--cyan);">
+        </div>
+        <div class="fx gap6">
+          <button class="btn-p" style="font-size:10px;" onclick="salvarObjetivo(${i})">💾 Salvar</button>
+          <button class="btn" style="font-size:10px;" onclick="document.getElementById('edit-obj-${i}').style.display='none'">✕ Cancelar</button>
+        </div>
+      </div>
     </div>`).join('');
 
-  const notasHtml = data.notas.map(n => `
-    <div class="note" style="border-left-color:${n.tipo==='master'?'var(--cyan)':'var(--purple)'};margin-bottom:6px;">
-      <span class="f10 fw6" style="color:${n.tipo==='master'?'var(--cyan)':'var(--purple)'};">${n.autor}</span><br>
-      ${n.texto}<div class="f10 cdim" style="margin-top:2px;">${n.data}</div>
+  const notasHtml = (data.notas||[]).map(n => `
+    <div style="background:var(--card2);border-left:2px solid ${n.tipo==='master'?'var(--cyan)':'var(--purple)'};border-radius:0 6px 6px 0;padding:8px 10px;margin-bottom:6px;">
+      <div class="f10 fw6" style="color:${n.tipo==='master'?'var(--cyan)':'var(--purple)'};">${n.autor} · ${n.data}</div>
+      <div class="f11 cm" style="margin-top:3px;">${n.texto}</div>
     </div>`).join('') || '<div class="f11 cm">Sem anotações ainda.</div>';
 
-  document.getElementById('pdi-obj-wrap').innerHTML = `
+  wrap.innerHTML = `
     <div class="card">
       <div class="ct">📋 PDI — ${data.nome}</div>
-      <div class="mb12"><div class="fx jb f11 mb6"><span class="cm">Progresso geral</span><span class="cc">${data.progresso}%</span></div><div class="prog"><div class="pf" style="width:${data.progresso}%;"></div></div></div>
+      <div class="mb10">
+        <div class="fx jb f11 mb5"><span class="cm">Progresso geral</span><span class="cc">${progGeral}%</span></div>
+        <div class="prog"><div class="pf" style="width:${progGeral}%;"></div></div>
+      </div>
       ${objHtml}
+      <button class="btn" style="width:100%;justify-content:center;margin-top:8px;font-size:11px;" onclick="abrirNovoObjetivo()">➕ Novo objetivo</button>
+
+      <!-- Form novo objetivo -->
+      <div id="form-novo-obj" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+        <div class="f11 fw6 cc mb8">Novo objetivo</div>
+        <div class="g2 mb8">
+          <div><label class="lbl">Título</label><input id="no-titulo" placeholder="Ex: Dominar SLA"></div>
+          <div><label class="lbl">Prazo</label><input id="no-prazo" placeholder="Ex: 30/06/2025"></div>
+        </div>
+        <div class="mb8"><label class="lbl">Meta / descrição</label><textarea id="no-meta" style="height:50px;resize:none;" placeholder="Descreva o objetivo..."></textarea></div>
+        <div class="mb10"><label class="lbl">Progresso inicial: <span id="no-prog-lbl">0%</span></label>
+          <input type="range" id="no-prog" min="0" max="100" value="0" oninput="document.getElementById('no-prog-lbl').textContent=this.value+'%'" style="width:100%;accent-color:var(--cyan);">
+        </div>
+        <div class="fx gap6">
+          <button class="btn-p" style="font-size:10px;" onclick="adicionarObjetivo()">✓ Adicionar</button>
+          <button class="btn" style="font-size:10px;" onclick="document.getElementById('form-novo-obj').style.display='none'">✕ Cancelar</button>
+        </div>
+      </div>
     </div>
     <div class="card">
       <div class="ct">📝 Anotações colaborativas</div>
-      <div class="f10 cm mb8">${isMaster ? 'Você e '+data.nome+' podem adicionar notas' : 'Você e Rafa podem adicionar notas'}</div>
+      <div class="f10 cm mb8">${isMaster?'Você e '+data.nome+' podem adicionar notas':'Você e Rafa podem adicionar notas'}</div>
       ${notasHtml}
       <textarea id="pdi-new-note" placeholder="Adicione uma anotação..." style="height:55px;resize:none;margin-top:8px;margin-bottom:7px;"></textarea>
       <button class="btn-p" style="font-size:10px;" onclick="savePdiNote()">➕ Adicionar nota</button>
     </div>`;
-
-  // Tab 2 - Reuniões (só mostra as que o usuário está envolvido)
-  document.getElementById('pdi-11-title').textContent = '📅 1:1 e Reuniões — ' + data.nome;
-  const reuns = data.reunioes;
-  document.getElementById('pdi-11-list').innerHTML = reuns.length ? reuns.map(r => `
-    <div class="m-row" style="align-items:flex-start;">
-      <div style="background:rgba(124,92,252,.15);border-radius:6px;padding:5px 10px;text-align:center;flex-shrink:0;">
-        <div class="f13 fw6 cp">${r.data.split('/')[0]}</div>
-        <div class="f10 cdim">${['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'][parseInt(r.data.split('/')[1])-1]}</div>
-      </div>
-      <div class="f1 mw0" style="margin-left:10px;">
-        <div class="f12 fw6 mb6" style="color:var(--text);">${r.tipo} — ${r.envolvidos.join(' & ')}</div>
-        <div class="f11 cm">${r.notas}</div>
-      </div>
-    </div>`).join('') : '<div class="f11 cm">Sem reuniões registradas.</div>';
-
-  // Tab 3 - Feedbacks (só do usuário)
-  document.getElementById('pdi-feed-title').textContent = '⭐ Feedbacks — ' + data.nome;
-  document.getElementById('pdi-feed-form-wrap').style.display = isMaster ? 'block' : 'none';
-  const feeds = data.feedbacks;
-  document.getElementById('pdi-feed-list').innerHTML = feeds.length ? feeds.map(f => `
-    <div style="background:var(--card2);border-radius:8px;padding:12px;margin-bottom:8px;">
-      <div class="fx ic jb mb8"><span class="f12 fw6" style="color:var(--text);">${f.tipo}</span><span class="tag ${f.tipo.includes('Positivo')?'tag-l':f.tipo.includes('Neutro')?'tag-n':'tag-u'}">${f.tipo.split(' ')[0]}</span></div>
-      <div class="f11 cm mb8">${f.texto}</div>
-      <div class="f10 cdim">Por: ${f.por} · ${f.data}</div>
-    </div>`).join('') : '<div class="f11 cm">Sem feedbacks registrados.</div>';
 }
+
+function abrirNovoObjetivo() {
+  const f = document.getElementById('form-novo-obj');
+  if(f) f.style.display = f.style.display==='none'?'block':'none';
+}
+
+function adicionarObjetivo() {
+  const email = currentUser.email.toLowerCase();
+  if(!PDI_DATA[email]) PDI_DATA[email] = {nome:currentUser.nome,progresso:0,objetivos:[],notas:[],reunioes:[],feedbacks:[]};
+  const titulo = document.getElementById('no-titulo').value.trim();
+  const prazo = document.getElementById('no-prazo').value.trim();
+  const meta = document.getElementById('no-meta').value.trim();
+  const prog = parseInt(document.getElementById('no-prog').value);
+  if(!titulo||!meta) {alert('Preencha título e meta.');return;}
+  PDI_DATA[email].objetivos.push({titulo,meta,prazo,progresso:prog});
+  renderPdi();
+  apiPost('salvarPdiObjetivo',{usuario_email:email,titulo,meta,prazo,progresso:prog});
+  showToast('Objetivo adicionado! ✓');
+}
+
+function editarObjetivo(i) {
+  document.querySelectorAll('[id^="edit-obj-"]').forEach(el=>el.style.display='none');
+  const f = document.getElementById('edit-obj-'+i);
+  if(f) f.style.display='block';
+}
+
+function salvarObjetivo(i) {
+  const email = currentUser.email.toLowerCase();
+  const data = PDI_DATA[email];
+  if(!data||!data.objetivos[i]) return;
+  data.objetivos[i].titulo = document.getElementById('eot-'+i).value.trim();
+  data.objetivos[i].prazo = document.getElementById('eop-'+i).value.trim();
+  data.objetivos[i].meta = document.getElementById('eom-'+i).value.trim();
+  data.objetivos[i].progresso = parseInt(document.getElementById('eopr-'+i).value);
+  renderPdi();
+  apiPost('salvarPdiObjetivo',{usuario_email:email,...data.objetivos[i],index:i});
+  showToast('Objetivo atualizado! ✓');
+}
+
+function excluirObjetivo(i) {
+  if(!confirm('Excluir este objetivo?')) return;
+  const email = currentUser.email.toLowerCase();
+  PDI_DATA[email].objetivos.splice(i,1);
+  renderPdi();
+  showToast('Objetivo excluído.');
+}
+
 
 function savePdiNote() {
   const txt = document.getElementById('pdi-new-note').value.trim();
