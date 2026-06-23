@@ -43,7 +43,7 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0;}
 .pgbar{background:var(--nav);border-bottom:1px solid var(--border);padding:0 18px;height:42px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .pg-t{font-size:14px;font-weight:600;color:var(--text);}
 .pg-s{font-size:11px;color:var(--muted);}
-.content{flex:1;overflow-y:auto;padding:16px;}
+.content{flex:1;overflow-y:auto;padding:16px;position:relative;}
 .ref-bar{display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--card2);border:1px solid var(--border);border-radius:7px;}
 .sync-b{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:20px;}
 .s-ok{background:rgba(16,185,129,0.15);color:#6ee7b7;}
@@ -124,7 +124,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 .bl{font-size:9px;color:var(--dim);margin-top:3px;}
 #v-login{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;}
 .lb{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px 24px;width:320px;max-width:95%;}
-.page{display:none;}.page.act{display:block;}
+.page{display:none;position:absolute;top:0;left:0;right:0;}
+.page.act{display:block;position:relative;}
 .pdi-tab{display:none;}.pdi-tab.act{display:block;}
 .mb6{margin-bottom:6px;}.mb8{margin-bottom:8px;}.mb10{margin-bottom:10px;}.mb12{margin-bottom:12px;}.mb14{margin-bottom:14px;}
 .mt8{margin-top:8px;}.mt10{margin-top:10px;}
@@ -211,26 +212,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
       </div>
       <div class="content">
 
-<!-- ADD TAREFA -->
-<div id="add-panel" style="position:absolute;visibility:hidden;height:0;overflow:hidden;pointer-events:none;">
-  <div class="card">
-    <div class="ct"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nova tarefa</div>
-    <div class="mb10"><label class="lbl">Descrição</label><input id="nt-d" placeholder="Ex: Responder tickets WhatsApp — tarde..."></div>
-    <div class="g3 mb10">
-      <div><label class="lbl">Urgência</label><select id="nt-u"><option value="urgente">🔴 Urgente</option><option value="normal" selected>🟡 Normal</option><option value="baixa">🟢 Baixa</option></select></div>
-      <div><label class="lbl">Tempo / prazo</label><input id="nt-t" placeholder="Ex: 45min, até 18h..."></div>
-      <div><label class="lbl">Categoria</label><select id="nt-c"><option>SAC</option><option>Reclame Aqui</option><option>Operação</option><option>Social Media</option><option>Financeiro</option><option>RMA / Garantia</option><option>Gestão</option></select></div>
-    </div>
-    <div class="g2 mb10">
-      <div><label class="lbl">Designar para</label><select id="nt-f"><option value="eu">Para mim mesma</option><option value="rose">Roseane (Rose)</option><option value="larissa">Larissa</option><option value="sarah">Sarah</option></select></div>
-      <div><label class="lbl">Observação</label><input id="nt-o" placeholder="Contexto rápido..."></div>
-    </div>
-    <div class="fx gap8" style="justify-content:flex-end;">
-      <button class="btn" onclick="toggleAdd()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Cancelar</button>
-      <button class="btn-p" onclick="createTask()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Criar e designar</button>
-    </div>
-  </div>
-</div>
 
 <!-- MEU DIA -->
 <div id="p-hoje" class="page act">
@@ -563,8 +544,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 // ── PERSISTÊNCIA DE SESSÃO (sobrevive ao F5) ──
 function saveSession(user, role) {
   try {
-    sessionStorage.setItem('cs_user', JSON.stringify({email: user.email, role}));
-    sessionStorage.setItem('cs_dia', new Date().toDateString());
+    localStorage.setItem('cs_user', JSON.stringify({email: user.email, role}));
+    localStorage.setItem('cs_dia', new Date().toDateString());
   } catch(e) {}
 }
 async function carregarDados() {
@@ -709,17 +690,17 @@ function loadSession() {
   try {
     // Verificar se é um novo dia - se sim, limpar dados do dia anterior
     const hoje = new Date().toDateString();
-    const ultimoDia = sessionStorage.getItem('cs_dia');
+    const ultimoDia = localStorage.getItem('cs_dia');
     if (ultimoDia && ultimoDia !== hoje) {
       // Novo dia! Limpar tarefas do dia anterior mas manter login
-      const savedUser = sessionStorage.getItem('cs_user');
-      sessionStorage.clear();
-      if (savedUser) sessionStorage.setItem('cs_user', savedUser);
-      sessionStorage.setItem('cs_dia', hoje);
+      const savedUser = localStorage.getItem('cs_user');
+      localStorage.removeItem('cs_user');localStorage.removeItem('cs_dia');
+      if (savedUser) localStorage.setItem('cs_user', savedUser);
+      localStorage.setItem('cs_dia', hoje);
     } else if (!ultimoDia) {
-      sessionStorage.setItem('cs_dia', hoje);
+      localStorage.setItem('cs_dia', hoje);
     }
-    const saved = sessionStorage.getItem('cs_user');
+    const saved = localStorage.getItem('cs_user');
     if (!saved) return false;
     const {email, role} = JSON.parse(saved);
     const user = USERS.find(u => u.email.toLowerCase() === email.toLowerCase());
@@ -805,6 +786,11 @@ function sp(p){
   const ni=document.getElementById('n-'+p);if(ni)ni.classList.add('act');
   document.getElementById('pt').textContent=PGS[p]||p;
   document.getElementById('add-panel').style.display='none';
+  const content=document.querySelector('.content');
+  if(content) content.scrollTop=0;
+  if(p==='pdi') renderPdi();
+  if(p==='config') renderAlarms();
+  if(p==='hoje') renderFixasDia();
 }
 function tMode(){isDark=!isDark;document.body.classList.toggle('lm',!isDark);document.getElementById('ml').textContent=isDark?'Claro':'Escuro';}
 
@@ -859,13 +845,9 @@ function undoTask(doneId, title){
 
 function toggleAdd(){
   const p=document.getElementById('add-panel');
-  const isHidden = p.style.visibility==='hidden' || p.style.height==='0';
-  if(isHidden){
-    p.style.cssText='position:relative;visibility:visible;height:auto;overflow:visible;margin-bottom:14px;';
-    setTimeout(()=>{const i=document.getElementById('nt-d');if(i)i.focus();},50);
-  } else {
-    p.style.cssText='position:absolute;visibility:hidden;height:0;overflow:hidden;pointer-events:none;';
-  }
+  const isOpen = p.style.display==='block';
+  p.style.display = isOpen ? 'none' : 'block';
+  if(!isOpen) setTimeout(()=>{const i=document.getElementById('nt-d');if(i)i.focus();},50);
 }
 function toggleTF(){const f=document.getElementById('tf');f.style.display=f.style.display==='none'?'block':'none';}
 function togglePF(){const f=document.getElementById('pf');f.style.display=f.style.display==='none'?'block':'none';}
@@ -1843,6 +1825,31 @@ setTimeout(renderCadList,100);
     </div>
     <div class="f10 fw6" style="color:var(--cyan);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">📋 Cadastradas</div>
     <div id="fixas-gerenciar-list"></div>
+  </div>
+</div>
+
+
+<!-- ADD TAREFA - overlay fixo -->
+<div id="add-panel" style="display:none;position:fixed;top:52px;right:0;left:215px;z-index:8000;padding:16px;">
+  <div class="card" style="box-shadow:0 8px 32px rgba(0,0,0,.4);max-width:800px;margin:0 auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div class="ct" style="margin-bottom:0;">➕ Nova tarefa</div>
+      <button class="btn" onclick="toggleAdd()" style="font-size:10px;">✕ Fechar</button>
+    </div>
+    <div class="mb10"><label class="lbl">Descrição</label><input id="nt-d" placeholder="Ex: Responder tickets WhatsApp — tarde..."></div>
+    <div class="g3 mb10">
+      <div><label class="lbl">Urgência</label><select id="nt-u"><option value="urgente">🔴 Urgente</option><option value="normal" selected>🟡 Normal</option><option value="baixa">🟢 Baixa</option></select></div>
+      <div><label class="lbl">Tempo / prazo</label><input id="nt-t" placeholder="Ex: 45min, até 18h..."></div>
+      <div><label class="lbl">Categoria</label><select id="nt-c"><option>SAC</option><option>Reclame Aqui</option><option>Operação</option><option>Social Media</option><option>Financeiro</option><option>RMA / Garantia</option><option>Gestão</option></select></div>
+    </div>
+    <div class="g2 mb10">
+      <div><label class="lbl">Designar para</label><select id="nt-f"><option value="eu">Para mim mesma</option><option value="rose">Roseane (Rose)</option><option value="larissa">Larissa</option><option value="sarah">Sarah</option></select></div>
+      <div><label class="lbl">Observação</label><input id="nt-o" placeholder="Contexto rápido..."></div>
+    </div>
+    <div class="fx gap8" style="justify-content:flex-end;">
+      <button class="btn" onclick="toggleAdd()">✕ Cancelar</button>
+      <button class="btn-p" onclick="createTask()">📤 Criar e designar</button>
+    </div>
   </div>
 </div>
 
