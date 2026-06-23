@@ -157,7 +157,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
     <div class="fx ic gap8">
       <div style="position:relative;cursor:pointer;" onclick="toggleNotifPanel()">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        <div id="notif-dot" style="position:absolute;top:-2px;right:-2px;width:7px;height:7px;background:var(--err);border-radius:50%;"></div>
+        <div id="notif-dot" style="position:absolute;top:-2px;right:-2px;width:7px;height:7px;background:var(--err);border-radius:50%;display:none;"></div>
       </div>
       <button id="ref-btn" onclick="doRefresh()" title="Atualizar dados" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:5px 7px;cursor:pointer;color:var(--muted);display:flex;align-items:center;transition:all .15s;" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">
         <svg id="ref-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
@@ -253,11 +253,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
     <div class="card">
       <div class="ct"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Concluídas hoje</div>
       <div id="h-done">
-        <div class="ti" style="opacity:.6;"><div class="chk done"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="f1 mw0"><div class="tt struck">Tickets WhatsApp — manhã</div><div class="tm"><span class="tag tag-d">Concluída</span><span class="ttime">Real: 25min</span></div></div></div>
+        </div>
         <div class="ti" style="opacity:.6;"><div class="chk done"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="f1 mw0"><div class="tt struck">Auditoria CS — 3 atendimentos</div><div class="tm"><span class="tag tag-d">Concluída</span><span class="ttime">Real: 40min</span></div></div></div>
         <div class="ti" style="opacity:.6;"><div class="chk done"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="f1 mw0"><div class="tt struck">PDI Rose — revisão e envio</div><div class="tm"><span class="tag tag-d">Concluída</span><span class="ttime">Real: 1h10</span></div></div></div>
       </div>
     </div>
+    </div><!-- /g2 -->
   </div>
 </div>
 
@@ -273,17 +274,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 
       <!-- Lista de pendentes do dia -->
       <div id="foco-pool">
-        <div class="ti" id="fp-1" style="cursor:pointer;" onclick="toggleFocoSelect('fp-1','Responder OS-000029 — Reclame Aqui','tag-u','🔴 Urgente','20min')">
-          <div class="chk" id="fpc-1"></div>
-          <div class="f1 mw0"><div class="tt f12">Responder OS-000029 — Reclame Aqui</div><div class="tm"><span class="tag tag-u">🔴 Urgente</span><span class="ttime">20min</span></div></div>
-        </div>
-        <div class="ti" id="fp-2" style="cursor:pointer;" onclick="toggleFocoSelect('fp-2','Validar estornos APPMAX','tag-u','🔴 Urgente','30min')">
-          <div class="chk" id="fpc-2"></div>
-          <div class="f1 mw0"><div class="tt f12">Validar estornos APPMAX</div><div class="tm"><span class="tag tag-u">🔴 Urgente</span><span class="ttime">30min</span></div></div>
-        </div>
-        <div class="ti" id="fp-3" style="cursor:pointer;" onclick="toggleFocoSelect('fp-3','Input diário — ML e Shopee','tag-n','🟡 Normal','15min')">
-          <div class="chk" id="fpc-3"></div>
-          <div class="f1 mw0"><div class="tt f12">Input diário — ML e Shopee</div><div class="tm"><span class="tag tag-n">🟡 Normal</span><span class="ttime">15min</span></div></div>
+        <div class="f11 cm" id="foco-pool-empty" style="padding:16px;text-align:center;color:var(--dim);">
+          Nenhuma tarefa pendente. Adicione pelo campo abaixo ou crie tarefas em "Meu Dia".
         </div>
       </div>
 
@@ -569,6 +561,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 function saveSession(user, role) {
   try {
     sessionStorage.setItem('cs_user', JSON.stringify({email: user.email, role}));
+    sessionStorage.setItem('cs_dia', new Date().toDateString());
   } catch(e) {}
 }
 async function carregarDados() {
@@ -624,9 +617,38 @@ async function carregarDados() {
     if(document.getElementById('alarm-list')) renderAlarms();
   }
 
+  // Sincronizar tarefas pendentes com o Modo Foco
+  const pool = document.getElementById('foco-pool');
+  if(pool && res && res.ok && res.tarefas) {
+    const pendentes = res.tarefas.filter(t => t.status !== 'concluida');
+    if(pendentes.length > 0) {
+      const urgMap = {urgente:'🔴 Urgente', normal:'🟡 Normal', baixa:'🟢 Baixa'};
+      const urgClass = {urgente:'tag-u', normal:'tag-n', baixa:'tag-l'};
+      pool.innerHTML = pendentes.map(t => {
+        const urg = t.urgencia || 'normal';
+        const fid = 'fp-' + t.id;
+        return `<div class="ti" id="${fid}" style="cursor:pointer;" onclick="toggleFocoSelect('${fid}','${t.titulo.replace(/'/g,"\'")}','${urgClass[urg]}','${urgMap[urg]}','${t.tempo||'—'}')">
+          <div class="chk" id="fpc-${t.id}"></div>
+          <div class="f1 mw0"><div class="tt f12">${t.titulo}</div>
+          <div class="tm"><span class="tag ${urgClass[urg]}">${urgMap[urg]}</span><span class="ttime">${t.tempo||'—'}</span></div></div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // Zerar badges ao carregar
+  canalUnread = 0;
+  updateCanalBadge();
+  const dot = document.getElementById('notif-dot');
+  if(dot) dot.style.display = 'none';
+
   // Carregar Canal CS
   const canalRes = await apiGet('getCanal');
   if(canalRes && canalRes.ok) renderCanalFeed(canalRes.posts);
+
+  // Renderizar fixas e limpar antigas
+  limparFixasAntigas();
+  renderFixasDia();
 
   // Carregar dash master
   if(role === 'master') {
@@ -668,12 +690,26 @@ function renderCanalFeed(posts) {
       <div class="reply-area" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;"><input placeholder="Resposta..."></div>
     </div>`;
   }).join('');
-  canalUnread = posts.length;
+  // Só contar como não lido posts das últimas 24h
+  const ontem = Date.now() - 86400000;
+  canalUnread = posts.filter(p => new Date(p.criado_em).getTime() > ontem).length;
   updateCanalBadge();
 }
 
 function loadSession() {
   try {
+    // Verificar se é um novo dia - se sim, limpar dados do dia anterior
+    const hoje = new Date().toDateString();
+    const ultimoDia = sessionStorage.getItem('cs_dia');
+    if (ultimoDia && ultimoDia !== hoje) {
+      // Novo dia! Limpar tarefas do dia anterior mas manter login
+      const savedUser = sessionStorage.getItem('cs_user');
+      sessionStorage.clear();
+      if (savedUser) sessionStorage.setItem('cs_user', savedUser);
+      sessionStorage.setItem('cs_dia', hoje);
+    } else if (!ultimoDia) {
+      sessionStorage.setItem('cs_dia', hoje);
+    }
     const saved = sessionStorage.getItem('cs_user');
     if (!saved) return false;
     const {email, role} = JSON.parse(saved);
@@ -815,8 +851,142 @@ function undoTask(doneId, title){
 function toggleAdd(){const p=document.getElementById('add-panel');p.style.display=p.style.display==='none'?'block':'none';if(p.style.display==='block')setTimeout(()=>document.getElementById('nt-d').focus(),50);}
 function toggleTF(){const f=document.getElementById('tf');f.style.display=f.style.display==='none'?'block':'none';}
 function togglePF(){const f=document.getElementById('pf');f.style.display=f.style.display==='none'?'block':'none';}
+// ── TAREFAS FIXAS DIÁRIAS ──
+let TAREFAS_FIXAS = JSON.parse(localStorage.getItem('cs_fixas') || '[]');
+
+function salvarFixasLocal() {
+  localStorage.setItem('cs_fixas', JSON.stringify(TAREFAS_FIXAS));
+}
+
+function renderFixasDia() {
+  const list = document.getElementById('fixas-list');
+  const empty = document.getElementById('fixas-empty');
+  if(!list) return;
+
+  // Filtrar fixas do usuário atual (gerais + pessoais)
+  const minhas = TAREFAS_FIXAS.filter(f =>
+    f.escopo === 'geral' || f.criado_por === currentUser.email
+  );
+
+  if(minhas.length === 0) {
+    list.innerHTML = '';
+    if(empty) empty.style.display = 'block';
+    return;
+  }
+  if(empty) empty.style.display = 'none';
+
+  // Verificar quais foram concluídas hoje
+  const hoje = new Date().toDateString();
+  const concluidasHoje = JSON.parse(localStorage.getItem('cs_fixas_concluidas_' + hoje) || '[]');
+
+  const urgClass = {urgente:'tag-u', normal:'tag-n', baixa:'tag-l'};
+  const urgMap = {urgente:'🔴 Urgente', normal:'🟡 Normal', baixa:'🟢 Baixa'};
+
+  list.innerHTML = minhas.map(f => {
+    const feita = concluidasHoje.includes(f.id);
+    return `<div class="ti" id="fixa-row-${f.id}" style="margin-bottom:5px;${feita?'opacity:.6;':''}">
+      <div class="chk ${feita?'done':''}" onclick="toggleFixa('${f.id}')" style="flex-shrink:0;">
+        ${feita?'<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>':''}
+      </div>
+      <div class="f1 mw0">
+        <div class="tt ${feita?'struck':''}">${f.titulo}</div>
+        <div class="tm">
+          <span class="tag ${urgClass[f.urgencia]||'tag-n'}">${urgMap[f.urgencia]||'🟡 Normal'}</span>
+          <span class="tag">${f.categoria}</span>
+          ${f.escopo==='geral'?'<span class="tag tag-c">🌐 Geral</span>':'<span class="tag tag-p">👤 Pessoal</span>'}
+        </div>
+      </div>
+      ${feita?'<span class="f10" style="color:var(--ok);flex-shrink:0;">✓ Feita hoje</span>':''}
+    </div>`;
+  }).join('');
+}
+
+function toggleFixa(id) {
+  const hoje = new Date().toDateString();
+  const key = 'cs_fixas_concluidas_' + hoje;
+  let concluidas = JSON.parse(localStorage.getItem(key) || '[]');
+  if(concluidas.includes(id)) {
+    concluidas = concluidas.filter(x => x !== id);
+  } else {
+    concluidas.push(id);
+  }
+  localStorage.setItem(key, JSON.stringify(concluidas));
+  renderFixasDia();
+}
+
+function toggleGerenciarFixas() {
+  const modal = document.getElementById('modal-fixas');
+  if(!modal) return;
+  const isOpen = modal.style.display === 'flex';
+  modal.style.display = isOpen ? 'none' : 'flex';
+  if(!isOpen) renderFixasGerenciar();
+}
+
+function renderFixasGerenciar() {
+  const list = document.getElementById('fixas-gerenciar-list');
+  if(!list) return;
+  if(TAREFAS_FIXAS.length === 0) {
+    list.innerHTML = '<div class="f11 cm" style="padding:12px;text-align:center;color:var(--dim);">Nenhuma tarefa fixa cadastrada ainda.</div>';
+    return;
+  }
+  const urgClass = {urgente:'tag-u', normal:'tag-n', baixa:'tag-l'};
+  const urgMap = {urgente:'🔴 Urgente', normal:'🟡 Normal', baixa:'🟢 Baixa'};
+  list.innerHTML = TAREFAS_FIXAS.map(f => `
+    <div style="background:var(--card2);border-radius:7px;padding:9px 12px;margin-bottom:6px;display:flex;align-items:center;gap:10px;">
+      <div style="flex:1;min-width:0;">
+        <div class="f12 fw5" style="color:var(--text);margin-bottom:3px;">${f.titulo}</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          <span class="tag ${urgClass[f.urgencia]||'tag-n'}" style="font-size:9px;">${urgMap[f.urgencia]||'🟡 Normal'}</span>
+          <span class="tag" style="font-size:9px;">${f.categoria}</span>
+          ${f.escopo==='geral'?'<span class="tag tag-c" style="font-size:9px;">🌐 Geral</span>':'<span class="tag tag-p" style="font-size:9px;">👤 Pessoal</span>'}
+          <span class="f10 cdim">por ${f.criado_por_nome}</span>
+        </div>
+      </div>
+      <button onclick="excluirFixa('${f.id}')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;white-space:nowrap;">🗑 Excluir</button>
+    </div>`).join('');
+}
+
+function adicionarFixa() {
+  const titulo = document.getElementById('fixa-titulo').value.trim();
+  if(!titulo) { alert('Digite a descrição da tarefa.'); return; }
+  const novaFixa = {
+    id: 'fx' + Date.now(),
+    titulo,
+    categoria: document.getElementById('fixa-cat').value,
+    urgencia: document.getElementById('fixa-urg').value,
+    escopo: document.getElementById('fixa-escopo').value,
+    criado_por: currentUser.email,
+    criado_por_nome: currentUser.nome.split(' ')[0],
+    criado_em: new Date().toISOString()
+  };
+  TAREFAS_FIXAS.push(novaFixa);
+  salvarFixasLocal();
+  document.getElementById('fixa-titulo').value = '';
+  renderFixasGerenciar();
+  renderFixasDia();
+  showToast('Tarefa fixa adicionada! Aparecerá todo dia. ✓');
+}
+
+function excluirFixa(id) {
+  if(!confirm('Excluir esta tarefa fixa? Ela não aparecerá mais nos próximos dias.')) return;
+  TAREFAS_FIXAS = TAREFAS_FIXAS.filter(f => f.id !== id);
+  salvarFixasLocal();
+  renderFixasGerenciar();
+  renderFixasDia();
+}
+
+// Limpar marcações de fixas de dias anteriores (manter localStorage limpo)
+function limparFixasAntigas() {
+  const hoje = new Date().toDateString();
+  Object.keys(localStorage).forEach(k => {
+    if(k.startsWith('cs_fixas_concluidas_') && !k.endsWith(hoje)) {
+      localStorage.removeItem(k);
+    }
+  });
+}
+
 // ── CANAL CS ──
-let canalUnread = 2; // posts 1 e 2 não lidos
+let canalUnread = 0;
 
 function updateCanalBadge(){
   const badge = document.getElementById('canal-badge');
@@ -1417,10 +1587,22 @@ function checkAlarms() {
 
 function startAlarmSystem() {
   if (alarmCheckInterval) clearInterval(alarmCheckInterval);
-  // Verificar a cada 10 segundos para não perder o minuto exato
+  // Verificar a cada 10 segundos
   alarmCheckInterval = setInterval(checkAlarms, 10000);
+  // Também verificar a cada 1 minuto exato usando timeout recursivo
+  scheduleNextMinute();
   checkAlarms();
-  console.log('[Alarm System] Iniciado. Verificando a cada 10s.');
+  console.log('[Alarm System] Iniciado. Total alarmes:', ALARMS.length);
+}
+
+function scheduleNextMinute() {
+  // Calcular ms até o próximo minuto exato
+  const now = new Date();
+  const msAteProxMinuto = (60 - now.getSeconds()) * 1000 - now.getMilliseconds() + 100;
+  setTimeout(() => {
+    checkAlarms();
+    scheduleNextMinute(); // reagendar para o próximo minuto
+  }, msAteProxMinuto);
 }
 
 // Renderizar alarmes na tela de config
