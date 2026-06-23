@@ -43,7 +43,7 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0;}
 .pgbar{background:var(--nav);border-bottom:1px solid var(--border);padding:0 18px;height:42px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .pg-t{font-size:14px;font-weight:600;color:var(--text);}
 .pg-s{font-size:11px;color:var(--muted);}
-.content{flex:1;overflow-y:auto;padding:16px;}
+.content{flex:1;overflow:hidden;padding:0;display:flex;flex-direction:column;}
 .ref-bar{display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--card2);border:1px solid var(--border);border-radius:7px;}
 .sync-b{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:20px;}
 .s-ok{background:rgba(16,185,129,0.15);color:#6ee7b7;}
@@ -124,7 +124,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 .bl{font-size:9px;color:var(--dim);margin-top:3px;}
 #v-login{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;}
 .lb{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px 24px;width:320px;max-width:95%;}
-.page{display:none;}.page.act{display:block;}
+.page{display:none;}.page.act{display:flex;flex-direction:column;flex:1;overflow-y:auto;padding:16px;}
 .pdi-tab{display:none;}.pdi-tab.act{display:block;}
 .mb6{margin-bottom:6px;}.mb8{margin-bottom:8px;}.mb10{margin-bottom:10px;}.mb12{margin-bottom:12px;}.mb14{margin-bottom:14px;}
 .mt8{margin-top:8px;}.mt10{margin-top:10px;}
@@ -251,7 +251,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
     </div>
     </div><!-- /g2 -->
   </div>
-</div>
 
 <!-- MODO FOCO -->
 <div id="p-foco" class="page">
@@ -472,12 +471,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 <!-- TIME CS -->
 <div id="p-time" class="page">
   <div class="fx jb ic mb12"><div class="f11 cm">Gerencie acessos e designe tarefas</div><button class="btn-p" style="font-size:10px;padding:4px 10px;" onclick="sp('cadastro')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg> Adicionar colaboradora</button></div>
-  <div class="card"><div class="ct"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Colaboradoras ativas</div>
-    <div class="m-row"><div class="m-av" style="background:linear-gradient(135deg,var(--purple),var(--cyan));">RS</div><div class="f1 mw0" style="margin-left:8px;"><div class="f12 fw6" style="color:var(--text);">Roseane (Rose)</div><div class="f10 cm">rose@cellfy.com.br · CS Ops</div></div><div class="fx gap6"><button class="btn" style="font-size:10px;" onclick="toggleAdd();document.getElementById('nt-f').value='rose';"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Designar</button><button class="btn" style="font-size:10px;" onclick="sp('dash')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Métricas</button><button class="btn" style="font-size:10px;" onclick="sp('pdi-master')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M8.56 14.44 7 22l5-3 5 3-1.56-7.56"/></svg> PDI</button></div></div>
-    <div class="m-row"><div class="m-av" style="background:linear-gradient(135deg,#ec4899,#7c5cfc);">LA</div><div class="f1 mw0" style="margin-left:8px;"><div class="f12 fw6" style="color:var(--text);">Larissa</div><div class="f10 cm">larissa@cellfy.com.br · CS Specialist</div></div><div class="fx gap6"><button class="btn" style="font-size:10px;" onclick="toggleAdd();document.getElementById('nt-f').value='larissa';"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Designar</button><button class="btn" style="font-size:10px;" onclick="sp('dash')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Métricas</button><button class="btn" style="font-size:10px;" onclick="sp('pdi-master')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M8.56 14.44 7 22l5-3 5 3-1.56-7.56"/></svg> PDI</button></div></div>
-    <div class="m-row"><div class="m-av" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">SA</div><div class="f1 mw0" style="margin-left:8px;"><div class="f12 fw6" style="color:var(--text);">Sarah</div><div class="f10 cm">sarah@cellfy.com.br · CS Analyst</div></div><div class="fx gap6"><button class="btn" style="font-size:10px;" onclick="toggleAdd();document.getElementById('nt-f').value='sarah';"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Designar</button><button class="btn" style="font-size:10px;" onclick="sp('dash')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Métricas</button><button class="btn" style="font-size:10px;" onclick="sp('pdi-master')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M8.56 14.44 7 22l5-3 5 3-1.56-7.56"/></svg> PDI</button></div></div>
-  </div>
-</div>
+  <div class="card"><div class="ct">👥 Colaboradoras ativas</div>
+      <div id="time-list"></div>
+    </div>
 
 <!-- PDI MASTER -->
 <div id="p-pdi-master" class="page">
@@ -536,6 +532,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
     </div><!-- /main -->
   </div><!-- /wrap -->
 
+      </div><!-- /content -->
+    </div><!-- /main -->
+  </div><!-- /wrap -->
+
 <!-- ALARME POPUP -->
 </div><!-- /app -->
 
@@ -549,10 +549,6 @@ function saveSession(user, role) {
 }
 async function carregarDados() {
   // Carregar tarefas do Sheets
-  // Garantir scroll no topo ao carregar
-  const contentEl = document.querySelector('.content');
-  if(contentEl) contentEl.scrollTop = 0;
-
   // Limpar listas antes de popular com dados reais
   const hPendEl = document.getElementById('h-pend');
   const hDoneEl = document.getElementById('h-done');
@@ -789,13 +785,11 @@ function sp(p){
   const ni=document.getElementById('n-'+p);if(ni)ni.classList.add('act');
   document.getElementById('pt').textContent=PGS[p]||p;
   document.getElementById('add-panel').style.display='none';
-  requestAnimationFrame(()=>{
-    const content=document.querySelector('.content');
-    if(content) content.scrollTop=0;
-  });
+
   if(p==='pdi') renderPdi();
   if(p==='config') renderAlarms();
   if(p==='hoje') renderFixasDia();
+  if(p==='time') renderTimeCS();
 }
 function tMode(){isDark=!isDark;document.body.classList.toggle('lm',!isDark);document.getElementById('ml').textContent=isDark?'Claro':'Escuro';}
 
@@ -1268,6 +1262,32 @@ function resetTimer(){clearInterval(timerInt);timerOn=false;timerSec=25*60;updTi
 function shortBreak(){clearInterval(timerInt);timerOn=false;timerSec=5*60;updTimer();document.getElementById('tmr-l').textContent='Pausa de 5 minutos — respira!';}
 
 function toggleCadForm(){const f=document.getElementById('cad-form');f.style.display=f.style.display==='none'?'block':'none';}
+function renderTimeCS(){
+  const list = document.getElementById('time-list');
+  if(!list) return;
+  const membros = USERS.filter(u=>u.email!==currentUser.email&&u.nivel==='membro');
+  if(membros.length===0){
+    list.innerHTML='<div class="f11 cm" style="padding:16px;text-align:center;color:var(--dim);">Nenhuma colaboradora cadastrada ainda.</div>';
+    return;
+  }
+  const cols=['linear-gradient(135deg,#7c5cfc,#00d4c8)','linear-gradient(135deg,#ec4899,#7c5cfc)','linear-gradient(135deg,#f59e0b,#ef4444)','linear-gradient(135deg,#10b981,#3b82f6)'];
+  list.innerHTML=membros.map((u,i)=>{
+    const init=u.nome.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+    return `<div class="m-row">
+      <div class="m-av" style="background:${cols[i%cols.length]};">${init}</div>
+      <div class="f1 mw0" style="margin-left:8px;">
+        <div class="f12 fw6" style="color:var(--text);">${u.nome}</div>
+        <div class="f10 cm">${u.email} · ${u.cargo}</div>
+      </div>
+      <div class="fx gap6">
+        <button class="btn" style="font-size:10px;" onclick="toggleAdd();document.getElementById('nt-f').value='${u.email}';">✈️ Designar</button>
+        <button class="btn" style="font-size:10px;" onclick="sp('dash')">📊 Métricas</button>
+        <button class="btn" style="font-size:10px;" onclick="sp('pdi-master')">📋 PDI</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function renderCadList(){
   const list=document.getElementById('cad-list');if(!list)return;
   const cols=['linear-gradient(135deg,#7c5cfc,#00d4c8)','linear-gradient(135deg,#ec4899,#7c5cfc)','linear-gradient(135deg,#f59e0b,#ef4444)','linear-gradient(135deg,#10b981,#3b82f6)'];
@@ -1300,7 +1320,27 @@ function showPwd(id){document.getElementById('pw-'+id).style.display='block';doc
 function cancelPwd(id){document.getElementById('pw-'+id).style.display='none';document.getElementById('vw-'+id).style.display='flex';}
 function savePwd(id){const u=USERS.find(x=>x.id===id);if(!u)return;const np=document.getElementById('np-'+id).value,cp=document.getElementById('cp-'+id).value;if(np.length<6){alert('Mínimo 6 caracteres.');return;}if(np!==cp){alert('Senhas não coincidem.');return;}u.senha=np;alert('Senha alterada com sucesso!');cancelPwd(id);}
 function delCad(id){if(!confirm('Remover acesso deste colaborador?'))return;USERS=USERS.filter(u=>u.id!==id);renderCadList();}
-function saveCad(){const n=document.getElementById('cad-nome').value.trim(),e=document.getElementById('cad-email').value.trim(),c=document.getElementById('cad-cargo').value.trim(),s=document.getElementById('cad-senha').value,nv=document.getElementById('cad-nivel').value;if(!n||!e||!c||!s){alert('Preencha todos os campos.');return;}if(USERS.find(u=>u.email.toLowerCase()===e.toLowerCase())){alert('E-mail já cadastrado.');return;}if(s.length<6){alert('Senha precisa ter no mínimo 6 caracteres.');return;}USERS.push({id:Date.now(),nome:n,email:e,cargo:c,senha:s,nivel:nv});renderCadList();['cad-nome','cad-email','cad-cargo','cad-senha'].forEach(id=>document.getElementById(id).value='');document.getElementById('cad-nivel').value='membro';document.getElementById('cad-form').style.display='none';}
+async function saveCad(){
+  const n=document.getElementById('cad-nome').value.trim(),
+        e=document.getElementById('cad-email').value.trim(),
+        c=document.getElementById('cad-cargo').value.trim(),
+        s=document.getElementById('cad-senha').value,
+        nv=document.getElementById('cad-nivel').value;
+  if(!n||!e||!c||!s){alert('Preencha todos os campos.');return;}
+  if(USERS.find(u=>u.email.toLowerCase()===e.toLowerCase())){alert('E-mail já cadastrado.');return;}
+  if(s.length<6){alert('Senha precisa ter no mínimo 6 caracteres.');return;}
+  const novoUser={id:Date.now(),nome:n,email:e,cargo:c,senha:s,nivel:nv};
+  USERS.push(novoUser);
+  renderCadList();
+  // Salvar no Sheets
+  await apiPost('salvarUsuario',{nome:n,email:e,cargo:c,senha:s,nivel:nv});
+  // Atualizar seletor de designação
+  atualizarSeletores();
+  ['cad-nome','cad-email','cad-cargo','cad-senha'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('cad-nivel').value='membro';
+  document.getElementById('cad-form').style.display='none';
+  showToast('Colaboradora cadastrada com sucesso! ✓');
+}
 
 // ── DADOS PDI POR USUÁRIO ──
 const PDI_DATA = {
@@ -1743,6 +1783,19 @@ document.addEventListener('click', function(e){
   }
 });
 
+function atualizarSeletores(){
+  // Atualizar dropdown de designação no add-panel
+  const sel = document.getElementById('nt-f');
+  if(!sel) return;
+  while(sel.options.length > 1) sel.remove(1);
+  USERS.filter(u=>u.email!==currentUser.email).forEach(u=>{
+    const opt = document.createElement('option');
+    opt.value = u.email;
+    opt.textContent = u.nome;
+    sel.appendChild(opt);
+  });
+}
+
 function showToast(msg){
   let t=document.getElementById('toast');
   if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;bottom:20px;right:20px;background:var(--ok);color:white;padding:8px 16px;border-radius:7px;font-size:12px;font-weight:600;z-index:9998;transition:opacity .3s;';document.body.appendChild(t);}
@@ -1783,7 +1836,7 @@ function showPwdMsg(txt,cor){
   el.textContent=txt;el.style.color=cor;el.style.display='block';
   setTimeout(()=>el.style.display='none',3500);
 }
-setTimeout(renderCadList,100);
+setTimeout(()=>{renderCadList();renderTimeCS();atualizarSeletores();},100);
 </script>
 
 <!-- PAINEL DE NOTIFICAÇÕES -->
