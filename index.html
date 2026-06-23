@@ -958,13 +958,14 @@ function loginAs(r,u){
   role=r;currentUser=u||USERS[0];
   document.getElementById('v-login').style.display='none';
   document.getElementById('app').style.display='flex';
+  const isMaster=r==='master';
   if(isMaster) document.body.classList.add('is-master');
   else document.body.classList.remove('is-master');
-  const isMaster=r==='master';
   document.getElementById('ns-master').style.display=isMaster?'block':'none';
   const init=currentUser.nome.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
   document.getElementById('sb-av').textContent=init;
   document.getElementById('sb-nm').textContent=currentUser.nome;
+  document.getElementById('sb-rl').textContent=currentUser.cargo||'Colaboradora';
   document.getElementById('sb-rl').textContent=currentUser.cargo;
   document.getElementById('btn-at').style.display=isMaster?'inline-flex':'none';
   document.getElementById('btn-post').style.display=isMaster?'inline-flex':'none';
