@@ -852,7 +852,7 @@ const API_URL = 'https://script.google.com/a/macros/cellfy.com.br/s/AKfycbwA0w6B
 
 // Usuários locais (fallback enquanto API não está configurada)
 let USERS=[
-  {id:1,nome:'Rafa Souza',         email:'rafa@cellfy.com.br',           senha:'cellfy2026',cargo:'CX Leader',                     nivel:'master', no_time:false},
+  {id:1,nome:'Rafa Souza',         email:'rafaelasouza@cellfy.com.br',   senha:'cellfy2026',cargo:'CX Leader',                     nivel:'master', no_time:false},
   {id:2,nome:'Roseane Santos',     email:'roseanesantos@cellfy.com.br',  senha:'cellfy2026',cargo:'Assistente de E-Commerce Pleno',nivel:'membro', no_time:true},
   {id:3,nome:'Larissa Nascimento', email:'larissanascimento@cellfy.com.br',senha:'cellfy2026',cargo:'Auxiliar de E-commerce',      nivel:'membro', no_time:true},
   {id:4,nome:'Sarah Katriny',      email:'sarahsilva@cellfy.com.br',     senha:'cellfy2026',cargo:'Auxiliar de E-commerce',        nivel:'membro', no_time:true},
@@ -2072,34 +2072,53 @@ function playAlarmSound() {
 }
 
 function showAlarm(msg) {
-  console.log('[ALARME DISPARADO]', new Date().toLocaleTimeString(), msg);
-  const popup = document.getElementById('alarm-popup');
-  const msgEl = document.getElementById('alarm-msg');
-  if(popup && msgEl) {
-    msgEl.textContent = msg;
-    // Forçar visibilidade máxima independente de qualquer CSS pai
-    popup.removeAttribute('style');
-    popup.style.cssText = [
-      'display:block',
-      'position:fixed',
-      'top:24px',
-      'left:50%',
-      'transform:translateX(-50%)',
-      'z-index:2147483647',
-      'background:linear-gradient(135deg,#7c5cfc,#00d4c8)',
-      'border-radius:14px',
-      'padding:18px 24px',
-      'min-width:320px',
-      'max-width:90vw',
-      'box-shadow:0 12px 40px rgba(0,0,0,.6)',
-      'font-family:system-ui,sans-serif'
-    ].join(';');
-    setTimeout(() => { if(popup) popup.style.display = 'none'; }, 30000);
-  }
+  console.log('[ALARME]', new Date().toLocaleTimeString(), msg);
+
+  // Remover popup anterior se existir
+  const old = document.getElementById('alarm-popup');
+  if(old) old.remove();
+
+  // Criar popup direto no body - garantido aparecer
+  const popup = document.createElement('div');
+  popup.id = 'alarm-popup';
+  popup.style.cssText = [
+    'position:fixed', 'top:24px', 'left:50%', 'transform:translateX(-50%)',
+    'z-index:2147483647', 'background:linear-gradient(135deg,#7c5cfc,#00d4c8)',
+    'border-radius:14px', 'padding:20px 24px', 'min-width:320px', 'max-width:90vw',
+    'box-shadow:0 12px 40px rgba(0,0,0,.7)', 'font-family:system-ui,sans-serif',
+    'animation:slideDown .3s ease'
+  ].join(';');
+  popup.innerHTML = `
+    <style>@keyframes slideDown{from{transform:translateX(-50%) translateY(-20px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}</style>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:24px;">🔔</span>
+        <span style="font-size:15px;font-weight:700;color:white;">Lembrete</span>
+      </div>
+      <button onclick="this.closest('#alarm-popup').remove()" style="background:rgba(255,255,255,.25);border:none;color:white;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <div style="font-size:13px;color:rgba(255,255,255,.95);line-height:1.5;margin-bottom:14px;">${msg}</div>
+    <button onclick="this.closest('#alarm-popup').remove()" style="width:100%;padding:9px;border-radius:8px;border:none;background:white;color:#7c5cfc;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">✓ Entendido</button>
+  `;
+  document.body.appendChild(popup);
+  setTimeout(() => { if(popup.parentNode) popup.remove(); }, 30000);
+
   // Som
   try {
     const ctx = getAudioCtx();
-    if(ctx.state === 'suspended') ctx.resume();
+    if(ctx.state === 'suspended') ctx.resume().then(()=>_playAlarmNotes(ctx));
+    else _playAlarmNotes(ctx);
+  } catch(e) {}
+
+  // Notificação do browser
+  dispararNotifBrowser(msg);
+
+  // Sino
+  try { addNotif('🔔 ' + msg, 'info'); } catch(e) {}
+}
+
+function _playAlarmNotes(ctx) {
+  try {
     [523,659,784,659,784].forEach((freq,i) => {
       const o = ctx.createOscillator(), g = ctx.createGain();
       o.connect(g); g.connect(ctx.destination);
@@ -2110,188 +2129,7 @@ function showAlarm(msg) {
       g.gain.linearRampToValueAtTime(0,t+0.15);
       o.start(t); o.stop(t+0.15);
     });
-  } catch(e) { console.warn('Som:', e); }
-  // Notificação do browser (funciona minimizado)
-  dispararNotifBrowser(msg);
-  try { addNotif('🔔 ' + msg, 'info'); } catch(e) {}
-}
-
-function closeAlarm() {
-  document.getElementById('alarm-popup').style.display = 'none';
-}
-
-function checkAlarms() {
-  const now = new Date();
-  const hh = now.getHours();
-  const mm = now.getMinutes();
-  const ss = now.getSeconds();
-  // Reset diário
-  if (hh === 0 && mm === 0 && ss < 15) ALARMS.forEach(a => a.disparado = false);
-  ALARMS.forEach((a, i) => {
-    if (!a.ativo || a.disparado) return;
-    const parts = a.hora.split(':');
-    if(parts.length < 2) return;
-    const ah = parseInt(parts[0], 10);
-    const am = parseInt(parts[1], 10);
-    if(isNaN(ah)||isNaN(am)) return;
-    // Verificar se estamos no minuto exato do alarme (ignora segundos)
-    if (hh === ah && mm === am) {
-      console.log(`[ALARME DISPARANDO] ${a.hora} - ${a.msg}`);
-      a.disparado = true;
-      showAlarm(a.msg);
-      return;
-    }
-    // Janela de recuperação: se passou até 4 minutos e não disparou ainda
-    const alarmTotal = ah * 60 + am;
-    const nowTotal = hh * 60 + mm;
-    const diff = nowTotal - alarmTotal;
-    if (diff > 0 && diff <= 4) {
-      console.log(`[ALARME RECUPERADO] ${a.hora} - passou ${diff}min - ${a.msg}`);
-      a.disparado = true;
-      showAlarm(a.msg);
-    }
-  });
-}
-
-function startAlarmSystem() {
-  if (alarmCheckInterval) clearInterval(alarmCheckInterval);
-  // Verificar a cada 10 segundos
-  alarmCheckInterval = setInterval(checkAlarms, 10000);
-  // Também verificar a cada 1 minuto exato usando timeout recursivo
-  scheduleNextMinute();
-  checkAlarms();
-  console.log('[Alarm System] Iniciado. Total alarmes:', ALARMS.length);
-}
-
-function scheduleNextMinute() {
-  // Calcular ms até o próximo minuto exato
-  const now = new Date();
-  const msAteProxMinuto = (60 - now.getSeconds()) * 1000 - now.getMilliseconds() + 100;
-  setTimeout(() => {
-    checkAlarms();
-    scheduleNextMinute(); // reagendar para o próximo minuto
-  }, msAteProxMinuto);
-}
-
-// Renderizar alarmes na tela de config
-function renderAlarms() {
-  const wrap = document.getElementById('alarm-list');
-  if (!wrap) return;
-  wrap.innerHTML = ALARMS.map((a,i) => `
-    <div style="background:var(--card2);border-radius:7px;padding:8px 10px;display:flex;align-items:center;gap:7px;margin-bottom:5px;">
-      <input type="time" value="${a.hora}" id="alarm-time-${i}" style="width:85px;padding:4px 7px;font-size:12px;background:var(--card3);border:1px solid var(--border2);border-radius:5px;color:var(--text);">
-      <input type="text" value="${a.msg}" id="alarm-msg-${i}" style="flex:1;font-size:11px;padding:4px 8px;background:var(--card3);border:1px solid var(--border2);border-radius:5px;color:var(--text);">
-      <div class="tog ${a.ativo?'on':''}" id="alarm-tog-${i}" onclick="toggleAlarm(${i})"></div>
-      <button onclick="saveAlarm(${i})" style="background:rgba(0,212,200,.12);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;white-space:nowrap;">💾 Salvar</button>
-      <button onclick="testAlarm(${i})" style="background:rgba(124,92,252,.12);border:1px solid var(--purple);color:#a78bfa;border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;white-space:nowrap;">▶ Testar</button>
-      <button onclick="removeAlarm(${i})" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:3px 7px;font-size:11px;cursor:pointer;">✕</button>
-    </div>`).join('');
-}
-
-function saveAlarm(i){
-  const h=document.getElementById('alarm-time-'+i);
-  const m=document.getElementById('alarm-msg-'+i);
-  if(!h||!m)return;
-  ALARMS[i].hora=h.value;
-  ALARMS[i].msg=m.value;
-  ALARMS[i].disparado=false;
-  ALARMS[i].ativo=true;
-  const tog=document.getElementById('alarm-tog-'+i);
-  if(tog)tog.classList.add('on');
-  console.log('[Alarme salvo]', ALARMS[i].hora, ALARMS[i].msg);
-  showToast('Lembrete salvo! Próximo check em até 10 segundos. ✓');
-  checkAlarms();
-}
-
-function toggleAlarm(i){
-  ALARMS[i].ativo=!ALARMS[i].ativo;
-  const tog=document.getElementById('alarm-tog-'+i);
-  if(tog)tog.classList.toggle('on');
-}
-
-function removeAlarm(i){
-  if(!confirm('Remover este lembrete?'))return;
-  ALARMS.splice(i,1);
-  renderAlarms();
-}
-
-// ── SISTEMA DE NOTIFICAÇÕES ──
-let NOTIFS = []; // Notificações aparecem apenas quando alarmes disparam ou tarefas são criadas
-
-function renderNotifPanel(){
-  const list = document.getElementById('notif-list');
-  if(!list) return;
-  // Sempre atualizar o dot
-  const notifDot = document.getElementById('notif-dot');
-  const unreadCount = NOTIFS.filter(n=>!n.lida).length;
-  if(notifDot) notifDot.style.display = unreadCount > 0 ? 'block' : 'none';
-  if(!NOTIFS.length){
-    list.innerHTML='<div style="padding:20px;text-align:center;font-size:12px;color:var(--dim);">Nenhuma notificação</div>';
-    return;
-  }
-  list.innerHTML = NOTIFS.map(n=>`
-    <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:${n.lida?'transparent':'rgba(124,92,252,0.05)'};display:flex;align-items:flex-start;gap:8px;" id="notif-${n.id}">
-      <div style="width:8px;height:8px;border-radius:50%;background:${n.tipo==='danger'?'var(--err)':n.tipo==='warn'?'var(--warn)':'var(--info)'};flex-shrink:0;margin-top:4px;"></div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:11px;color:var(--text);line-height:1.4;margin-bottom:2px;">${n.msg}</div>
-        <div style="font-size:10px;color:var(--dim);">${n.tempo}</div>
-      </div>
-      <button onclick="markRead(${n.id})" style="background:transparent;border:none;color:var(--dim);cursor:pointer;font-size:16px;padding:0;line-height:1;" title="Marcar como lida">✕</button>
-    </div>`).join('');
-  // Atualizar dot
-  const unread = NOTIFS.filter(n=>!n.lida).length;
-  const dot = document.getElementById('notif-dot');
-  if(dot) dot.style.display = unread > 0 ? 'block' : 'none';
-}
-
-function toggleNotifPanel(){
-  const panel = document.getElementById('notif-panel');
-  if(!panel) return;
-  const isOpen = panel.style.display !== 'none';
-  panel.style.display = isOpen ? 'none' : 'block';
-  if(!isOpen) renderNotifPanel();
-}
-
-function markRead(id){
-  NOTIFS = NOTIFS.filter(n=>n.id!==id);
-  renderNotifPanel();
-}
-
-function clearNotifs(){
-  NOTIFS = [];
-  renderNotifPanel();
-  const dot = document.getElementById('notif-dot');
-  if(dot) dot.style.display = 'none';
-  const panel = document.getElementById('notif-panel');
-  if(panel) panel.style.display = 'none';
-}
-
-function addNotif(msg, tipo='info'){
-  NOTIFS.unshift({id:Date.now(), msg, tempo:'agora', tipo, lida:false});
-  const dot=document.getElementById('notif-dot');
-  if(dot) dot.style.display='block';
-}
-
-// Fechar painel ao clicar fora
-document.addEventListener('click', function(e){
-  const panel=document.getElementById('notif-panel');
-  if(!panel||panel.style.display==='none') return;
-  if(!panel.contains(e.target) && !e.target.closest('[onclick="toggleNotifPanel()"]')){
-    panel.style.display='none';
-  }
-});
-
-function atualizarSeletores(){
-  // Atualizar dropdown de designação no add-panel
-  const sel = document.getElementById('nt-f');
-  if(!sel) return;
-  while(sel.options.length > 1) sel.remove(1);
-  USERS.filter(u=>u.email!==currentUser.email).forEach(u=>{
-    const opt = document.createElement('option');
-    opt.value = u.email;
-    opt.textContent = u.nome;
-    sel.appendChild(opt);
-  });
+  } catch(e) {}
 }
 
 
@@ -2600,19 +2438,6 @@ setTimeout(()=>{renderCadList();renderTimeCS();atualizarSeletores();},100);
     <button onclick="clearNotifs()" style="font-size:10px;color:var(--muted);background:transparent;border:none;cursor:pointer;font-family:inherit;">Limpar tudo</button>
   </div>
   <div id="notif-list" style="max-height:280px;overflow-y:auto;"></div>
-</div>
-
-<!-- ALARME POPUP - fora de qualquer container -->
-<div id="alarm-popup" style="display:none;position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:2147483647;background:linear-gradient(135deg,#7c5cfc,#00d4c8);border-radius:14px;padding:18px 24px;min-width:320px;max-width:90vw;box-shadow:0 12px 40px rgba(0,0,0,.6);font-family:system-ui,sans-serif;">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-    <div style="display:flex;align-items:center;gap:10px;">
-      <span style="font-size:24px;">🔔</span>
-      <span style="font-size:15px;font-weight:700;color:white;">Lembrete</span>
-    </div>
-    <button onclick="closeAlarm()" style="background:rgba(255,255,255,.25);border:none;color:white;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button>
-  </div>
-  <div style="font-size:13px;color:rgba(255,255,255,.95);line-height:1.5;margin-bottom:14px;" id="alarm-msg">Mensagem do lembrete</div>
-  <button onclick="closeAlarm()" style="width:100%;padding:8px;border-radius:8px;border:none;background:white;color:#7c5cfc;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">✓ Entendido</button>
 </div>
 
 <!-- MODAL GERENCIAR FIXAS -->
