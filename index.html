@@ -43,7 +43,7 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0;}
 .pgbar{background:var(--nav);border-bottom:1px solid var(--border);padding:0 18px;height:42px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .pg-t{font-size:14px;font-weight:600;color:var(--text);}
 .pg-s{font-size:11px;color:var(--muted);}
-.content{flex:1;overflow-y:auto;padding:16px;position:relative;}
+.content{flex:1;overflow-y:auto;padding:16px;}
 .ref-bar{display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--card2);border:1px solid var(--border);border-radius:7px;}
 .sync-b{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:20px;}
 .s-ok{background:rgba(16,185,129,0.15);color:#6ee7b7;}
@@ -124,8 +124,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 .bl{font-size:9px;color:var(--dim);margin-top:3px;}
 #v-login{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;}
 .lb{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px 24px;width:320px;max-width:95%;}
-.page{display:none;position:absolute;top:0;left:0;right:0;}
-.page.act{display:block;position:relative;}
+.page{display:none;}.page.act{display:block;}
 .pdi-tab{display:none;}.pdi-tab.act{display:block;}
 .mb6{margin-bottom:6px;}.mb8{margin-bottom:8px;}.mb10{margin-bottom:10px;}.mb12{margin-bottom:12px;}.mb14{margin-bottom:14px;}
 .mt8{margin-top:8px;}.mt10{margin-top:10px;}
@@ -137,6 +136,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 .lm .card,.lm .post,.lm .ti,.lm .m-row,.lm .tc,.lm .mc,.lm .card2,.lm .note{background:#f8fafc !important;border-color:rgba(100,130,200,.18) !important;}
 .lm .ti:hover,.lm .tc:hover{background:#f0f4f8 !important;}
 .lm input,.lm select,.lm textarea{background:#f8fafc;border-color:rgba(100,130,200,.3);color:#1e293b;}
+
+/* Garantir que páginas inativas não ocupam espaço */
+.page { margin:0!important; padding:0!important; height:0!important; overflow:hidden!important; }
+.page.act { height:auto!important; overflow:visible!important; }
 </style>
 </head>
 <body>
@@ -174,7 +177,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
     <div class="sb">
       <div class="sb-sec">
         <span class="sb-lbl">Pessoal</span>
-        <div class="ni act" id="n-hoje" onclick="sp('hoje')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> Meu Dia</div>
+        <div class="ni" id="n-hoje" onclick="sp('hoje')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> Meu Dia</div>
         <div class="ni" id="n-foco" onclick="sp('foco')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 13a3.5 3.5 0 0 0-3.5 3.5v1a3.5 3.5 0 0 0 7 0v-1.8"/><path d="M8.5 13a3.5 3.5 0 0 1 3.5 3.5v1a3.5 3.5 0 0 1-7 0v-1.8"/><path d="M17.5 11a3.5 3.5 0 1 0-3.5-3.5"/><path d="M6.5 11a3.5 3.5 0 1 1 3.5-3.5"/><path d="M12 14.5v-9"/></svg> Modo Foco</div>
         <div class="ni" id="n-tarefas" onclick="sp('tarefas')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="m9 12 2 2 4-4"/></svg> Tarefas</div>
         <div class="ni" id="n-ferramentas" onclick="sp('ferramentas')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg> Ferramentas</div>
@@ -214,7 +217,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 
 
 <!-- MEU DIA -->
-<div id="p-hoje" class="page act">
+<div id="p-hoje" class="page">
   <div class="alert al-i"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Lembrete 08:30 — Confira suas tarefas! | Reunião OPS Leaders — 14h</div>
   <div class="g4 mb12">
     <div class="mc"><div class="ml">Total hoje</div><div class="mv cc" id="cnt-total">0</div><div class="ms">tarefas</div></div>
