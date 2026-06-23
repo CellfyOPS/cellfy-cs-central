@@ -177,6 +177,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
         <div class="ni" id="n-foco" onclick="sp('foco')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 13a3.5 3.5 0 0 0-3.5 3.5v1a3.5 3.5 0 0 0 7 0v-1.8"/><path d="M8.5 13a3.5 3.5 0 0 1 3.5 3.5v1a3.5 3.5 0 0 1-7 0v-1.8"/><path d="M17.5 11a3.5 3.5 0 1 0-3.5-3.5"/><path d="M6.5 11a3.5 3.5 0 1 1 3.5-3.5"/><path d="M12 14.5v-9"/></svg> Modo Foco</div>
         <div class="ni" id="n-tarefas" onclick="sp('tarefas')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="m9 12 2 2 4-4"/></svg> Tarefas</div>
         <div class="ni" id="n-ferramentas" onclick="sp('ferramentas')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg> Ferramentas</div>
+        <div class="ni" id="n-dashboard" onclick="sp('dashboard')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Dashboard</div>
         <div class="ni" id="n-metricas" onclick="sp('metricas')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Minhas Métricas</div>
         <div class="ni" id="n-pdi" onclick="sp('pdi')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M8.56 14.44 7 22l5-3 5 3-1.56-7.56"/></svg> Meu PDI <span class="nb nb-g">Novo</span></div>
       </div>
@@ -251,6 +252,43 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
     </div>
     </div><!-- /g2 -->
   </div>
+
+<!-- DASHBOARD -->
+<div id="p-dashboard" class="page">
+
+  <!-- FILTROS -->
+  <div class="card mb12" style="padding:12px 16px;">
+    <div class="fx ic gap12" style="flex-wrap:wrap;">
+      <div class="fx ic gap6">
+        <span class="f10 fw6 cm">Período:</span>
+        <select id="dash-filtro-periodo" onchange="renderDashboard()" style="font-size:11px;padding:4px 8px;width:130px;">
+          <option value="hoje">Hoje</option>
+          <option value="semana" selected>Esta semana</option>
+          <option value="mes">Este mês</option>
+          <option value="tudo">Todo o histórico</option>
+        </select>
+      </div>
+      <div class="fx ic gap6" id="dash-filtro-pessoa-wrap">
+        <span class="f10 fw6 cm">Colaboradora:</span>
+        <select id="dash-filtro-pessoa" onchange="renderDashboard()" style="font-size:11px;padding:4px 8px;width:160px;">
+          <option value="eu">Minha visão</option>
+        </select>
+      </div>
+      <div class="fx ic gap6">
+        <span class="f10 fw6 cm">Mostrar:</span>
+        <label style="font-size:11px;color:var(--muted);cursor:pointer;"><input type="checkbox" id="dash-show-tarefas" checked onchange="renderDashboard()"> Tarefas</label>
+        <label style="font-size:11px;color:var(--muted);cursor:pointer;"><input type="checkbox" id="dash-show-pdi" checked onchange="renderDashboard()"> PDI</label>
+        <label style="font-size:11px;color:var(--muted);cursor:pointer;"><input type="checkbox" id="dash-show-canal" checked onchange="renderDashboard()"> Canal CS</label>
+        <label style="font-size:11px;color:var(--muted);cursor:pointer;"><input type="checkbox" id="dash-show-fixas" checked onchange="renderDashboard()"> Fixas</label>
+      </div>
+      <button class="btn-p" style="font-size:10px;padding:4px 12px;margin-left:auto;" onclick="renderDashboard()">🔄 Atualizar</button>
+    </div>
+  </div>
+
+  <!-- CONTEÚDO DINÂMICO -->
+  <div id="dash-content"></div>
+
+</div>
 
 <!-- MODO FOCO -->
 <div id="p-foco" class="page">
@@ -470,12 +508,29 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 
 <!-- TIME CS -->
 <div id="p-time" class="page">
-  <div class="fx jb ic mb12"><div class="f11 cm">Gerencie acessos e designe tarefas</div><button class="btn-p" style="font-size:10px;padding:4px 10px;" onclick="sp('cadastro')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg> Adicionar colaboradora</button></div>
-  <div class="card"><div class="ct">👥 Colaboradoras ativas</div>
-      <div id="time-list"></div>
+  <div class="g2 gap12">
+    <!-- Coluna esquerda: Time CS ativo -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div class="ct" style="margin-bottom:0;">👥 Time CS</div>
+        <span class="tag tag-c" id="time-count">0 pessoas</span>
+      </div>
+      <div class="f10 cm mb10">Colaboradoras que aparecem nas designações, métricas e PDIs.</div>
+      <div id="time-cs-list"></div>
     </div>
+    <!-- Coluna direita: Gerenciar -->
+    <div class="card">
+      <div class="ct">⚙️ Gerenciar membros</div>
+      <div class="f10 cm mb10">Ative ou desative quem aparece no Time CS.</div>
+      <div id="time-gerenciar-list"></div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
+        <div class="f10 cm mb8">Para adicionar novas colaboradoras, use a aba <strong style="color:var(--cyan);">Colaboradores</strong>.</div>
+        <button class="btn" style="width:100%;justify-content:center;font-size:11px;" onclick="sp('cadastro')">➕ Ir para Colaboradores</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-<!-- PDI MASTER -->
 <div id="p-pdi-master" class="page">
   <!-- Lista de colaboradoras -->
   <div id="pdi-master-index">
@@ -551,21 +606,45 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
         <button class="btn-p" style="font-size:10px;" onclick="testAlarm(0)">🔔 Testar</button>
       </div>
     </div>
-    <div class="card"><div class="ct"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Categorias</div><div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;"><span class="tag tag-p">SAC</span><span class="tag tag-p">Reclame Aqui</span><span class="tag tag-p">Operação</span><span class="tag tag-p">Social Media</span><span class="tag tag-p">Financeiro</span><span class="tag tag-p">Gestão</span><span class="tag tag-u">RMA / Garantia</span><span class="tag tag-l">Treinamento</span></div><div class="fx gap6"><input placeholder="Nova categoria..." style="flex:1;"><button class="btn-p" style="font-size:10px;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button></div></div>
-    <div class="card"><div class="ct"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg> Aparência</div><div style="display:flex;flex-direction:column;gap:10px;"><div class="fx ic jb"><span class="f12" style="color:var(--text);">Modo escuro / claro</span><div class="tog on" onclick="tMode();this.classList.toggle('on')"></div></div><div class="fx ic jb"><span class="f12" style="color:var(--text);">Notificações por e-mail</span><div class="tog on" onclick="this.classList.toggle('on')"></div></div><div class="fx ic jb"><span class="f12" style="color:var(--text);">Sons de alerta</span><div class="tog" onclick="this.classList.toggle('on')"></div></div></div></div>
-    <div class="card"><div class="ct">🔑 Minha senha</div>
-      <div class="f10 cm mb8">Altere sua senha de acesso ao CS Task Central</div>
+    <div class="card">
+      <div class="ct">🏷️ Categorias</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;" id="cats-list">
+        <span class="tag tag-p">SAC</span><span class="tag tag-p">Reclame Aqui</span>
+        <span class="tag tag-p">Operação</span><span class="tag tag-p">Social Media</span>
+        <span class="tag tag-p">Financeiro</span><span class="tag tag-p">Gestão</span>
+        <span class="tag tag-u">RMA / Garantia</span><span class="tag tag-l">Treinamento</span>
+      </div>
+      <div class="fx gap6">
+        <input id="nova-cat" placeholder="Nova categoria..." style="flex:1;">
+        <button class="btn-p" style="font-size:10px;" onclick="adicionarCat()">➕</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">🎨 Aparência</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="fx ic jb"><span class="f12" style="color:var(--text);">Modo escuro / claro</span><div class="tog on" id="tog-modo" onclick="tMode();this.classList.toggle('on')"></div></div>
+        <div class="fx ic jb"><span class="f12" style="color:var(--text);">Sons de alerta</span><div class="tog" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">🔑 Minha senha</div>
+      <div class="f10 cm mb8">Altere sua senha de acesso</div>
       <div class="mb8"><label class="lbl">Senha atual</label><input type="password" id="pwd-atual" placeholder="Digite a senha atual"></div>
       <div class="mb8"><label class="lbl">Nova senha</label><input type="password" id="pwd-nova" placeholder="Mínimo 6 caracteres"></div>
       <div class="mb10"><label class="lbl">Confirmar nova senha</label><input type="password" id="pwd-conf" placeholder="Repita a nova senha"></div>
       <button class="btn-p" style="font-size:11px;" onclick="trocarSenha()">🔑 Alterar senha</button>
       <div id="pwd-msg" style="margin-top:8px;font-size:11px;display:none;"></div>
     </div>
-    <div class="card"><div class="ct"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg> Gerenciar ferramentas</div><div style="display:flex;flex-direction:column;gap:5px;"><div class="fx ic jb" style="padding:7px 10px;background:var(--card2);border-radius:6px;"><span class="f11" style="color:var(--text);">SAC Backoffice</span><div class="fx gap6"><button class="btn" style="font-size:10px;padding:2px 7px;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="btn" style="font-size:10px;padding:2px 7px;color:var(--err);"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d1="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button></div></div><div class="fx ic jb" style="padding:7px 10px;background:var(--card2);border-radius:6px;"><span class="f11" style="color:var(--text);">Input Diário CS</span><div class="fx gap6"><button class="btn" style="font-size:10px;padding:2px 7px;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="btn" style="font-size:10px;padding:2px 7px;color:var(--err);"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d1="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button></div></div></div></div>
+    <div class="card" style="grid-column:1/-1;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div class="ct" style="margin-bottom:0;">📌 Tarefas Fixas Diárias</div>
+        <button class="btn-p" style="font-size:10px;padding:4px 10px;" onclick="toggleGerenciarFixas()">⚙️ Gerenciar</button>
+      </div>
+      <div class="f10 cm">Tarefas que aparecem todo dia automaticamente no Meu Dia. Clique em Gerenciar para adicionar ou remover.</div>
+    </div>
   </div>
 </div>
 
-<!-- CADASTRO -->
 <div id="p-cadastro" class="page">
   <div class="fx jb ic mb12"><div class="f11 cm">Gerencie os acessos da equipe</div><button class="btn-p" style="font-size:10px;padding:4px 10px;" onclick="toggleCadForm()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg> Novo colaborador</button></div>
   <div id="cad-form" style="display:none;" class="mb14">
@@ -578,10 +657,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
   </div>
   <div class="card"><div class="ct"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Colaboradores cadastrados</div><div id="cad-list"></div></div>
 </div>
-
-      </div><!-- /content -->
-    </div><!-- /main -->
-  </div><!-- /wrap -->
 
       </div><!-- /content -->
     </div><!-- /main -->
@@ -682,9 +757,12 @@ async function carregarDados() {
   const dot = document.getElementById('notif-dot');
   if(dot) dot.style.display = 'none';
 
+  // Cache para dashboard
+  if(res && res.ok) window.DASH_TAREFAS = res.tarefas || [];
+
   // Carregar Canal CS
   const canalRes = await apiGet('getCanal');
-  if(canalRes && canalRes.ok) renderCanalFeed(canalRes.posts);
+  if(canalRes && canalRes.ok) { renderCanalFeed(canalRes.posts); window.DASH_POSTS = canalRes.posts || []; }
 
   // Renderizar fixas e limpar antigas
   limparFixasAntigas();
@@ -774,10 +852,10 @@ const API_URL = 'https://script.google.com/a/macros/cellfy.com.br/s/AKfycbwA0w6B
 
 // Usuários locais (fallback enquanto API não está configurada)
 let USERS=[
-  {id:1,nome:'Rafa Souza',         email:'rafa@cellfy.com.br',           senha:'cellfy2026',cargo:'CX Leader',                     nivel:'master'},
-  {id:2,nome:'Roseane Santos',     email:'roseanesantos@cellfy.com.br',  senha:'cellfy2026',cargo:'Assistente de E-Commerce Pleno',nivel:'membro'},
-  {id:3,nome:'Larissa Nascimento', email:'larissanascimento@cellfy.com.br',senha:'cellfy2026',cargo:'Auxiliar de E-commerce',      nivel:'membro'},
-  {id:4,nome:'Sarah Katriny',      email:'sarahsilva@cellfy.com.br',     senha:'cellfy2026',cargo:'Auxiliar de E-commerce',        nivel:'membro'},
+  {id:1,nome:'Rafa Souza',         email:'rafa@cellfy.com.br',           senha:'cellfy2026',cargo:'CX Leader',                     nivel:'master', no_time:false},
+  {id:2,nome:'Roseane Santos',     email:'roseanesantos@cellfy.com.br',  senha:'cellfy2026',cargo:'Assistente de E-Commerce Pleno',nivel:'membro', no_time:true},
+  {id:3,nome:'Larissa Nascimento', email:'larissanascimento@cellfy.com.br',senha:'cellfy2026',cargo:'Auxiliar de E-commerce',      nivel:'membro', no_time:true},
+  {id:4,nome:'Sarah Katriny',      email:'sarahsilva@cellfy.com.br',     senha:'cellfy2026',cargo:'Auxiliar de E-commerce',        nivel:'membro', no_time:true},
 ];
 
 // ── API: buscar dados do Sheets ──
@@ -805,7 +883,7 @@ async function apiPost(action, dados) {
   }
 }
 let currentUser=USERS[0],role='master',isDark=true,autoTmr=null,timerInt=null,timerSec=25*60,timerOn=false,pomoDone=0;
-const PGS={hoje:'Meu Dia',foco:'Modo Foco',tarefas:'Tarefas',ferramentas:'Central de Ferramentas',metricas:'Minhas Métricas',pdi:'Meu PDI',canal:'Canal CS',dash:'Visão Geral do Time',time:'Gerenciar Time','pdi-master':'PDIs do Time',config:'Configurações',cadastro:'Cadastro de Colaboradores'};
+const PGS={dashboard:'Minha Dashboard',hoje:'Meu Dia',foco:'Modo Foco',tarefas:'Tarefas',ferramentas:'Central de Ferramentas',metricas:'Minhas Métricas',pdi:'Meu PDI',canal:'Canal CS',dash:'Visão Geral do Time',time:'Gerenciar Time','pdi-master':'PDIs do Time',config:'Configurações',cadastro:'Cadastro de Colaboradores'};
 const d=new Date();
 document.getElementById('ps').textContent=d.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).replace(/^./,c=>c.toUpperCase());
 
@@ -849,6 +927,7 @@ function sp(p){
   if(p==='time') renderTimeCS();
   if(p==='cadastro') renderCadList();
   if(p==='pdi-master') renderPdiMaster();
+  if(p==='dashboard') initDashboard();
 }
 function tMode(){isDark=!isDark;document.body.classList.toggle('lm',!isDark);document.getElementById('ml').textContent=isDark?'Claro':'Escuro';}
 
@@ -1566,30 +1645,71 @@ function salvarNotaPara(){
 
 
 function renderTimeCS(){
-  const list = document.getElementById('time-list');
-  if(!list) return;
-  const membros = USERS.filter(u=>u.email!==currentUser.email&&u.nivel==='membro');
-  if(membros.length===0){
-    list.innerHTML='<div class="f11 cm" style="padding:16px;text-align:center;color:var(--dim);">Nenhuma colaboradora cadastrada ainda.</div>';
-    return;
+  const listCS = document.getElementById('time-cs-list');
+  const listGer = document.getElementById('time-gerenciar-list');
+  const countEl = document.getElementById('time-count');
+  if(!listCS || !listGer) return;
+
+  const cols = ['linear-gradient(135deg,#7c5cfc,#00d4c8)','linear-gradient(135deg,#ec4899,#7c5cfc)','linear-gradient(135deg,#f59e0b,#ef4444)','linear-gradient(135deg,#10b981,#3b82f6)'];
+  const membros = USERS.filter(u=>u.nivel==='membro');
+  const noTime = USERS.filter(u=>u.nivel==='membro' && u.no_time);
+  const fora = USERS.filter(u=>u.nivel==='membro' && !u.no_time);
+
+  if(countEl) countEl.textContent = noTime.length + ' pessoa' + (noTime.length!==1?'s':'');
+
+  // Time CS ativo
+  if(noTime.length === 0){
+    listCS.innerHTML = '<div class="f11 cm" style="padding:16px;text-align:center;color:var(--dim);">Nenhuma colaboradora no Time CS ainda.<br>Ative ao lado →</div>';
+  } else {
+    listCS.innerHTML = noTime.map((u,i)=>{
+      const init = u.nome.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+      return `<div class="m-row">
+        <div class="m-av" style="background:${cols[i%cols.length]};">${init}</div>
+        <div class="f1 mw0" style="margin-left:8px;">
+          <div class="f12 fw6" style="color:var(--text);">${u.nome}</div>
+          <div class="f10 cm">${u.cargo}</div>
+        </div>
+        <div class="fx gap5">
+          <button class="btn" style="font-size:10px;" onclick="toggleAdd();document.getElementById('nt-f').value='${u.email}'">✈️ Designar</button>
+          <button class="btn" style="font-size:10px;color:var(--err);" onclick="removerDoTime('${u.email}')">✕</button>
+        </div>
+      </div>`;
+    }).join('');
   }
-  const cols=['linear-gradient(135deg,#7c5cfc,#00d4c8)','linear-gradient(135deg,#ec4899,#7c5cfc)','linear-gradient(135deg,#f59e0b,#ef4444)','linear-gradient(135deg,#10b981,#3b82f6)'];
-  list.innerHTML=membros.map((u,i)=>{
-    const init=u.nome.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
-    return `<div class="m-row">
-      <div class="m-av" style="background:${cols[i%cols.length]};">${init}</div>
-      <div class="f1 mw0" style="margin-left:8px;">
-        <div class="f12 fw6" style="color:var(--text);">${u.nome}</div>
-        <div class="f10 cm">${u.email} · ${u.cargo}</div>
+
+  // Lista para gerenciar (todos os membros)
+  listGer.innerHTML = membros.map((u,i)=>{
+    const init = u.nome.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+    const ativo = u.no_time;
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--card2);border-radius:7px;margin-bottom:5px;">
+      <div class="m-av" style="background:${cols[i%cols.length]};width:30px;height:30px;font-size:10px;">${init}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="f12 fw5" style="color:var(--text);">${u.nome}</div>
+        <div class="f10 cm">${u.cargo}</div>
       </div>
-      <div class="fx gap6">
-        <button class="btn" style="font-size:10px;" onclick="toggleAdd();document.getElementById('nt-f').value='${u.email}';">✈️ Designar</button>
-        <button class="btn" style="font-size:10px;" onclick="sp('dash')">📊 Métricas</button>
-        <button class="btn" style="font-size:10px;" onclick="sp('pdi-master')">📋 PDI</button>
-      </div>
+      <div class="tog ${ativo?'on':''}" onclick="toggleTimeCS('${u.email}',this)" title="${ativo?'Remover do Time CS':'Adicionar ao Time CS'}"></div>
+      <span class="f10" style="color:${ativo?'var(--ok)':'var(--dim)'};min-width:40px;">${ativo?'Ativo':'Inativo'}</span>
     </div>`;
   }).join('');
 }
+
+function toggleTimeCS(email, togEl){
+  const u = USERS.find(x=>x.email===email);
+  if(!u) return;
+  u.no_time = !u.no_time;
+  togEl.classList.toggle('on');
+  renderTimeCS();
+  showToast(u.no_time ? u.nome.split(' ')[0]+' adicionada ao Time CS ✓' : u.nome.split(' ')[0]+' removida do Time CS');
+}
+
+function removerDoTime(email){
+  const u = USERS.find(x=>x.email===email);
+  if(!u) return;
+  u.no_time = false;
+  renderTimeCS();
+  showToast(u.nome.split(' ')[0]+' removida do Time CS');
+}
+
 
 function renderCadList(){
   const list=document.getElementById('cad-list');if(!list)return;
@@ -1991,6 +2111,8 @@ function showAlarm(msg) {
       o.start(t); o.stop(t+0.15);
     });
   } catch(e) { console.warn('Som:', e); }
+  // Notificação do browser (funciona minimizado)
+  dispararNotifBrowser(msg);
   try { addNotif('🔔 ' + msg, 'info'); } catch(e) {}
 }
 
@@ -2172,6 +2294,29 @@ function atualizarSeletores(){
   });
 }
 
+
+// ── NOTIFICAÇÃO DO BROWSER ──
+function pedirPermissaoNotif() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    Notification.requestPermission().then(perm => {
+      if(perm === 'granted') showToast('✓ Notificações ativadas! Você será avisada mesmo com o sistema minimizado.');
+    });
+  }
+}
+
+function dispararNotifBrowser(msg) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  try {
+    const notif = new Notification('🔔 CS Task Central — Cellfy', {
+      body: msg,
+      tag: 'alarme-cs',
+      requireInteraction: true
+    });
+    notif.onclick = () => { window.focus(); notif.close(); };
+  } catch(e) {}
+}
+
 function showToast(msg){
   let t=document.getElementById('toast');
   if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;bottom:20px;right:20px;background:var(--ok);color:white;padding:8px 16px;border-radius:7px;font-size:12px;font-weight:600;z-index:9998;transition:opacity .3s;';document.body.appendChild(t);}
@@ -2191,6 +2336,239 @@ function addAlarm() {
   showToast('Lembrete adicionado! Configure o horário e a mensagem.');
 }
 
+// ── DASHBOARD COMPLETA ──
+function initDashboard() {
+  // Popular select de colaboradoras (só master vê todas)
+  const sel = document.getElementById('dash-filtro-pessoa');
+  const wrap = document.getElementById('dash-filtro-pessoa-wrap');
+  if(!sel) return;
+  // Limpar opções existentes exceto "Minha visão"
+  while(sel.options.length > 1) sel.remove(1);
+  if(role === 'master') {
+    if(wrap) wrap.style.display = 'flex';
+    const opt0 = document.createElement('option');
+    opt0.value = 'todos'; opt0.textContent = 'Todo o time';
+    sel.appendChild(opt0);
+    USERS.filter(u=>u.nivel==='membro').forEach(u=>{
+      const opt = document.createElement('option');
+      opt.value = u.email; opt.textContent = u.nome.split(' ')[0];
+      sel.appendChild(opt);
+    });
+  } else {
+    if(wrap) wrap.style.display = 'none';
+  }
+  renderDashboard();
+}
+
+function getDashPeriodo() {
+  const p = document.getElementById('dash-filtro-periodo')?.value || 'semana';
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const fim = new Date(); fim.setHours(23,59,59,999);
+  let inicio;
+  if(p === 'hoje') inicio = new Date(hoje);
+  else if(p === 'semana') { inicio = new Date(hoje); inicio.setDate(inicio.getDate() - 7); }
+  else if(p === 'mes') { inicio = new Date(hoje); inicio.setDate(1); }
+  else inicio = new Date(2020,0,1);
+  return {inicio, fim, label: {hoje:'Hoje',semana:'Últimos 7 dias',mes:'Este mês',tudo:'Todo o histórico'}[p]};
+}
+
+function getDashPessoa() {
+  const v = document.getElementById('dash-filtro-pessoa')?.value || 'eu';
+  if(v === 'eu') return {tipo:'eu', email:currentUser.email, nome:currentUser.nome};
+  if(v === 'todos') return {tipo:'todos', email:null, nome:'Todo o time'};
+  const u = USERS.find(x=>x.email===v);
+  return {tipo:'pessoa', email:v, nome:u?u.nome:'—'};
+}
+
+function renderDashboard() {
+  const content = document.getElementById('dash-content');
+  if(!content) return;
+
+  const periodo = getDashPeriodo();
+  const pessoa = getDashPessoa();
+  const showTarefas = document.getElementById('dash-show-tarefas')?.checked !== false;
+  const showPdi = document.getElementById('dash-show-pdi')?.checked !== false;
+  const showCanal = document.getElementById('dash-show-canal')?.checked !== false;
+  const showFixas = document.getElementById('dash-show-fixas')?.checked !== false;
+
+  // Filtrar tarefas por período e pessoa
+  const todasTarefas = window.DASH_TAREFAS || [];
+  const tarefasFiltradas = todasTarefas.filter(t => {
+    const dCriado = new Date(t.criado_em);
+    const noPeriodo = dCriado >= periodo.inicio && dCriado <= periodo.fim;
+    if(!noPeriodo) return false;
+    if(pessoa.tipo === 'eu') return t.usuario_email === pessoa.email || t.designado_para === pessoa.email;
+    if(pessoa.tipo === 'pessoa') return t.usuario_email === pessoa.email || t.designado_para === pessoa.email;
+    return true; // todos
+  });
+
+  const concluidas = tarefasFiltradas.filter(t=>t.status==='concluida');
+  const pendentes = tarefasFiltradas.filter(t=>t.status==='pendente');
+  const atrasadas = tarefasFiltradas.filter(t=>t.status!=='concluida' && t.urgencia==='urgente');
+  const taxa = tarefasFiltradas.length > 0 ? Math.round((concluidas.length/tarefasFiltradas.length)*100) : 0;
+
+  // Categorias mais usadas
+  const catCount = {};
+  tarefasFiltradas.forEach(t=>{ catCount[t.categoria]=(catCount[t.categoria]||0)+1; });
+  const topCats = Object.entries(catCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+  // PDI do usuário
+  const pdiEmail = pessoa.tipo==='eu'?currentUser.email:pessoa.email;
+  const pdiData = pdiEmail ? PDI_DATA[pdiEmail.toLowerCase()] : null;
+  const pdiProg = pdiData&&pdiData.objetivos.length>0
+    ? Math.round(pdiData.objetivos.reduce((s,o)=>s+o.progresso,0)/pdiData.objetivos.length) : 0;
+
+  let html = '';
+
+  // ── CABEÇALHO ──
+  html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+    <div>
+      <div class="f13 fw6" style="color:var(--text);">${pessoa.nome}</div>
+      <div class="f10 cm">${periodo.label}</div>
+    </div>
+    <div style="background:rgba(0,212,200,.1);border:1px solid var(--cyan);border-radius:8px;padding:6px 16px;text-align:center;">
+      <div class="f10 cm">Taxa de conclusão</div>
+      <div class="f14 fw6 cc">${taxa}%</div>
+    </div>
+  </div>`;
+
+  // ── MÉTRICAS RÁPIDAS ──
+  html += `<div class="g4 mb12">
+    <div class="mc"><div class="ml">Total</div><div class="mv cc">${tarefasFiltradas.length}</div><div class="ms">tarefas</div></div>
+    <div class="mc"><div class="ml">Concluídas</div><div class="mv cs">${concluidas.length}</div><div class="ms">${taxa}%</div></div>
+    <div class="mc"><div class="ml">Pendentes</div><div class="mv cw">${pendentes.length}</div><div class="ms">em aberto</div></div>
+    <div class="mc"><div class="ml">Urgentes</div><div class="mv cd">${atrasadas.length}</div><div class="ms">atenção</div></div>
+  </div>`;
+
+  // ── SEÇÃO TAREFAS ──
+  if(showTarefas) {
+    // Por categoria
+    const catBars = topCats.length > 0
+      ? topCats.map(([cat,n])=>{
+          const pct = Math.round((n/tarefasFiltradas.length)*100);
+          return `<div class="mb8">
+            <div class="fx jb f11 mb5"><span class="cm">${cat||'Sem categoria'}</span><span style="color:var(--text);">${n} tarefa${n!==1?'s':''} (${pct}%)</span></div>
+            <div class="prog"><div class="pf" style="width:${pct}%;background:var(--purple);"></div></div>
+          </div>`;
+        }).join('')
+      : '<div class="f11 cm">Sem dados no período.</div>';
+
+    // Últimas tarefas
+    const ultimas = tarefasFiltradas.slice(-5).reverse();
+    const ultimasHtml = ultimas.length > 0
+      ? ultimas.map(t=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);">
+          <div style="width:8px;height:8px;border-radius:50%;background:${t.status==='concluida'?'var(--ok)':t.urgencia==='urgente'?'var(--err)':'var(--warn)'};flex-shrink:0;"></div>
+          <div style="flex:1;min-width:0;"><div class="f11 fw5" style="color:var(--text);">${t.titulo}</div><div class="f10 cm">${t.categoria||''} ${t.criado_em?'· '+new Date(t.criado_em).toLocaleDateString('pt-BR'):''}</div></div>
+          <span class="tag ${t.status==='concluida'?'tag-d':t.urgencia==='urgente'?'tag-u':'tag-n'}">${t.status==='concluida'?'✓ Feita':t.urgencia==='urgente'?'Urgente':'Pendente'}</span>
+        </div>`).join('')
+      : '<div class="f11 cm">Sem tarefas no período.</div>';
+
+    html += `<div class="g2 gap12 mb12">
+      <div class="card"><div class="ct">📊 Por categoria</div>${catBars}</div>
+      <div class="card"><div class="ct">📋 Últimas tarefas</div>${ultimasHtml}</div>
+    </div>`;
+  }
+
+  // ── SEÇÃO PDI ──
+  if(showPdi && (pessoa.tipo==='eu'||pessoa.tipo==='pessoa') && pdiData) {
+    const objsHtml = pdiData.objetivos.map(o=>`
+      <div style="margin-bottom:10px;">
+        <div class="fx jb f11 mb5"><span class="fw5" style="color:var(--text);">🎯 ${o.titulo}</span><span style="color:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};">${o.progresso}%</span></div>
+        <div class="prog"><div class="pf" style="width:${o.progresso}%;background:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};"></div></div>
+        ${o.prazo?`<div class="f10 cdim mt8">Prazo: ${o.prazo}</div>`:''}
+      </div>`).join('') || '<div class="f11 cm">Sem objetivos no PDI.</div>';
+
+    html += `<div class="card mb12">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="ct" style="margin-bottom:0;">📋 PDI — ${pdiData.nome}</div>
+        <div style="text-align:right;"><div class="f10 cm">Progresso geral</div><div class="f14 fw6 cc">${pdiProg}%</div></div>
+      </div>
+      <div class="prog mb12" style="height:6px;"><div class="pf" style="width:${pdiProg}%;"></div></div>
+      ${objsHtml}
+    </div>`;
+  }
+
+  // ── SEÇÃO DESEMPENHO DO TIME (só master, visão todos) ──
+  if(showTarefas && role==='master' && pessoa.tipo==='todos') {
+    const timeMembros = USERS.filter(u=>u.nivel==='membro');
+    const timeRows = timeMembros.map(u=>{
+      const mt = todasTarefas.filter(t=>(t.usuario_email===u.email||t.designado_para===u.email)&&new Date(t.criado_em)>=periodo.inicio);
+      const mc = mt.filter(t=>t.status==='concluida').length;
+      const mp = mt.filter(t=>t.status==='pendente').length;
+      const taxa2 = mt.length>0?Math.round((mc/mt.length)*100):0;
+      const init = u.nome.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+      return `<tr>
+        <td style="padding:10px 12px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white;">${init}</div>
+            <div><div class="f12 fw5" style="color:var(--text);">${u.nome.split(' ')[0]}</div><div class="f10 cm">${u.cargo}</div></div>
+          </div>
+        </td>
+        <td style="padding:10px 12px;text-align:center;font-size:13px;font-weight:700;color:var(--ok);">${mc}</td>
+        <td style="padding:10px 12px;text-align:center;font-size:13px;font-weight:700;color:var(--warn);">${mp}</td>
+        <td style="padding:10px 12px;text-align:center;">
+          <div style="font-size:12px;font-weight:700;color:${taxa2>=75?'var(--ok)':taxa2>=50?'var(--warn)':'var(--err)'};">${taxa2}%</div>
+          <div style="height:4px;background:rgba(255,255,255,.07);border-radius:2px;margin-top:4px;"><div style="height:100%;width:${taxa2}%;border-radius:2px;background:${taxa2>=75?'var(--ok)':taxa2>=50?'var(--warn)':'var(--err)'};"></div></div>
+        </td>
+      </tr>`;
+    }).join('');
+
+    html += `<div class="card mb12">
+      <div class="ct">👥 Desempenho do time — ${periodo.label}</div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);">
+            <th style="padding:8px 12px;text-align:left;font-size:10px;color:var(--dim);text-transform:uppercase;">Colaboradora</th>
+            <th style="padding:8px 12px;text-align:center;font-size:10px;color:var(--dim);text-transform:uppercase;">✅ Feitas</th>
+            <th style="padding:8px 12px;text-align:center;font-size:10px;color:var(--dim);text-transform:uppercase;">⏳ Pendentes</th>
+            <th style="padding:8px 12px;text-align:center;font-size:10px;color:var(--dim);text-transform:uppercase;">Taxa</th>
+          </tr>
+        </thead>
+        <tbody>${timeRows}</tbody>
+      </table>
+    </div>`;
+  }
+
+  // ── SEÇÃO CANAL CS ──
+  if(showCanal) {
+    const totalPosts = window.DASH_POSTS ? window.DASH_POSTS.filter(p=>{
+      const d = new Date(p.criado_em);
+      return d >= periodo.inicio && d <= periodo.fim;
+    }).length : 0;
+    html += `<div class="card mb12">
+      <div class="ct">💬 Canal CS — ${periodo.label}</div>
+      <div class="fx ic gap12">
+        <div class="mc" style="flex:1;"><div class="ml">Posts publicados</div><div class="mv cc">${totalPosts}</div></div>
+        <div class="mc" style="flex:1;"><div class="ml">Engajamento</div><div class="mv cp">—</div><div class="ms">em breve</div></div>
+      </div>
+    </div>`;
+  }
+
+  // ── MENSAGEM SE TUDO DESMARCADO ──
+  if(!showTarefas && !showPdi && !showCanal && !showFixas) {
+    html = '<div class="f12 cm" style="padding:40px;text-align:center;color:var(--dim);">Selecione pelo menos um item para exibir na dashboard.</div>';
+  }
+
+  content.innerHTML = html;
+}
+
+// Cache de dados para dashboard
+window.DASH_TAREFAS = [];
+window.DASH_POSTS = [];
+
+
+function adicionarCat(){
+  const input = document.getElementById('nova-cat');
+  if(!input||!input.value.trim()) return;
+  const list = document.getElementById('cats-list');
+  if(list){
+    const span = document.createElement('span');
+    span.className='tag tag-p';
+    span.textContent=input.value.trim();
+    list.appendChild(span);
+  }
+  input.value='';
+}
 function trocarSenha(){
   const atual=document.getElementById('pwd-atual').value;
   const nova=document.getElementById('pwd-nova').value;
