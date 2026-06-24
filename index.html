@@ -124,7 +124,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 .bl{font-size:9px;color:var(--dim);margin-top:3px;}
 #v-login{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;}
 .lb{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px 24px;width:320px;max-width:95%;}
-.page{display:none;}.page.act{display:block;}
+.page{display:none;}.page.act{display:block;min-height:0;}
 .pdi-tab{display:none;}.pdi-tab.act{display:block;}
 .mb6{margin-bottom:6px;}.mb8{margin-bottom:8px;}.mb10{margin-bottom:10px;}.mb12{margin-bottom:12px;}.mb14{margin-bottom:14px;}
 .mt8{margin-top:8px;}.mt10{margin-top:10px;}
@@ -445,30 +445,36 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 
 <!-- TAREFAS -->
 <div id="p-tarefas" class="page">
-  <div class="fx mb12 gap8" style="flex-wrap:wrap;">
-    <select style="width:130px;"><option>Todos os status</option><option>Pendente</option><option>Concluída</option><option>Atrasada</option></select>
-    <select style="width:120px;"><option>Todas urgências</option><option>🔴 Urgente</option><option>🟡 Normal</option><option>🟢 Baixa</option></select>
-    <input placeholder="Buscar tarefa..." style="flex:1;min-width:140px;">
+  <div class="fx gap10 mb12" style="flex-wrap:wrap;">
+    <select id="tf-status" onchange="filtrarTarefas()" style="font-size:11px;padding:5px 10px;border-radius:6px;background:var(--card2);border:1px solid var(--border);color:var(--text);">
+      <option value="">Todos os status</option>
+      <option value="pendente">⏳ Pendentes</option>
+      <option value="concluida">✅ Concluídas</option>
+    </select>
+    <select id="tf-urg" onchange="filtrarTarefas()" style="font-size:11px;padding:5px 10px;border-radius:6px;background:var(--card2);border:1px solid var(--border);color:var(--text);">
+      <option value="">Todas urgências</option>
+      <option value="urgente">🔴 Urgente</option>
+      <option value="normal">🟡 Normal</option>
+      <option value="baixa">🟢 Baixa</option>
+    </select>
+    <input id="tf-busca" onkeyup="filtrarTarefas()" placeholder="Buscar tarefa..." style="flex:1;min-width:160px;font-size:11px;">
   </div>
+
   <div class="card mb12">
-    <div class="ct"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="m9 12 2 2 4-4"/></svg> Todas as tarefas</div>
+    <div class="ct">📋 Minhas tarefas</div>
     <div id="all-tasks">
-        <div class="f11 cm" style="padding:16px;text-align:center;color:var(--dim);">
-          Nenhuma tarefa ainda. Adicione pelo botão "+ Nova tarefa".
-        </div>
-      </div>
+      <div class="f11 cm" style="padding:16px;text-align:center;color:var(--dim);">Nenhuma tarefa ainda. Adicione pelo botão "+ Nova tarefa".</div>
+    </div>
   </div>
+
   <div class="card">
-    <div class="ct"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/></svg> Histórico de designações</div>
+    <div class="ct">🔄 Histórico de designações</div>
     <div id="hist-list">
-        <div class="f11 cm" style="padding:16px;text-align:center;color:var(--dim);">
-          Nenhuma designação ainda. As designações aparecerão aqui quando criadas.
-        </div>
-      </div>
+      <div class="f11 cm" style="padding:16px;text-align:center;color:var(--dim);">Nenhuma designação ainda. As designações aparecerão aqui quando criadas.</div>
+    </div>
   </div>
 </div>
 
-<!-- FERRAMENTAS -->
 <div id="p-ferramentas" class="page">
   <div class="fx jb ic mb12">
     <div class="f11 cm">Central de Ferramentas CS</div>
@@ -647,8 +653,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 </div>
 
 <!-- TIME CS -->
-  <!-- Humor do Time -->
-  <div class="card mt12">
+  <!-- Humor do Time - apenas para master -->
+  <div class="card mt12" id="humor-time-card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
       <div class="ct" style="margin-bottom:0;">😊 Humor do Time — Últimos 7 dias</div>
       <button class="btn" style="font-size:10px;" onclick="renderMoodRelatorio()">🔄 Atualizar</button>
@@ -1082,6 +1088,8 @@ function loginAs(r,u){
   // btn-post (Novo post Canal) todos veem
   const btnPost=document.getElementById('btn-post');
   if(btnPost) btnPost.style.display='inline-flex';
+  // Popular dropdown de designação
+  setTimeout(atualizarSeletores, 100);
   sp('hoje');
   startAlarmSystem();
   saveSession(currentUser,role);
@@ -1189,12 +1197,32 @@ function ckTask(e, id, chk) {
 }
 
 function sincronizarStatus(id, concluida) {
+  // Normalizar ID - remover prefixos 'at', 'fp-' para obter ID base
+  const baseId = id.startsWith('att') ? id.slice(3) : id.startsWith('at') ? id.slice(2) : id.startsWith('fp-') ? id.slice(3) : id;
+  const svgCheck = '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+
+  // Sincronizar no h-pend (Meu Dia) - usar id base
+  const pendRow = document.getElementById(baseId);
+  if(pendRow && pendRow.closest('#h-pend')) {
+    const pendChk = pendRow.querySelector('.chk');
+    const pendTt = pendRow.querySelector('.tt');
+    if(concluida) {
+      if(pendChk){pendChk.classList.add('done');pendChk.innerHTML=svgCheck;}
+      if(pendTt) pendTt.classList.add('struck');
+      setTimeout(()=>{
+        if(pendRow.parentNode) pendRow.remove();
+      }, 400);
+    } else {
+      if(pendChk){pendChk.classList.remove('done');pendChk.innerHTML='';}
+      if(pendTt) pendTt.classList.remove('struck');
+    }
+  }
+
   // Sincronizar na aba Tarefas (all-tasks)
-  const atRow = document.getElementById('at' + id);
+  const atRow = document.getElementById('att' + baseId) || document.getElementById('at' + baseId);
   if(atRow) {
     const atChk = atRow.querySelector('.chk');
     const atTt = atRow.querySelector('.tt');
-    const svgCheck = '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
     if(concluida) {
       if(atChk) { atChk.classList.add('done'); atChk.innerHTML = svgCheck; }
       if(atTt) atTt.classList.add('struck');
@@ -1220,6 +1248,8 @@ function atualizarMetricas() {
 }
 
 function undoTask(doneId, origemId, title) {
+  // Normalizar origemId
+  const baseId = origemId ? (origemId.startsWith('at') ? origemId.slice(2) : origemId) : doneId.replace('done-','');
   // Remover do h-done
   const doneRow = document.getElementById(doneId);
   if(doneRow) doneRow.remove();
@@ -1755,6 +1785,8 @@ function loginAs(r,u){
   // btn-post (Novo post Canal) todos veem
   const btnPost=document.getElementById('btn-post');
   if(btnPost) btnPost.style.display='inline-flex';
+  // Popular dropdown de designação
+  setTimeout(atualizarSeletores, 100);
   sp('hoje');
   startAlarmSystem();
   saveSession(currentUser,role);
@@ -2005,6 +2037,368 @@ function renderMoodPessoal() {
   wrap.innerHTML = `<div style="display:flex;gap:4px;">${diasHtml}</div>`;
 }
 
+
+// ── CRIAR TAREFA ──
+const URM = {urgente:'🔴 Urgente', normal:'🟡 Normal', baixa:'🟢 Baixa'};
+const URC = {urgente:'tag-u', normal:'tag-n', baixa:'tag-l'};
+
+async function createTask(){
+  const desc = document.getElementById('nt-d')?.value.trim();
+  if(!desc){ alert('Digite a descrição da tarefa.'); return; }
+  const urg  = document.getElementById('nt-u')?.value || 'normal';
+  const time = document.getElementById('nt-t')?.value || '—';
+  const obs  = document.getElementById('nt-o')?.value || '';
+  const forVal = document.getElementById('nt-f')?.value || 'eu';
+  const cat  = document.getElementById('nt-c')?.value || 'SAC';
+  const tid  = 't' + Date.now();
+  const svgChk = '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+
+  // Adicionar em Meu Dia
+  const pend = document.getElementById('h-pend');
+  if(pend){
+    const emp = document.getElementById('h-pend-empty');
+    if(emp) emp.style.display='none';
+    const row = document.createElement('div');
+    row.className='ti'; row.id=tid;
+    row.innerHTML=`<div class="chk" onclick="ckTask(event,'${tid}',this)"></div>
+      <div class="f1 mw0"><div class="tt">${desc}</div>
+      <div class="tm"><span class="tag ${URC[urg]}">${URM[urg]}</span><span class="tag">${cat}</span><span class="ttime">${time}</span></div></div>`;
+    pend.prepend(row);
+  }
+
+  // Adicionar em Tarefas (all-tasks)
+  const allT = document.getElementById('all-tasks');
+  if(allT){
+    const emp2 = allT.querySelector('.f11.cm');
+    if(emp2 && emp2.textContent.includes('Nenhuma')) emp2.remove();
+    const row2 = document.createElement('div');
+    row2.className='ti'; row2.id='at'+tid;
+    row2.innerHTML=`<div class="chk" onclick="ckTask(event,'at${tid}',this)"></div>
+      <div class="f1 mw0"><div class="tt">${desc}</div>
+      <div class="tm"><span class="tag ${URC[urg]}">${URM[urg]}</span><span class="ttime">${time}</span></div></div>`;
+    allT.prepend(row2);
+  }
+
+  // Histórico de designação
+  if(forVal !== 'eu'){
+    const destNome = USERS.find(u=>u.email===forVal)?.nome || forVal;
+    const hist = document.getElementById('hist-list');
+    if(hist){
+      const emp3 = hist.querySelector('.f11.cm');
+      if(emp3) emp3.remove();
+      const div = document.createElement('div');
+      div.className='hist-r';
+      div.innerHTML=`<div class="m-av" style="background:linear-gradient(135deg,var(--purple),var(--cyan));width:28px;height:28px;font-size:10px;">${currentUser.nome.split(' ').map(n=>n[0]).join('').substring(0,2)}</div>
+        <div class="f1 mw0" style="margin-left:8px;">
+          <div class="f12 fw6 mb6" style="color:var(--text);"><span class="cc">${currentUser.nome.split(' ')[0]}</span> → <span style="color:#a78bfa;">${destNome.split(' ')[0]}</span> — "${desc}"</div>
+          <div class="tm"><span class="tag ${URC[urg]}">${URM[urg]}</span><span class="ttime">agora</span><span class="tag tag-c">Pendente</span></div>
+        </div>`;
+      hist.prepend(div);
+    }
+  }
+
+  // Atualizar Modo Foco
+  const pool = document.getElementById('foco-pool');
+  if(pool){
+    const emp4 = document.getElementById('foco-pool-empty');
+    if(emp4) emp4.style.display='none';
+    const fid='fp-'+tid;
+    const fd = document.createElement('div');
+    fd.className='ti'; fd.id=fid; fd.style.cursor='pointer';
+    fd.onclick=()=>toggleFocoSelect(fid,desc,URC[urg],URM[urg],time);
+    fd.innerHTML=`<div class="chk" id="fpc-${tid}"></div>
+      <div class="f1 mw0"><div class="tt f12">${desc}</div>
+      <div class="tm"><span class="tag ${URC[urg]}">${URM[urg]}</span><span class="ttime">${time}</span></div></div>`;
+    pool.prepend(fd);
+  }
+
+  // Atualizar métricas
+  const cnt = document.getElementById('cnt-total');
+  if(cnt) cnt.textContent = parseInt(cnt.textContent||0)+1;
+
+  // Fechar painel
+  document.getElementById('add-panel').style.display='none';
+  ['nt-d','nt-t','nt-o'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+
+  // Atualizar timer
+  popularTimerTarefas();
+
+  showToast('Tarefa criada! ✓');
+  sp('hoje');
+
+  // Salvar no Sheets
+  apiPost('salvarTarefa',{
+    usuario_email: currentUser.email,
+    titulo: desc, urgencia: urg, categoria: cat,
+    tempo: time, observacao: obs,
+    criado_por: currentUser.email,
+    criado_por_nome: currentUser.nome,
+    designado_para: forVal==='eu' ? currentUser.email : forVal
+  });
+}
+
+// ── COLABORADORES ──
+function toggleCadForm(){
+  const f = document.getElementById('cad-form');
+  if(!f) return;
+  f.style.display = f.style.display==='none'?'block':'none';
+  if(f.style.display==='block') document.getElementById('cad-nome')?.focus();
+}
+
+async function saveCad(){
+  const n  = document.getElementById('cad-nome')?.value.trim();
+  const em = document.getElementById('cad-email')?.value.trim();
+  const c  = document.getElementById('cad-cargo')?.value.trim();
+  const s  = document.getElementById('cad-senha')?.value;
+  const nv = document.getElementById('cad-nivel')?.value || 'membro';
+  if(!n||!em||!c||!s){ alert('Preencha todos os campos.'); return; }
+  if(USERS.find(u=>u.email.toLowerCase()===em.toLowerCase())){ alert('E-mail já cadastrado.'); return; }
+  if(s.length<6){ alert('Senha mínima: 6 caracteres.'); return; }
+  const novo = {id:Date.now(),nome:n,email:em,cargo:c,senha:s,nivel:nv,no_time:false};
+  USERS.push(novo);
+  renderCadList();
+  atualizarSeletores();
+  renderTimeCS();
+  ['cad-nome','cad-email','cad-cargo','cad-senha'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('cad-nivel').value='membro';
+  document.getElementById('cad-form').style.display='none';
+  await apiPost('salvarUsuario',{nome:n,email:em,cargo:c,senha:s,nivel:nv});
+  showToast('Colaboradora cadastrada! ✓');
+}
+
+function renderCadList(){
+  const list = document.getElementById('cad-list');
+  if(!list) return;
+  const membros = USERS.filter(u=>u.nivel==='membro');
+  if(membros.length===0){
+    list.innerHTML='<div class="f11 cm" style="padding:16px;text-align:center;color:var(--dim);">Nenhuma colaboradora cadastrada ainda.</div>';
+    return;
+  }
+  const cols=['linear-gradient(135deg,#7c5cfc,#00d4c8)','linear-gradient(135deg,#ec4899,#7c5cfc)','linear-gradient(135deg,#f59e0b,#ef4444)','linear-gradient(135deg,#10b981,#3b82f6)'];
+  list.innerHTML = membros.map((u,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card2);border-radius:8px;margin-bottom:6px;">
+      <div style="width:32px;height:32px;border-radius:50%;background:${cols[i%cols.length]};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0;">
+        ${u.nome.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase()}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="f12 fw6" style="color:var(--text);">${u.nome}</div>
+        <div class="f10 cm">${u.email} · ${u.cargo}</div>
+      </div>
+      <span class="tag ${u.nivel==='master'?'tag-u':'tag-n'}">${u.nivel}</span>
+    </div>`).join('');
+}
+
+function atualizarSeletores(){
+  const sel = document.getElementById('nt-f');
+  if(!sel) return;
+  while(sel.options.length>1) sel.remove(1);
+  USERS.filter(u=>u.email!==currentUser.email).forEach(u=>{
+    const opt=document.createElement('option');
+    opt.value=u.email;
+    opt.textContent=u.nome.split(' ')[0]+' ('+u.cargo.split(' ')[0]+')';
+    sel.appendChild(opt);
+  });
+}
+
+// ── ALARMES ──
+function renderAlarms(){
+  const wrap=document.getElementById('alarm-list');
+  if(!wrap) return;
+  if(!ALARMS||ALARMS.length===0){
+    wrap.innerHTML='<div style="padding:8px;text-align:center;font-size:11px;color:var(--dim);">Nenhum lembrete. Clique em "+ Novo lembrete".</div>';
+    return;
+  }
+  wrap.innerHTML=ALARMS.map((a,i)=>`
+    <div style="background:var(--card2);border-radius:7px;padding:8px 10px;display:flex;align-items:center;gap:7px;margin-bottom:5px;">
+      <input type="time" value="${a.hora}" id="alarm-time-${i}" style="width:85px;padding:4px 7px;font-size:12px;background:var(--card);border:1px solid var(--border);border-radius:5px;color:var(--text);">
+      <input type="text" value="${a.msg}" id="alarm-msg-${i}" style="flex:1;font-size:11px;padding:4px 8px;background:var(--card);border:1px solid var(--border);border-radius:5px;color:var(--text);" placeholder="Mensagem...">
+      <div class="tog ${a.ativo?'on':''}" id="alarm-tog-${i}" onclick="toggleAlarm(${i})"></div>
+      <button onclick="saveAlarm(${i})" style="background:rgba(0,212,200,.12);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:inherit;">💾</button>
+      <button onclick="testAlarm(${i})" style="background:rgba(124,92,252,.12);border:1px solid var(--purple);color:#a78bfa;border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:inherit;">▶</button>
+      <button onclick="removeAlarm(${i})" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:3px 7px;font-size:10px;cursor:pointer;font-family:inherit;">✕</button>
+    </div>`).join('');
+}
+
+function saveAlarm(i){
+  const h=document.getElementById('alarm-time-'+i);
+  const m=document.getElementById('alarm-msg-'+i);
+  if(!h||!m) return;
+  ALARMS[i].hora=h.value; ALARMS[i].msg=m.value;
+  ALARMS[i].disparado=false; ALARMS[i].ativo=true;
+  const tog=document.getElementById('alarm-tog-'+i);
+  if(tog) tog.classList.add('on');
+  apiPost('salvarAlarme',{id:ALARMS[i].id,hora:ALARMS[i].hora,mensagem:ALARMS[i].msg,ativo:true,email:currentUser.email});
+  showToast('Lembrete salvo! ✓');
+  checkAlarms();
+}
+
+function toggleAlarm(i){ALARMS[i].ativo=!ALARMS[i].ativo;const t=document.getElementById('alarm-tog-'+i);if(t)t.classList.toggle('on');}
+function removeAlarm(i){if(!confirm('Remover?'))return;ALARMS.splice(i,1);renderAlarms();}
+function testAlarm(i){initAudio();showAlarm(ALARMS[i]?ALARMS[i].msg:'Teste!');}
+
+function checkAlarms(){
+  const now=new Date(),hh=now.getHours(),mm=now.getMinutes();
+  if(hh===0&&mm===0) ALARMS.forEach(a=>a.disparado=false);
+  ALARMS.forEach(a=>{
+    if(!a.ativo||a.disparado) return;
+    const p=a.hora.split(':');if(p.length<2)return;
+    const ah=parseInt(p[0]),am=parseInt(p[1]);if(isNaN(ah)||isNaN(am))return;
+    if(hh===ah&&mm===am){a.disparado=true;showAlarm(a.msg);return;}
+    const diff=(hh*60+mm)-(ah*60+am);
+    if(diff>0&&diff<=3){a.disparado=true;showAlarm(a.msg);}
+  });
+}
+
+function scheduleNextMinute(){
+  const now=new Date();
+  const ms=(60-now.getSeconds())*1000-now.getMilliseconds()+100;
+  setTimeout(()=>{checkAlarms();scheduleNextMinute();},ms);
+}
+
+let alarmCheckInterval=null;
+function startAlarmSystem(){
+  if(alarmCheckInterval)clearInterval(alarmCheckInterval);
+  alarmCheckInterval=setInterval(checkAlarms,10000);
+  scheduleNextMinute();
+  checkAlarms();
+}
+
+function showAlarm(msg){
+  const old=document.getElementById('alarm-popup');if(old)old.remove();
+  const popup=document.createElement('div');
+  popup.id='alarm-popup';
+  popup.style.cssText='position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:2147483647;background:linear-gradient(135deg,#7c5cfc,#00d4c8);border-radius:14px;padding:20px 24px;min-width:320px;max-width:90vw;box-shadow:0 12px 40px rgba(0,0,0,.7);font-family:system-ui,sans-serif;';
+  popup.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+    <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:24px;">🔔</span><span style="font-size:15px;font-weight:700;color:white;">Lembrete</span></div>
+    <button onclick="this.closest('#alarm-popup').remove()" style="background:rgba(255,255,255,.25);border:none;color:white;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:16px;">✕</button>
+  </div>
+  <div style="font-size:13px;color:rgba(255,255,255,.95);margin-bottom:14px;">${msg}</div>
+  <button onclick="this.closest('#alarm-popup').remove()" style="width:100%;padding:9px;border-radius:8px;border:none;background:white;color:#7c5cfc;font-size:13px;font-weight:700;cursor:pointer;">✓ Entendido</button>`;
+  document.body.appendChild(popup);
+  setTimeout(()=>{if(popup.parentNode)popup.remove();},30000);
+  dispararNotifBrowser(msg);
+  try{addNotif('🔔 '+msg,'info');}catch(e){}
+  try{const ctx=getAudioCtx();if(ctx.state==='suspended')ctx.resume().then(()=>_playAlarmNotes(ctx));else _playAlarmNotes(ctx);}catch(e){}
+}
+
+function _playAlarmNotes(ctx){
+  try{[523,659,784,659,784].forEach((freq,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=freq;o.type='sine';const t=ctx.currentTime+i*0.18;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.4,t+0.05);g.gain.linearRampToValueAtTime(0,t+0.15);o.start(t);o.stop(t+0.15);});}catch(e){}
+}
+
+// ── TIME CS E PDI MASTER ──
+function renderTimeCS(){
+  const listCS=document.getElementById('time-cs-list');
+  const listGer=document.getElementById('time-gerenciar-list');
+  const countEl=document.getElementById('time-count');
+  if(!listCS||!listGer) return;
+  const cols=['linear-gradient(135deg,#7c5cfc,#00d4c8)','linear-gradient(135deg,#ec4899,#7c5cfc)','linear-gradient(135deg,#f59e0b,#ef4444)','linear-gradient(135deg,#10b981,#3b82f6)'];
+  const membros=USERS.filter(u=>u.nivel==='membro');
+  const noTime=membros.filter(u=>u.no_time);
+  if(countEl)countEl.textContent=noTime.length+' pessoa'+(noTime.length!==1?'s':'');
+  listCS.innerHTML=noTime.length===0
+    ?'<div class="f11 cm" style="padding:16px;text-align:center;color:var(--dim);">Nenhuma no Time CS. Ative ao lado →</div>'
+    :noTime.map((u,i)=>{const init=u.nome.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+      return `<div class="m-row"><div class="m-av" style="background:${cols[i%cols.length]};">${init}</div>
+        <div class="f1 mw0" style="margin-left:8px;"><div class="f12 fw6" style="color:var(--text);">${u.nome}</div><div class="f10 cm">${u.cargo}</div></div>
+        <div class="fx gap5">
+          <button class="btn" style="font-size:10px;" onclick="toggleAdd();document.getElementById('nt-f').value='${u.email}'">✈️ Designar</button>
+          <button style="background:transparent;border:none;color:var(--err);cursor:pointer;font-size:12px;" onclick="removerDoTime('${u.email}')">✕</button>
+        </div></div>`;}).join('');
+  listGer.innerHTML=membros.map((u,i)=>{const init=u.nome.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--card2);border-radius:7px;margin-bottom:5px;">
+      <div class="m-av" style="background:${cols[i%cols.length]};width:30px;height:30px;font-size:10px;">${init}</div>
+      <div style="flex:1;min-width:0;"><div class="f12 fw5" style="color:var(--text);">${u.nome}</div><div class="f10 cm">${u.cargo}</div></div>
+      <div class="tog ${u.no_time?'on':''}" onclick="toggleTimeCS('${u.email}',this)"></div>
+      <span class="f10" style="color:${u.no_time?'var(--ok)':'var(--dim)'};min-width:40px;">${u.no_time?'Ativo':'Inativo'}</span>
+    </div>`;}).join('');
+}
+
+function toggleTimeCS(email,togEl){const u=USERS.find(x=>x.email===email);if(!u)return;u.no_time=!u.no_time;togEl.classList.toggle('on');renderTimeCS();showToast(u.nome.split(' ')[0]+(u.no_time?' adicionada':' removida')+' do Time CS');}
+function removerDoTime(email){const u=USERS.find(x=>x.email===email);if(!u)return;u.no_time=false;renderTimeCS();}
+
+function renderPdiMaster(){
+  const list=document.getElementById('pdi-master-list');
+  if(!list)return;
+  document.getElementById('pdi-master-index').style.display='block';
+  document.getElementById('pdi-master-editor').style.display='none';
+  const membros=USERS.filter(u=>u.nivel==='membro');
+  if(!membros.length){list.innerHTML='<div class="f11 cm" style="padding:16px;text-align:center;color:var(--dim);">Nenhuma colaboradora.</div>';return;}
+  const cols=['linear-gradient(135deg,#7c5cfc,#00d4c8)','linear-gradient(135deg,#ec4899,#7c5cfc)','linear-gradient(135deg,#f59e0b,#ef4444)','linear-gradient(135deg,#10b981,#3b82f6)'];
+  list.innerHTML=membros.map((u,i)=>{
+    const init=u.nome.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+    const pdi=PDI_DATA[u.email.toLowerCase()];
+    const nObjs=pdi?pdi.objetivos.length:0;
+    const prog=pdi&&nObjs>0?Math.round(pdi.objetivos.reduce((s,o)=>s+o.progresso,0)/nObjs):0;
+    const cor=prog>=75?'var(--ok)':prog>=40?'var(--warn)':'var(--err)';
+    return `<div class="card" style="cursor:pointer;" onclick="abrirPdiColaboradora('${u.email}')"
+      onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div class="fx ic gap10 mb10">
+        <div class="m-av" style="background:${cols[i%cols.length]};width:38px;height:38px;">${init}</div>
+        <div class="f1 mw0"><div class="f13 fw6" style="color:var(--text);">${u.nome}</div><div class="f10 cm">${u.cargo}</div></div>
+        <span class="tag ${nObjs>0?'tag-l':'tag-n'}">${nObjs} obj.</span>
+      </div>
+      <div class="fx jb f10 mb5"><span class="cm">Progresso</span><span style="color:${cor};">${prog}%</span></div>
+      <div class="prog"><div class="pf" style="width:${prog}%;background:${cor};"></div></div>
+    </div>`;}).join('');
+}
+
+function renderPdi(){
+  const email=currentUser.email.toLowerCase();
+  const data=PDI_DATA[email];
+  const wrap=document.getElementById('pdi-obj-wrap');
+  if(!wrap)return;
+  if(!data||!data.objetivos||data.objetivos.length===0){
+    wrap.innerHTML=`<div class="card" style="grid-column:1/-1;text-align:center;padding:24px;">
+      <div class="f12 cm mb10">Nenhum objetivo no PDI ainda.</div>
+      <button class="btn-p" onclick="abrirNovoObjetivo()">➕ Adicionar objetivo</button>
+    </div>
+    <div class="card">
+      <div class="ct">📝 Anotações</div>
+      <div id="pdi-notas-list" class="f11 cm">Sem anotações ainda.</div>
+      <textarea id="pdi-new-note" style="height:55px;resize:none;margin-top:8px;" placeholder="Adicionar anotação..."></textarea>
+      <button class="btn-p" style="font-size:10px;margin-top:6px;" onclick="savePdiNote()">➕ Adicionar</button>
+    </div>`;
+    return;
+  }
+  const prog=Math.round(data.objetivos.reduce((s,o)=>s+o.progresso,0)/data.objetivos.length);
+  wrap.innerHTML=`<div class="card">
+    <div class="ct">📋 PDI — ${data.nome||currentUser.nome}</div>
+    <div class="fx jb f11 mb5"><span class="cm">Progresso geral</span><span class="cc">${prog}%</span></div>
+    <div class="prog mb10"><div class="pf" style="width:${prog}%;"></div></div>
+    ${data.objetivos.map((o,i)=>`<div style="background:var(--card2);border-radius:8px;padding:10px;margin-bottom:8px;border-left:3px solid ${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};">
+      <div class="fx ic jb mb6"><div class="f12 fw6" style="color:var(--text);">🎯 ${o.titulo}</div>
+        <div class="fx gap4">
+          <button onclick="editarObjetivo(${i})" style="background:rgba(0,212,200,.1);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;">✏️</button>
+          <button onclick="excluirObjetivo(${i})" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;">🗑</button>
+        </div>
+      </div>
+      <div class="f11 cm mb6">${o.meta}</div>
+      <div class="f10 cdim mb8">Prazo: ${o.prazo||'—'}</div>
+      <div class="fx jb f10 mb5"><span class="cm">Progresso</span><span style="color:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};">${o.progresso}%</span></div>
+      <div class="prog"><div class="pf" style="width:${o.progresso}%;background:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};"></div></div>
+    </div>`).join('')}
+    <button class="btn" style="width:100%;justify-content:center;margin-top:6px;" onclick="abrirNovoObjetivo()">➕ Novo objetivo</button>
+    <div id="form-novo-obj" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+      <div class="g2 mb8">
+        <div><label class="lbl">Título</label><input id="no-titulo" placeholder="Ex: Dominar SLA"></div>
+        <div><label class="lbl">Prazo</label><input id="no-prazo" placeholder="Ex: 30/06/2025"></div>
+      </div>
+      <div class="mb8"><label class="lbl">Meta</label><textarea id="no-meta" style="height:50px;resize:none;" placeholder="Descreva o objetivo..."></textarea></div>
+      <div class="mb10"><label class="lbl">Progresso: <span id="no-prog-lbl">0%</span></label>
+        <input type="range" id="no-prog" min="0" max="100" value="0" oninput="document.getElementById('no-prog-lbl').textContent=this.value+'%'" style="width:100%;accent-color:var(--cyan);"></div>
+      <div class="fx gap6">
+        <button class="btn-p" style="font-size:10px;" onclick="adicionarObjetivo()">✓ Adicionar</button>
+        <button class="btn" style="font-size:10px;" onclick="document.getElementById('form-novo-obj').style.display='none'">✕</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct">📝 Anotações</div>
+    <div id="pdi-notas-list">${(data.notas||[]).map(n=>`<div style="background:var(--card2);border-left:2px solid var(--purple);border-radius:0 6px 6px 0;padding:7px 10px;margin-bottom:5px;"><div class="f10 fw6" style="color:var(--purple);">${n.autor} · ${n.data}</div><div class="f11 cm">${n.texto}</div></div>`).join('')||'<div class="f11 cm">Sem anotações ainda.</div>'}</div>
+    <textarea id="pdi-new-note" style="height:55px;resize:none;margin-top:8px;" placeholder="Adicionar anotação..."></textarea>
+    <button class="btn-p" style="font-size:10px;margin-top:6px;" onclick="savePdiNote()">➕ Adicionar</button>
+  </div>`;
+}
 </script>
 </body>
 </html>
