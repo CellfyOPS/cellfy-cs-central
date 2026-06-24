@@ -139,6 +139,11 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 
 .master-only { display: none; }
 .is-master .master-only { display: block; }
+
+@keyframes pulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50% { opacity:.5; transform:scale(1.3); }
+}
 </style>
 </head>
 <body>
@@ -162,6 +167,16 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         <div id="notif-dot" style="position:absolute;top:-2px;right:-2px;width:7px;height:7px;background:var(--err);border-radius:50%;display:none;"></div>
       </div>
+      <!-- TIMER TOGGL -->
+      <div id="timer-widget" style="display:flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;" title="Rastreador de tempo">
+        <div id="timer-dot" style="width:8px;height:8px;border-radius:50%;background:var(--dim);flex-shrink:0;"></div>
+        <select id="timer-task-sel" style="background:transparent;border:none;color:var(--muted);font-size:10px;max-width:120px;cursor:pointer;outline:none;" onchange="timerSelectTask()">
+          <option value="">⏱ Selecionar tarefa</option>
+        </select>
+        <span id="timer-display" style="font-size:11px;font-weight:700;color:var(--text);min-width:40px;text-align:center;font-variant-numeric:tabular-nums;">00:00</span>
+        <button id="timer-btn" onclick="toggleTimer()" style="background:var(--purple);border:none;color:white;border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;font-family:inherit;">▶</button>
+      </div>
+
       <button id="ref-btn" onclick="doRefresh()" title="Atualizar dados" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:5px 7px;cursor:pointer;color:var(--muted);display:flex;align-items:center;transition:all .15s;" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">
         <svg id="ref-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
       </button>
@@ -169,7 +184,41 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nova tarefa
       </button>
     </div>
+  
+
+<!-- ADD TAREFA OVERLAY -->
+<div id="add-panel" style="display:none;position:fixed;top:56px;right:16px;z-index:8000;width:560px;max-width:95vw;">
+  <div class="card" style="box-shadow:0 8px 32px rgba(0,0,0,.5);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div class="ct" style="margin-bottom:0;">➕ Nova tarefa</div>
+      <button onclick="toggleAdd()" style="background:transparent;border:none;color:var(--muted);font-size:18px;cursor:pointer;">✕</button>
+    </div>
+    <div class="mb10"><label class="lbl">Descrição</label>
+      <input id="nt-d" placeholder="Ex: Responder tickets WhatsApp — tarde...">
+    </div>
+    <div class="g3 mb10">
+      <div><label class="lbl">Urgência</label>
+        <select id="nt-u"><option value="urgente">🔴 Urgente</option><option value="normal" selected>🟡 Normal</option><option value="baixa">🟢 Baixa</option></select>
+      </div>
+      <div><label class="lbl">Tempo</label><input id="nt-t" placeholder="Ex: 45min"></div>
+      <div><label class="lbl">Categoria</label>
+        <select id="nt-c"><option>SAC</option><option>Reclame Aqui</option><option>Operação</option><option>Social Media</option><option>Financeiro</option><option>RMA / Garantia</option><option>Gestão</option></select>
+      </div>
+    </div>
+    <div class="g2 mb10">
+      <div><label class="lbl">Designar para</label>
+        <select id="nt-f"><option value="eu">Para mim</option></select>
+      </div>
+      <div><label class="lbl">Observação</label><input id="nt-o" placeholder="Contexto rápido..."></div>
+    </div>
+    <div class="fx gap8" style="justify-content:flex-end;">
+      <button class="btn" onclick="toggleAdd()">Cancelar</button>
+      <button class="btn-p" onclick="createTask()">📤 Criar tarefa</button>
+    </div>
   </div>
+</div>
+
+</div>
 
 
   <div class="wrap">
@@ -500,9 +549,17 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
     <div class="card"><div class="ct"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Tarefas por dia</div><div class="bw"><div class="bc"><div class="b" style="height:48px;background:var(--cyan);opacity:.6;"></div><div class="bl">Seg</div></div><div class="bc"><div class="b" style="height:65px;background:var(--cyan);opacity:.75;"></div><div class="bl">Ter</div></div><div class="bc"><div class="b" style="height:40px;background:var(--cyan);opacity:.55;"></div><div class="bl">Qua</div></div><div class="bc"><div class="b" style="height:58px;background:var(--cyan);opacity:.7;"></div><div class="bl">Qui</div></div><div class="bc"><div class="b" style="height:35px;background:var(--purple);opacity:.75;"></div><div class="bl">Sex</div></div></div></div>
     <div class="card"><div class="ct"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Tempo médio por categoria</div><div style="display:flex;flex-direction:column;gap:8px;"><div><div class="fx jb f11 mb6"><span class="cm">SAC / Atendimento</span><span style="color:var(--text);">32min</span></div><div class="prog"><div class="pf" style="width:70%;"></div></div></div><div><div class="fx jb f11 mb6"><span class="cm">Auditoria CS</span><span style="color:var(--text);">45min</span></div><div class="prog"><div class="pf" style="width:55%;background:var(--purple);"></div></div></div><div><div class="fx jb f11 mb6"><span class="cm">Input / Registros</span><span style="color:var(--text);">18min</span></div><div class="prog"><div class="pf" style="width:32%;background:var(--ok);"></div></div></div><div><div class="fx jb f11 mb6"><span class="cm">Gestão / Reuniões</span><span style="color:var(--text);">55min</span></div><div class="prog"><div class="pf" style="width:88%;background:var(--warn);"></div></div></div></div></div>
   </div>
+
+  <!-- Meu Humor -->
+  <div class="card mt12">
+    <div class="ct">😊 Meu Humor — Últimos 7 dias</div>
+    <div class="f10 cm mb10">Seu histórico de como você se sentiu ao trabalhar.</div>
+    <div id="mood-pessoal">
+      <div class="f11 cm" style="text-align:center;color:var(--dim);">Registre seu humor no Modo Foco para ver o histórico.</div>
+    </div>
+  </div>
 </div>
 
-<!-- MEU PDI -->
 <div id="p-pdi" class="page">
   <div class="tab-bar">
     <div class="tab act" onclick="switchPdiTab(this,'pdi-t1')">Meu PDI</div>
@@ -896,6 +953,7 @@ async function carregarDados() {
   renderPdiMaster();
   renderCadList();
   atualizarSeletores();
+  popularTimerTarefas();
 }
 
 function renderCanalFeed(posts) {
@@ -1050,7 +1108,9 @@ function sp(p){
   if(p==='cadastro') renderCadList();
   if(p==='pdi-master') renderPdiMaster();
   if(p==='dashboard') initDashboard();
-  if(p==='dash') renderMoodRelatorio();
+  if(p==='dash') { renderMoodRelatorio(); }
+  if(p==='metricas') { renderMoodPessoal(); }
+  if(p==='foco') { popularTimerTarefas(); }
   if(p==='ferramentas') renderFerramentas();
 }
 function tMode(){isDark=!isDark;document.body.classList.toggle('lm',!isDark);document.getElementById('ml').textContent=isDark?'Claro':'Escuro';}
@@ -1721,7 +1781,9 @@ function sp(p){
   if(p==='cadastro') renderCadList();
   if(p==='pdi-master') renderPdiMaster();
   if(p==='dashboard') initDashboard();
-  if(p==='dash') renderMoodRelatorio();
+  if(p==='dash') { renderMoodRelatorio(); }
+  if(p==='metricas') { renderMoodPessoal(); }
+  if(p==='foco') { popularTimerTarefas(); }
   if(p==='ferramentas') renderFerramentas();
 }
 function tMode(){isDark=!isDark;document.body.classList.toggle('lm',!isDark);document.getElementById('ml').textContent=isDark?'Claro':'Escuro';}
@@ -1783,6 +1845,165 @@ function toggleAdd(){
 }
 function toggleTF(){const f=document.getElementById('tf');f.style.display=f.style.display==='none'?'block':'none';}
 function togglePF(){const f=document.getElementById('pf');f.style.display=f.style.display==='none'?'block':'none';}
+
+
+
+// ── TIMER TOGGL ──
+let timerRunning = false;
+let timerSeconds = 0;
+let timerInterval = null;
+let timerTarefaAtual = '';
+
+function timerSelectTask() {
+  const sel = document.getElementById('timer-task-sel');
+  timerTarefaAtual = sel ? sel.options[sel.selectedIndex]?.text || '' : '';
+}
+
+function toggleTimer() {
+  const btn = document.getElementById('timer-btn');
+  const dot = document.getElementById('timer-dot');
+  if(timerRunning) {
+    // Parar
+    clearInterval(timerInterval);
+    timerRunning = false;
+    if(btn) btn.textContent = '▶';
+    if(dot) dot.style.background = 'var(--dim)';
+    const mins = Math.floor(timerSeconds/60);
+    if(timerTarefaAtual && mins > 0) showToast(`⏱ ${timerTarefaAtual}: ${mins}min registrado`);
+    timerSeconds = 0;
+    updateTimerDisplay();
+  } else {
+    // Iniciar
+    timerRunning = true;
+    if(btn) { btn.textContent = '■'; btn.style.background = 'var(--err)'; }
+    if(dot) { dot.style.background = 'var(--ok)'; dot.style.animation = 'pulse 1s infinite'; }
+    timerInterval = setInterval(() => {
+      timerSeconds++;
+      updateTimerDisplay();
+    }, 1000);
+  }
+}
+
+function updateTimerDisplay() {
+  const el = document.getElementById('timer-display');
+  if(!el) return;
+  const m = String(Math.floor(timerSeconds/60)).padStart(2,'0');
+  const s2 = String(timerSeconds%60).padStart(2,'0');
+  el.textContent = m + ':' + s2;
+}
+
+function popularTimerTarefas() {
+  const sel = document.getElementById('timer-task-sel');
+  if(!sel) return;
+  while(sel.options.length > 1) sel.remove(1);
+
+  // 1. Tarefas fixas do dia (definidas pelo master ou pela própria)
+  if(TAREFAS_FIXAS && TAREFAS_FIXAS.length > 0) {
+    const hoje = new Date().toDateString();
+    const concluidasHoje = JSON.parse(localStorage.getItem('cs_fixas_concluidas_' + hoje) || '[]');
+    const fixas = TAREFAS_FIXAS.filter(f =>
+      (f.escopo === 'geral' || f.criado_por === currentUser.email) &&
+      !concluidasHoje.includes(f.id)
+    );
+    if(fixas.length > 0) {
+      const grp = document.createElement('optgroup');
+      grp.label = '📌 Tarefas Fixas';
+      fixas.forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = 'fixa:' + f.id;
+        opt.textContent = (f.urgencia==='urgente'?'🔴 ':'🟡 ') + f.titulo.substring(0,28);
+        grp.appendChild(opt);
+      });
+      sel.appendChild(grp);
+    }
+  }
+
+  // 2. Tarefas pendentes do dia
+  const pendentes = document.querySelectorAll('#h-pend .ti .tt');
+  if(pendentes.length > 0) {
+    const grp2 = document.createElement('optgroup');
+    grp2.label = '⏳ Pendentes hoje';
+    pendentes.forEach(tt => {
+      if(tt.classList.contains('struck')) return; // pular concluídas
+      const opt = document.createElement('option');
+      opt.value = 'pend:' + tt.textContent;
+      opt.textContent = tt.textContent.substring(0,30) + (tt.textContent.length>30?'...':'');
+      grp2.appendChild(opt);
+    });
+    if(grp2.children.length > 0) sel.appendChild(grp2);
+  }
+
+  // Se não tiver nada, mostrar aviso
+  if(sel.options.length === 1) {
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = 'Sem tarefas pendentes';
+    opt.disabled = true;
+    sel.appendChild(opt);
+  }
+}
+
+// ── REAÇÕES DO CANAL - versão corrigida ──
+// Cada usuário pode reagir UMA vez por emoji por post
+let CANAL_REACOES = {}; // {postId: {emoji: [emails]}}
+
+function toggleReacao(btn, emoji) {
+  const post = btn.closest('.post');
+  if(!post) return;
+  const postId = post.id;
+  if(!CANAL_REACOES[postId]) CANAL_REACOES[postId] = {};
+  if(!CANAL_REACOES[postId][emoji]) CANAL_REACOES[postId][emoji] = [];
+  
+  const lista = CANAL_REACOES[postId][emoji];
+  const email = currentUser.email;
+  const idx = lista.indexOf(email);
+  const countEl = btn.querySelector('.react-count');
+  
+  if(idx >= 0) {
+    // Remover reação
+    lista.splice(idx, 1);
+    btn.classList.remove('on');
+  } else {
+    // Adicionar reação
+    lista.push(email);
+    btn.classList.add('on');
+  }
+  
+  if(countEl) countEl.textContent = lista.length > 0 ? lista.length : '';
+}
+
+// ── addAlarm ──
+function addAlarm() {
+  if(!ALARMS) return;
+  ALARMS.push({id:'a'+Date.now(), hora:'09:00', msg:'Novo lembrete — edite aqui...', ativo:true, disparado:false});
+  renderAlarms();
+  const last = ALARMS.length-1;
+  setTimeout(() => { const el=document.getElementById('alarm-msg-'+last); if(el){el.focus();el.select();} }, 100);
+  showToast('Lembrete adicionado! Configure e salve.');
+}
+
+// ── HUMOR - mostrar apenas dados próprios para colaboradoras ──
+function renderMoodPessoal() {
+  const wrap = document.getElementById('mood-pessoal');
+  if(!wrap) return;
+  
+  const meusMoods = MOOD_HISTORY.filter(m => m.usuario_email === currentUser.email);
+  const ultimos7 = [];
+  for(let i=6; i>=0; i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    ultimos7.push(d.toLocaleDateString('pt-BR'));
+  }
+  
+  const diasHtml = ultimos7.map(data => {
+    const m = meusMoods.find(x => x.data === data);
+    return `<div style="text-align:center;flex:1;">
+      <div style="font-size:18px;">${m ? m.emoji : '—'}</div>
+      <div style="font-size:9px;color:var(--dim);">${data.substring(0,5)}</div>
+    </div>`;
+  }).join('');
+  
+  wrap.innerHTML = `<div style="display:flex;gap:4px;">${diasHtml}</div>`;
+}
 
 </script>
 </body>
