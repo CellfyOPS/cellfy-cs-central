@@ -1,4 +1,95 @@
-<!DOCTYPE html><html lang="pt-BR">
+<
+
+let alarmCheckInterval = null;
+
+function renderAlarms() {
+  const wrap = document.getElementById('alarm-list');
+  if(!wrap) return;
+  if(!ALARMS || ALARMS.length === 0) {
+    wrap.innerHTML = '<div style="padding:8px;text-align:center;font-size:11px;color:var(--dim);">Nenhum lembrete. Clique em "+ Novo lembrete".</div>';
+    return;
+  }
+  wrap.innerHTML = ALARMS.map((a,i) => `
+    <div style="background:var(--card2);border-radius:7px;padding:8px 10px;display:flex;align-items:center;gap:7px;margin-bottom:5px;">
+      <input type="time" value="${a.hora}" id="alarm-time-${i}"
+        style="width:85px;padding:4px 7px;font-size:12px;background:var(--card);border:1px solid var(--border);border-radius:5px;color:var(--text);">
+      <input type="text" value="${a.msg}" id="alarm-msg-${i}"
+        style="flex:1;font-size:11px;padding:4px 8px;background:var(--card);border:1px solid var(--border);border-radius:5px;color:var(--text);"
+        placeholder="Mensagem do lembrete...">
+      <div class="tog ${a.ativo?'on':''}" id="alarm-tog-${i}" onclick="toggleAlarm(${i})"></div>
+      <button onclick="saveAlarm(${i})" style="background:rgba(0,212,200,.12);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:inherit;">💾 Salvar</button>
+      <button onclick="testAlarm(${i})" style="background:rgba(124,92,252,.12);border:1px solid var(--purple);color:#a78bfa;border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:inherit;">▶ Testar</button>
+      <button onclick="removeAlarm(${i})" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:3px 7px;font-size:11px;cursor:pointer;font-family:inherit;">✕</button>
+    </div>`).join('');
+}
+
+function addAlarm() {
+  ALARMS.push({id:'a'+Date.now(), hora:'09:00', msg:'Novo lembrete — edite aqui...', ativo:true, disparado:false});
+  renderAlarms();
+  const last = ALARMS.length-1;
+  setTimeout(() => { const el=document.getElementById('alarm-msg-'+last); if(el){el.focus();el.select();} }, 100);
+}
+
+function saveAlarm(i) {
+  const h=document.getElementById('alarm-time-'+i);
+  const m=document.getElementById('alarm-msg-'+i);
+  if(!h||!m) return;
+  ALARMS[i].hora=h.value; ALARMS[i].msg=m.value;
+  ALARMS[i].disparado=false; ALARMS[i].ativo=true;
+  const tog=document.getElementById('alarm-tog-'+i);
+  if(tog) tog.classList.add('on');
+  apiPost('salvarAlarme',{id:ALARMS[i].id, hora:ALARMS[i].hora, mensagem:ALARMS[i].msg, ativo:true, email:currentUser.email});
+  showToast('Lembrete salvo! ✓');
+  checkAlarms();
+}
+
+function toggleAlarm(i) {
+  ALARMS[i].ativo=!ALARMS[i].ativo;
+  const tog=document.getElementById('alarm-tog-'+i);
+  if(tog) tog.classList.toggle('on');
+}
+
+function removeAlarm(i) {
+  if(!confirm('Remover este lembrete?')) return;
+  ALARMS.splice(i,1);
+  renderAlarms();
+}
+
+function testAlarm(i) {
+  initAudio();
+  showAlarm(ALARMS[i]?ALARMS[i].msg:'Teste de lembrete!');
+}
+
+function checkAlarms() {
+  const now=new Date();
+  const hh=now.getHours(), mm=now.getMinutes();
+  if(hh===0&&mm===0) ALARMS.forEach(a=>a.disparado=false);
+  ALARMS.forEach(a=>{
+    if(!a.ativo||a.disparado) return;
+    const parts=a.hora.split(':');
+    if(parts.length<2) return;
+    const ah=parseInt(parts[0],10), am=parseInt(parts[1],10);
+    if(isNaN(ah)||isNaN(am)) return;
+    if(hh===ah&&mm===am){a.disparado=true;showAlarm(a.msg);return;}
+    const diff=(hh*60+mm)-(ah*60+am);
+    if(diff>0&&diff<=3){a.disparado=true;showAlarm(a.msg);}
+  });
+}
+
+function scheduleNextMinute() {
+  const now=new Date();
+  const ms=(60-now.getSeconds())*1000-now.getMilliseconds()+100;
+  setTimeout(()=>{checkAlarms();scheduleNextMinute();},ms);
+}
+
+function startAlarmSystem() {
+  if(alarmCheckInterval) clearInterval(alarmCheckInterval);
+  alarmCheckInterval=setInterval(checkAlarms,10000);
+  scheduleNextMinute();
+  checkAlarms();
+}
+
+!DOCTYPE html><html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -150,7 +241,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
     </div>
     <div class="mb10"><label class="lbl">E-mail</label><input type="email" id="l-email" placeholder="seu@cellfy.com.br"></div>
     <div class="mb12"><label class="lbl">Senha</label><input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button onclick="initAudio();doLogin()" style="width:100%;padding:10px;border-radius:7px;border:none;background:var(--purple);color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Entrar</button>
+    <button onclick="doLogin()" style="width:100%;padding:10px;border-radius:7px;border:none;background:var(--purple);color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Entrar</button>
   </div>
 </div>
 <div id="app" style="display:none;">
@@ -374,14 +465,16 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
       </div>
     </div>
     <div class="card" style="text-align:center;">
-      <div style="font-size:28px;margin-bottom:6px;">🙂</div>
-      <div class="f12 fw6 mb10" style="color:var(--text);">Como estou agora?</div>
-      <div class="fx ic" style="justify-content:center;gap:10px;font-size:22px;">
-        <span style="cursor:pointer;" onclick="pickMood(this)">😴</span>
-        <span style="cursor:pointer;" onclick="pickMood(this)">😐</span>
-        <span style="cursor:pointer;" onclick="pickMood(this)">🙂</span>
-        <span style="cursor:pointer;" onclick="pickMood(this)">🔥</span>
+      <div style="font-size:28px;margin-bottom:6px;" id="mood-icon">🙂</div>
+      <div class="f12 fw6 mb6" style="color:var(--text);">Como estou agora?</div>
+      <div class="f10 cm mb10" id="mood-label">Clique para registrar seu humor</div>
+      <div class="fx ic" style="justify-content:center;gap:12px;font-size:24px;">
+        <span style="cursor:pointer;transition:transform .15s;border-radius:50%;padding:4px;" onclick="pickMood(this,'😴','Esgotada')" title="Esgotada" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'">😴</span>
+        <span style="cursor:pointer;transition:transform .15s;border-radius:50%;padding:4px;" onclick="pickMood(this,'😐','Neutro')" title="Neutro" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'">😐</span>
+        <span style="cursor:pointer;transition:transform .15s;border-radius:50%;padding:4px;" onclick="pickMood(this,'🙂','Bem')" title="Bem" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'">🙂</span>
+        <span style="cursor:pointer;transition:transform .15s;border-radius:50%;padding:4px;" onclick="pickMood(this,'🔥','Produtiva')" title="Produtiva" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'">🔥</span>
       </div>
+      <div class="f10 cdim mt8" id="mood-time"></div>
     </div>
     <div class="card" style="text-align:center;">
       <div style="font-size:28px;margin-bottom:6px;">💡</div>
@@ -587,6 +680,18 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 </div>
 
 <!-- TIME CS -->
+  <!-- Humor do Time -->
+  <div class="card mt12">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div class="ct" style="margin-bottom:0;">😊 Humor do Time — Últimos 7 dias</div>
+      <button class="btn" style="font-size:10px;" onclick="renderMoodRelatorio()">🔄 Atualizar</button>
+    </div>
+    <div class="f10 cm mb10">Baseado nos registros diários de cada colaboradora no Modo Foco.</div>
+    <div id="mood-relatorio">
+      <div class="f11 cm" style="padding:16px;text-align:center;color:var(--dim);">Clique em "Atualizar" para carregar os dados de humor do time.</div>
+    </div>
+  </div>
+
 <div id="p-time" class="page">
   <div class="g2 gap12">
     <!-- Coluna esquerda: Time CS ativo -->
@@ -746,6 +851,23 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 </div><!-- /app -->
 
 <script>
+let audioCtx = null;
+
+function initAudio() {
+  try {
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+  } catch(e) {}
+}
+
+function getAudioCtx() {
+  if(!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+  }
+  return audioCtx;
+}
+
+
 // ── PERSISTÊNCIA DE SESSÃO (sobrevive ao F5) ──
 function saveSession(user, role) {
   try {
@@ -986,10 +1108,17 @@ function loginAs(r,u){
   document.getElementById('sb-av').textContent=init;
   document.getElementById('sb-nm').textContent=currentUser.nome;
   document.getElementById('sb-rl').textContent=currentUser.cargo||'Colaboradora';
-  document.getElementById('sb-rl').textContent=currentUser.cargo;
-  document.getElementById('btn-at').style.display=isMaster?'inline-flex':'none';
-  document.getElementById('btn-post').style.display=isMaster?'inline-flex':'none';
-  sp('hoje');changeInterval('30');
+  // btn-at (Nova Tarefa) só master vê
+  const btnAt=document.getElementById('btn-at');
+  if(btnAt) btnAt.style.display=isMaster?'inline-flex':'none';
+  // btn-post (Novo post Canal) todos veem
+  const btnPost=document.getElementById('btn-post');
+  if(btnPost) btnPost.style.display='inline-flex';
+  sp('hoje');
+  startAlarmSystem();
+  saveSession(currentUser,role);
+  carregarDados();
+  setTimeout(pedirPermissaoNotif,2000);
 }
 function doLogout(){
   document.getElementById('app').style.display='none';
@@ -1011,6 +1140,7 @@ function sp(p){
   if(p==='cadastro') renderCadList();
   if(p==='pdi-master') renderPdiMaster();
   if(p==='dashboard') initDashboard();
+  if(p==='dash') renderMoodRelatorio();
   if(p==='ferramentas') renderFerramentas();
 }
 function tMode(){isDark=!isDark;document.body.classList.toggle('lm',!isDark);document.getElementById('ml').textContent=isDark?'Claro':'Escuro';}
@@ -1168,6 +1298,157 @@ function toggleAdd(){
 }
 function toggleTF(){const f=document.getElementById('tf');f.style.display=f.style.display==='none'?'block':'none';}
 function togglePF(){const f=document.getElementById('pf');f.style.display=f.style.display==='none'?'block':'none';}
+// ── HUMOR DO TIME ──
+let MOOD_HISTORY = JSON.parse(localStorage.getItem('cs_mood') || '[]');
+
+const MOOD_INFO = {
+  '😴': {label:'Esgotada', cor:'#94a3b8', nivel:1},
+  '😐': {label:'Neutro',   cor:'#f59e0b', nivel:2},
+  '🙂': {label:'Bem',      cor:'#10b981', nivel:3},
+  '🔥': {label:'Produtiva',cor:'#7c5cfc', nivel:4},
+};
+
+function pickMood(el, emoji, label) {
+  // Destacar selecionada
+  el.parentElement.querySelectorAll('span').forEach(s => {
+    s.style.background = '';
+    s.style.transform = 'scale(1)';
+  });
+  el.style.background = 'rgba(124,92,252,0.2)';
+  el.style.transform = 'scale(1.2)';
+
+  // Atualizar ícone e label
+  const icon = document.getElementById('mood-icon');
+  const lbl = document.getElementById('mood-label');
+  const timeEl = document.getElementById('mood-time');
+  if(icon) icon.textContent = emoji;
+  if(lbl) {
+    const info = MOOD_INFO[emoji];
+    lbl.textContent = label;
+    lbl.style.color = info ? info.cor : 'var(--muted)';
+  }
+  const agora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  if(timeEl) timeEl.textContent = 'Registrado às ' + agora;
+
+  // Salvar no histórico local
+  const registro = {
+    emoji, label,
+    usuario_email: currentUser.email,
+    usuario_nome: currentUser.nome,
+    data: new Date().toLocaleDateString('pt-BR'),
+    hora: agora,
+    timestamp: Date.now()
+  };
+  // Atualizar ou adicionar registro de hoje
+  const hoje = new Date().toLocaleDateString('pt-BR');
+  MOOD_HISTORY = MOOD_HISTORY.filter(m =>
+    !(m.usuario_email === currentUser.email && m.data === hoje)
+  );
+  MOOD_HISTORY.push(registro);
+  localStorage.setItem('cs_mood', JSON.stringify(MOOD_HISTORY));
+
+  // Salvar no Sheets
+  apiPost('salvarFeedback', {
+    usuario_email: currentUser.email,
+    tipo: 'Humor: ' + emoji + ' ' + label,
+    texto: emoji + ' ' + label + ' — ' + agora,
+    por_nome: currentUser.nome
+  });
+
+  showToast('Humor registrado: ' + emoji + ' ' + label);
+}
+
+function getMoodHoje(email) {
+  const hoje = new Date().toLocaleDateString('pt-BR');
+  return MOOD_HISTORY.find(m => m.usuario_email === email && m.data === hoje);
+}
+
+function renderMoodRelatorio() {
+  const wrap = document.getElementById('mood-relatorio');
+  if(!wrap) return;
+
+  // Buscar todos os moods dos últimos 7 dias
+  const hoje = new Date();
+  const ultimos7 = [];
+  for(let i=6; i>=0; i--) {
+    const d = new Date(hoje); d.setDate(d.getDate()-i);
+    ultimos7.push(d.toLocaleDateString('pt-BR'));
+  }
+
+  const membros = USERS.filter(u => u.nivel === 'membro');
+
+  // Tabela de humor por pessoa por dia
+  const moodPorPessoa = membros.map(u => {
+    const dias = ultimos7.map(data => {
+      // Buscar no localStorage (dados locais do master)
+      return MOOD_HISTORY.find(m => m.usuario_email === u.email && m.data === data) || null;
+    });
+    const total = dias.filter(Boolean).length;
+    const media = total > 0
+      ? dias.filter(Boolean).reduce((s,m) => s + (MOOD_INFO[m.emoji]?.nivel||0), 0) / total
+      : 0;
+    const predominante = total > 0
+      ? Object.entries(
+          dias.filter(Boolean).reduce((acc,m) => {
+            acc[m.emoji] = (acc[m.emoji]||0)+1; return acc;
+          }, {})
+        ).sort((a,b)=>b[1]-a[1])[0]?.[0]
+      : '—';
+    return {u, dias, media: media.toFixed(1), predominante, total};
+  });
+
+  const diasCols = ultimos7.map(d => `<th style="padding:6px 8px;font-size:9px;color:var(--dim);text-transform:uppercase;text-align:center;min-width:36px;">${d.substring(0,5)}</th>`).join('');
+
+  const linhas = moodPorPessoa.map(({u, dias, media, predominante, total}) => {
+    const init = u.nome.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+    const diasCells = dias.map(m => m
+      ? `<td style="text-align:center;padding:6px 4px;font-size:16px;" title="${m.label} - ${m.hora}">${m.emoji}</td>`
+      : `<td style="text-align:center;padding:6px 4px;font-size:12px;color:var(--dim);">—</td>`
+    ).join('');
+    const corMedia = media >= 3.5 ? 'var(--ok)' : media >= 2.5 ? 'var(--warn)' : media >= 1 ? 'var(--err)' : 'var(--dim)';
+    return `<tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:8px 10px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white;flex-shrink:0;">${init}</div>
+          <div><div class="f12 fw5" style="color:var(--text);">${u.nome.split(' ')[0]}</div><div class="f10 cm">${total} registros</div></div>
+        </div>
+      </td>
+      ${diasCells}
+      <td style="text-align:center;padding:6px 8px;font-size:18px;">${predominante}</td>
+      <td style="text-align:center;padding:6px 8px;font-size:12px;font-weight:700;color:${corMedia};">${media > 0 ? media : '—'}</td>
+    </tr>`;
+  }).join('');
+
+  // Alertas
+  const alertas = moodPorPessoa
+    .filter(({dias}) => {
+      const recentes = dias.slice(-3).filter(Boolean);
+      return recentes.length >= 2 && recentes.every(m => MOOD_INFO[m.emoji]?.nivel <= 2);
+    })
+    .map(({u}) => `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:7px;margin-bottom:5px;">
+      <span style="font-size:16px;">⚠️</span>
+      <div class="f11" style="color:var(--text);">${u.nome.split(' ')[0]} está registrando humor baixo nos últimos dias. Considere um 1:1.</div>
+    </div>`).join('');
+
+  wrap.innerHTML = `
+    ${alertas ? `<div class="mb12">${alertas}</div>` : ''}
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;min-width:500px;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);">
+            <th style="padding:6px 10px;text-align:left;font-size:10px;color:var(--dim);text-transform:uppercase;">Colaboradora</th>
+            ${diasCols}
+            <th style="padding:6px 8px;font-size:9px;color:var(--dim);text-transform:uppercase;text-align:center;">+Comum</th>
+            <th style="padding:6px 8px;font-size:9px;color:var(--dim);text-transform:uppercase;text-align:center;">Média</th>
+          </tr>
+        </thead>
+        <tbody>${linhas}</tbody>
+      </table>
+    </div>
+    <div class="f10 cdim mt10" style="text-align:right;">Escala: 😴=1 😐=2 🙂=3 🔥=4 · Média ≥ 3.5 = ótimo · ≤ 2 = atenção</div>`;
+}
+
+
 // ── TAREFAS FIXAS DIÁRIAS ──
 let TAREFAS_FIXAS = JSON.parse(localStorage.getItem('cs_fixas') || '[]');
 
@@ -1498,10 +1779,17 @@ function loginAs(r,u){
   document.getElementById('sb-av').textContent=init;
   document.getElementById('sb-nm').textContent=currentUser.nome;
   document.getElementById('sb-rl').textContent=currentUser.cargo||'Colaboradora';
-  document.getElementById('sb-rl').textContent=currentUser.cargo;
-  document.getElementById('btn-at').style.display=isMaster?'inline-flex':'none';
-  document.getElementById('btn-post').style.display=isMaster?'inline-flex':'none';
-  sp('hoje');changeInterval('30');
+  // btn-at (Nova Tarefa) só master vê
+  const btnAt=document.getElementById('btn-at');
+  if(btnAt) btnAt.style.display=isMaster?'inline-flex':'none';
+  // btn-post (Novo post Canal) todos veem
+  const btnPost=document.getElementById('btn-post');
+  if(btnPost) btnPost.style.display='inline-flex';
+  sp('hoje');
+  startAlarmSystem();
+  saveSession(currentUser,role);
+  carregarDados();
+  setTimeout(pedirPermissaoNotif,2000);
 }
 function doLogout(){
   document.getElementById('app').style.display='none';
@@ -1523,6 +1811,7 @@ function sp(p){
   if(p==='cadastro') renderCadList();
   if(p==='pdi-master') renderPdiMaster();
   if(p==='dashboard') initDashboard();
+  if(p==='dash') renderMoodRelatorio();
   if(p==='ferramentas') renderFerramentas();
 }
 function tMode(){isDark=!isDark;document.body.classList.toggle('lm',!isDark);document.getElementById('ml').textContent=isDark?'Claro':'Escuro';}
