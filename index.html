@@ -168,13 +168,26 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
         <div id="notif-dot" style="position:absolute;top:-2px;right:-2px;width:7px;height:7px;background:var(--err);border-radius:50%;display:none;"></div>
       </div>
       <!-- TIMER TOGGL -->
-      <div id="timer-widget" style="display:flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;" title="Rastreador de tempo">
-        <div id="timer-dot" style="width:8px;height:8px;border-radius:50%;background:var(--dim);flex-shrink:0;"></div>
-        <select id="timer-task-sel" style="background:transparent;border:none;color:var(--muted);font-size:10px;max-width:120px;cursor:pointer;outline:none;" onchange="timerSelectTask()">
-          <option value="">⏱ Selecionar tarefa</option>
+      <div id="timer-widget" style="display:flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:4px 8px;">
+        <div id="timer-dot" style="width:8px;height:8px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:background .3s;"></div>
+        <select id="timer-task-sel" onchange="timerSelectTask()" style="background:transparent;border:none;color:var(--muted);font-size:10px;max-width:110px;cursor:pointer;outline:none;font-family:inherit;">
+          <option value="">Selecionar tarefa</option>
         </select>
-        <span id="timer-display" style="font-size:11px;font-weight:700;color:var(--text);min-width:40px;text-align:center;font-variant-numeric:tabular-nums;">00:00</span>
-        <button id="timer-btn" onclick="toggleTimer()" style="background:var(--purple);border:none;color:white;border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;font-family:inherit;">▶</button>
+        <span id="timer-display" style="font-size:12px;font-weight:700;color:var(--text);min-width:44px;text-align:center;font-variant-numeric:tabular-nums;letter-spacing:1px;">00:00</span>
+        <button id="timer-btn-play" onclick="timerPlay()" title="Iniciar" style="background:var(--purple);border:none;color:white;border-radius:5px;width:24px;height:24px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;">▶</button>
+        <button id="timer-btn-pause" onclick="timerPause()" title="Pausar" style="display:none;background:var(--warn);border:none;color:white;border-radius:5px;width:24px;height:24px;cursor:pointer;font-size:11px;align-items:center;justify-content:center;">⏸</button>
+        <button id="timer-btn-stop" onclick="timerStop()" title="Concluir e salvar" style="display:none;background:var(--err);border:none;color:white;border-radius:5px;width:24px;height:24px;cursor:pointer;font-size:11px;align-items:center;justify-content:center;">■</button>
+        <button id="timer-btn-hist" onclick="toggleTimerHistorico()" title="Histórico" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:5px;width:24px;height:24px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;">📋</button>
+      </div>
+      <!-- Painel histórico do timer -->
+      <div id="timer-hist-panel" style="display:none;position:fixed;top:56px;right:16px;z-index:9000;width:380px;max-height:500px;overflow-y:auto;" class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div class="ct" style="margin-bottom:0;">⏱ Histórico de sessões</div>
+          <button onclick="toggleTimerHistorico()" style="background:transparent;border:none;color:var(--muted);font-size:16px;cursor:pointer;">✕</button>
+        </div>
+        <div id="timer-hist-content">
+          <div class="f11 cm" style="text-align:center;color:var(--dim);">Nenhuma sessão registrada ainda.</div>
+        </div>
       </div>
 
       <button id="ref-btn" onclick="doRefresh()" title="Atualizar dados" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:5px 7px;cursor:pointer;color:var(--muted);display:flex;align-items:center;transition:all .15s;" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">
@@ -689,31 +702,42 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 </div>
 
 <div id="p-dash" class="page">
-  <div class="g4 mb12"><div class="mc"><div class="ml">Tarefas abertas</div><div class="mv cw" id="dash-abertas">0</div><div class="ms">no time</div></div><div class="mc"><div class="ml">Concluídas hoje</div><div class="mv cs" id="dash-hoje">0</div><div class="ms">hoje</div></div><div class="mc"><div class="ml">Atrasadas</div><div class="mv cd" id="dash-atrasadas">0</div><div class="ms">atrasadas</div></div><div class="mc"><div class="ml">Taxa do time</div><div class="mv cc" id="dash-taxa">—</div><div class="ms">no prazo</div></div></div>
-  <div class="g2 gap12"><div class="card"><div class="ct"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Status agora</div>
-    <div class="m-row"><div class="m-av" style="background:linear-gradient(135deg,var(--purple),var(--cyan));">RS</div><div class="f1 mw0" style="margin-left:8px;"><div class="f12 fw6" style="color:var(--text);">Rose</div><div class="f10 cm">CS Ops</div></div><div class="fx gap10"><div style="text-align:center;"><div class="f13 fw6 cs">8</div><div class="f10 cdim">feitas</div></div><div style="text-align:center;"><div class="f13 fw6 cw">3</div><div class="f10 cdim">pend.</div></div><div style="text-align:center;"><div class="f13 fw6 cd">1</div><div class="f10 cdim">atras.</div></div></div></div>
-    <div class="m-row"><div class="m-av" style="background:linear-gradient(135deg,#ec4899,#7c5cfc);">LA</div><div class="f1 mw0" style="margin-left:8px;"><div class="f12 fw6" style="color:var(--text);">Larissa</div><div class="f10 cm">CS Specialist</div></div><div class="fx gap10"><div style="text-align:center;"><div class="f13 fw6 cs">11</div><div class="f10 cdim">feitas</div></div><div style="text-align:center;"><div class="f13 fw6 cw">2</div><div class="f10 cdim">pend.</div></div><div style="text-align:center;"><div class="f13 fw6 cs">0</div><div class="f10 cdim">atras.</div></div></div></div>
-    <div class="m-row"><div class="m-av" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">SA</div><div class="f1 mw0" style="margin-left:8px;"><div class="f12 fw6" style="color:var(--text);">Sarah</div><div class="f10 cm">CS Analyst</div></div><div class="fx gap10"><div style="text-align:center;"><div class="f13 fw6 cs">6</div><div class="f10 cdim">feitas</div></div><div style="text-align:center;"><div class="f13 fw6 cw">4</div><div class="f10 cdim">pend.</div></div><div style="text-align:center;"><div class="f13 fw6 cd">2</div><div class="f10 cdim">atras.</div></div></div></div>
+  <!-- Métricas rápidas -->
+  <div class="g4 mb12">
+    <div class="mc"><div class="ml">Tarefas abertas</div><div class="mv cd" id="dash-abertas">—</div><div class="ms">no time</div></div>
+    <div class="mc"><div class="ml">Concluídas</div><div class="mv cs" id="dash-hoje">—</div><div class="ms">hoje</div></div>
+    <div class="mc"><div class="ml">Atrasadas</div><div class="mv cd" id="dash-atrasadas">—</div><div class="ms">pendentes</div></div>
+    <div class="mc"><div class="ml">Membros</div><div class="mv cc" id="dash-membros">—</div><div class="ms">ativos</div></div>
   </div>
-  <div class="card"><div class="ct"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> Evolução — junho</div>
-    <div class="bw mb10"><div class="bc"><div class="b" style="height:40px;background:var(--cyan);opacity:.5;"></div><div class="bl">S1</div></div><div class="bc"><div class="b" style="height:58px;background:var(--cyan);opacity:.65;"></div><div class="bl">S2</div></div><div class="bc"><div class="b" style="height:70px;background:var(--cyan);opacity:.8;"></div><div class="bl">S3</div></div><div class="bc"><div class="b" style="height:28px;background:var(--purple);opacity:.5;"></div><div class="bl">S4</div></div></div>
-    <div class="fx jb f11 mb6"><span class="cm">Meta junho: 200 tarefas</span><span class="cc">168/200</span></div>
-    <div class="prog" style="height:5px;"><div class="pf" style="width:84%;"></div></div>
-  </div></div>
-</div>
 
-<!-- TIME CS -->
-  <!-- Humor do Time - apenas para master -->
-  <div class="card mt12" id="humor-time-card" style="display:none;">
+  <!-- Status do time -->
+  <div class="g2 gap12 mb12">
+    <div class="card">
+      <div class="ct">👥 Status agora</div>
+      <div id="dash-status-time">
+        <div class="f11 cm" style="padding:16px;text-align:center;color:var(--dim);">Carregando dados do time...</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">😊 Humor do time hoje</div>
+      <div id="dash-humor-hoje">
+        <div class="f11 cm" style="padding:16px;text-align:center;color:var(--dim);">Aguardando registros de hoje.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Humor últimos 7 dias -->
+  <div class="card mb12" id="humor-time-card" style="display:none;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
       <div class="ct" style="margin-bottom:0;">😊 Humor do Time — Últimos 7 dias</div>
       <button class="btn" style="font-size:10px;" onclick="renderMoodRelatorio()">🔄 Atualizar</button>
     </div>
     <div class="f10 cm mb10">Baseado nos registros diários de cada colaboradora no Modo Foco.</div>
     <div id="mood-relatorio">
-      <div class="f11 cm" style="padding:16px;text-align:center;color:var(--dim);">Clique em "Atualizar" para carregar os dados de humor do time.</div>
+      <div class="f11 cm" style="padding:16px;text-align:center;color:var(--dim);">Clique em "Atualizar" para carregar.</div>
     </div>
   </div>
+</div>
 
 <div id="p-time" class="page">
   <div class="g2 gap12">
@@ -933,6 +957,66 @@ async function carregarDados() {
         doneHTML += `<div class="ti" style="opacity:.6;">
           <div class="chk done"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
           <div class="f1 mw0"><div class="tt struck">${t.titulo}</div><div class="tm"><span class="tag tag-d">Concluída</span></div></div>
+        </
+let audioCtx = null;
+
+function initAudio() {
+  try {
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+  } catch(e) {}
+}
+
+function getAudioCtx() {
+  if(!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+  }
+  return audioCtx;
+}
+
+
+// ── PERSISTÊNCIA DE SESSÃO (sobrevive ao F5) ──
+function saveSession(user, role) {
+  try {
+    localStorage.setItem('cs_user', JSON.stringify({email: user.email, role}));
+    localStorage.setItem('cs_dia', new Date().toDateString());
+  } catch(e) {}
+}
+async function carregarDados() {
+  // Carregar tarefas do Sheets
+  // Limpar listas antes de popular com dados reais
+  const hPendEl = document.getElementById('h-pend');
+  const hDoneEl = document.getElementById('h-done');
+  if(hPendEl) hPendEl.innerHTML = '<div class="f11 cm" style="padding:20px;text-align:center;color:var(--dim);">✅ Nenhuma tarefa pendente!</div>';
+  if(hDoneEl) hDoneEl.innerHTML = '<div class="f11 cm" style="padding:20px;text-align:center;color:var(--dim);">Nenhuma concluída hoje ainda.</div>';
+
+  const res = await apiGet('getTarefas', {email: currentUser.email});
+  if(res && res.ok && res.tarefas.length > 0) {
+    const pend = document.getElementById('h-pend');
+    const done = document.getElementById('h-done');
+    const allTasks = document.getElementById('all-tasks');
+    let pendHTML = '', doneHTML = '', allHTML = '';
+    const urgMap = {urgente:'🔴 Urgente', normal:'🟡 Normal', baixa:'🟢 Baixa'};
+    const urgClass = {urgente:'tag-u', normal:'tag-n', baixa:'tag-l'};
+    let total=0, feitas=0, urgentes=0;
+    res.tarefas.forEach(t => {
+      total++;
+      const tid = t.id;
+      const urg = t.urgencia || 'normal';
+      const tagCls = urgClass[urg] || 'tag-n';
+      const tagLbl = urgMap[urg] || '🟡 Normal';
+      const row = `<div class="ti" id="${tid}">
+        <div class="chk" onclick="ckTask(event,'${tid}',this)"></div>
+        <div class="f1 mw0">
+          <div class="tt">${t.titulo}</div>
+          <div class="tm"><span class="tag ${tagCls}">${tagLbl}</span><span class="tag">${t.categoria||''}</span><span class="ttime">${t.tempo||''}</span></div>
+        </div>
+      </div>`;
+      if(t.status === 'concluida') {
+        feitas++;
+        doneHTML += `<div class="ti" style="opacity:.6;">
+          <div class="chk done"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="f1 mw0"><div class="tt struck">${t.titulo}</div><div class="tm"><span class="tag tag-d">Concluída</span></div></div>
         </div>`;
       } else {
         if(urg === 'urgente') urgentes++;
@@ -995,6 +1079,64 @@ async function carregarDados() {
   // Carregar Canal CS
   const canalRes = await apiGet('getCanal');
   if(canalRes && canalRes.ok) { renderCanalFeed(canalRes.posts); window.DASH_POSTS = canalRes.posts || []; }
+
+  // Popular Visão Geral (p-dash) com dados reais
+  if(role === 'master') {
+    const dashRes = await apiGet('getDash');
+    if(dashRes && dashRes.ok) {
+      const set = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+      set('dash-abertas', dashRes.pendentes || 0);
+      set('dash-hoje', dashRes.concluidasHoje || 0);
+      set('dash-atrasadas', dashRes.atrasadas || 0);
+      set('dash-membros', (dashRes.usuarios||[]).length);
+
+      // Status do time
+      const statusWrap = document.getElementById('dash-status-time');
+      if(statusWrap && dashRes.usuarios && dashRes.usuarios.length > 0) {
+        const cols = ['linear-gradient(135deg,#7c5cfc,#00d4c8)','linear-gradient(135deg,#ec4899,#7c5cfc)','linear-gradient(135deg,#f59e0b,#ef4444)','linear-gradient(135deg,#10b981,#3b82f6)'];
+        statusWrap.innerHTML = dashRes.usuarios.map((u,i) => {
+          const init = u.nome.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+          const taxa = u.total > 0 ? Math.round((u.feitas/u.total)*100) : 0;
+          const cor = taxa>=75?'var(--ok)':taxa>=50?'var(--warn)':'var(--err)';
+          return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+            <div style="width:32px;height:32px;border-radius:50%;background:${cols[i%cols.length]};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0;">${init}</div>
+            <div style="flex:1;min-width:0;">
+              <div class="f12 fw6" style="color:var(--text);">${u.nome.split(' ')[0]}</div>
+              <div class="f10 cm">${u.cargo||''}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px;color:${cor};font-weight:700;">${taxa}%</div>
+              <div class="f10 cm">${u.feitas} feitas · ${u.pendentes} pend.</div>
+            </div>
+          </div>`;
+        }).join('');
+      } else if(statusWrap) {
+        statusWrap.innerHTML = '<div class="f11 cm" style="text-align:center;padding:16px;color:var(--dim);">Nenhuma atividade registrada hoje.</div>';
+      }
+    }
+
+    // Humor de hoje
+    const humorTimeRes = await apiGet('getHumorTime');
+    if(humorTimeRes && humorTimeRes.ok) {
+      const humorWrap = document.getElementById('dash-humor-hoje');
+      const hoje = new Date().toLocaleDateString('pt-BR');
+      const deHoje = (humorTimeRes.humor||[]).filter(h => h.data === hoje);
+      if(humorWrap) {
+        if(deHoje.length === 0) {
+          humorWrap.innerHTML = '<div class="f11 cm" style="text-align:center;padding:16px;color:var(--dim);">Nenhum registro de humor hoje ainda.</div>';
+        } else {
+          const membros = {};
+          deHoje.forEach(h => { membros[h.usuario_email] = h; });
+          humorWrap.innerHTML = Object.values(membros).map(h => `
+            <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);">
+              <span style="font-size:22px;">${h.emoji}</span>
+              <div><div class="f12 fw5" style="color:var(--text);">${h.usuario_nome.split(' ')[0]}</div>
+              <div class="f10 cm">${h.label} · ${h.hora}</div></div>
+            </div>`).join('');
+        }
+      }
+    }
+  }
 
   // Renderizar fixas e limpar antigas
   limparFixasAntigas();
@@ -1587,7 +1729,7 @@ function renderMoodRelatorio() {
 
 
 // ── TAREFAS FIXAS DIÁRIAS ──
-let TAREFAS_FIXAS = JSON.parse(localStorage.getItem('cs_fixas') || '[]');
+let TAREFAS_FIXAS = []; // Carregado do Sheets
 
 function salvarFixasLocal() {
   localStorage.setItem('cs_fixas', JSON.stringify(TAREFAS_FIXAS));
@@ -2019,91 +2161,211 @@ function togglePF(){const f=document.getElementById('pf');f.style.display=f.styl
 
 
 // ── TIMER TOGGL ──
-let timerRunning = false;
-let timerSeconds = 0;
+let timerRunning  = false;
+let timerPaused   = false;
+let timerSeconds  = 0;
 let timerInterval = null;
+let timerInicioHora  = null;
+let timerInicioTs    = null;
 let timerTarefaAtual = '';
+let timerTarefaId    = '';
+let TIMER_SESSOES = JSON.parse(localStorage.getItem('cs_timer_sessoes') || '[]');
 
 function timerSelectTask() {
   const sel = document.getElementById('timer-task-sel');
-  timerTarefaAtual = sel ? sel.options[sel.selectedIndex]?.text || '' : '';
+  if(!sel) return;
+  timerTarefaAtual = sel.options[sel.selectedIndex]?.text || '';
+  timerTarefaId    = sel.value || '';
 }
 
-function toggleTimer() {
-  const btn = document.getElementById('timer-btn');
-  const dot = document.getElementById('timer-dot');
-  if(timerRunning) {
-    // PARAR - salvar sessão
-    clearInterval(timerInterval);
-    timerRunning = false;
-    if(btn) { btn.textContent = '▶'; btn.style.background = 'var(--purple)'; }
-    if(dot) { dot.style.background = 'var(--dim)'; dot.style.animation = 'none'; }
-    const mins = Math.floor(timerSeconds / 60);
-    const secs = timerSeconds % 60;
-    const tempoFmt = mins > 0 ? `${mins}min${secs>0?' '+secs+'s':''}` : `${secs}s`;
-    if(mins > 0) {
-      // Salvar sessão no histórico local e no Sheets
-      const sessao = {
-        tarefa: timerTarefaAtual || 'Sem tarefa',
-        inicio: timerInicioHora || '—',
-        duracao_min: mins,
-        duracao_fmt: tempoFmt,
-        data: new Date().toLocaleDateString('pt-BR'),
-        timestamp: Date.now(),
-        usuario_email: currentUser ? currentUser.email : ''
-      };
-      TIMER_SESSOES.push(sessao);
-      localStorage.setItem('cs_timer_sessoes', JSON.stringify(TIMER_SESSOES.slice(-100)));
-      // Salvar no Sheets
-      apiPost('salvarTimer', {
-        usuario_email: currentUser.email,
-        usuario_nome: currentUser.nome,
-        tarefa: sessao.tarefa,
-        inicio: sessao.inicio,
-        duracao_min: mins,
-        duracao_fmt: tempoFmt,
-        data: sessao.data,
-        timestamp: sessao.timestamp
-      });
-      showToast(`⏱ ${sessao.tarefa}: ${tempoFmt} salvo!`);
-    }
-    timerSeconds = 0;
-    timerInicioHora = null;
-    updateTimerDisplay();
-    // Esconder card no Meu Dia
-    const card = document.getElementById('timer-ativo-card');
-    if(card) card.style.display = 'none';
-  } else {
-    // INICIAR
-    timerRunning = true;
-    timerInicioHora = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-    if(btn) { btn.textContent = '■'; btn.style.background = 'var(--err)'; }
-    if(dot) { dot.style.background = 'var(--ok)'; dot.style.animation = 'pulse 1s infinite'; }
-    timerInterval = setInterval(() => {
-      timerSeconds++;
-      updateTimerDisplay();
-      // Atualizar card no Meu Dia
-      const disp = document.getElementById('timer-ativo-display');
-      if(disp) {
-        const m = String(Math.floor(timerSeconds/60)).padStart(2,'0');
-        const s2 = String(timerSeconds%60).padStart(2,'0');
-        disp.textContent = m + ':' + s2;
-      }
-    }, 1000);
-    // Mostrar card no Meu Dia
-    const card = document.getElementById('timer-ativo-card');
-    const tarefaEl = document.getElementById('timer-ativo-tarefa');
-    if(card) card.style.display = 'block';
-    if(tarefaEl) tarefaEl.textContent = timerTarefaAtual || 'Tarefa em andamento';
+function timerPlay() {
+  if(timerPaused) {
+    // RETOMAR
+    timerPaused = false;
+    timerInterval = setInterval(timerTick, 1000);
+    setTimerState('running');
+    return;
   }
+  // INICIAR nova sessão
+  const sel = document.getElementById('timer-task-sel');
+  if(sel && sel.value) {
+    timerTarefaAtual = sel.options[sel.selectedIndex]?.text || 'Tarefa';
+    timerTarefaId    = sel.value;
+  } else {
+    timerTarefaAtual = 'Sessão livre';
+    timerTarefaId    = '';
+  }
+  timerSeconds   = 0;
+  timerRunning   = true;
+  timerPaused    = false;
+  timerInicioHora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  timerInicioTs   = Date.now();
+  timerInterval   = setInterval(timerTick, 1000);
+  setTimerState('running');
+  // Mostrar card no Meu Dia
+  const card = document.getElementById('timer-ativo-card');
+  const tar  = document.getElementById('timer-ativo-tarefa');
+  if(card) card.style.display = 'block';
+  if(tar)  tar.textContent = timerTarefaAtual;
+  showToast('⏱ Timer iniciado — ' + timerTarefaAtual);
+}
+
+function timerPause() {
+  clearInterval(timerInterval);
+  timerPaused = true;
+  timerRunning = false;
+  setTimerState('paused');
+  showToast('⏸ Timer pausado — ' + formatTime(timerSeconds));
+}
+
+function timerStop() {
+  clearInterval(timerInterval);
+  const mins = Math.floor(timerSeconds / 60);
+  const secs = timerSeconds % 60;
+  const tempoFmt = mins > 0
+    ? (mins >= 60 ? Math.floor(mins/60)+'h '+(mins%60)+'min' : mins+'min'+(secs>0?' '+secs+'s':''))
+    : secs+'s';
+
+  if(timerSeconds >= 30) {
+    // Salvar sessão
+    const sessao = {
+      id: 'tmr'+Date.now(),
+      tarefa:       timerTarefaAtual || 'Sessão livre',
+      tarefa_id:    timerTarefaId,
+      inicio:       timerInicioHora || '—',
+      duracao_min:  mins,
+      duracao_seg:  timerSeconds,
+      duracao_fmt:  tempoFmt,
+      data:         new Date().toLocaleDateString('pt-BR'),
+      data_iso:     new Date().toISOString().substring(0,10),
+      timestamp:    timerInicioTs || Date.now(),
+      usuario_email: currentUser?.email || ''
+    };
+    TIMER_SESSOES.unshift(sessao);
+    localStorage.setItem('cs_timer_sessoes', JSON.stringify(TIMER_SESSOES.slice(0,200)));
+
+    // Salvar no Sheets
+    apiPost('salvarTimer', {
+      usuario_email: currentUser.email,
+      usuario_nome:  currentUser.nome,
+      tarefa:        sessao.tarefa,
+      inicio:        sessao.inicio,
+      duracao_min:   mins,
+      duracao_fmt:   tempoFmt,
+      data:          sessao.data,
+      timestamp:     sessao.timestamp
+    });
+
+    showToast('✓ ' + sessao.tarefa + ': ' + tempoFmt + ' salvo!');
+    renderTimerHistorico();
+  }
+
+  // Resetar
+  timerSeconds  = 0;
+  timerRunning  = false;
+  timerPaused   = false;
+  timerInicioHora = null;
+  timerInicioTs   = null;
+  setTimerState('stopped');
+  updateTimerDisplay();
+
+  // Esconder card Meu Dia
+  const card = document.getElementById('timer-ativo-card');
+  if(card) card.style.display = 'none';
+}
+
+function timerTick() {
+  timerSeconds++;
+  updateTimerDisplay();
+  // Atualizar card Meu Dia
+  const disp = document.getElementById('timer-ativo-display');
+  if(disp) disp.textContent = formatTime(timerSeconds);
+}
+
+function setTimerState(state) {
+  const dot   = document.getElementById('timer-dot');
+  const play  = document.getElementById('timer-btn-play');
+  const pause = document.getElementById('timer-btn-pause');
+  const stop  = document.getElementById('timer-btn-stop');
+  if(state === 'running') {
+    if(dot)   { dot.style.background='var(--ok)'; dot.style.animation='pulse 1s infinite'; }
+    if(play)  play.style.display  = 'none';
+    if(pause) { pause.style.display = 'flex'; }
+    if(stop)  { stop.style.display  = 'flex'; }
+  } else if(state === 'paused') {
+    if(dot)   { dot.style.background='var(--warn)'; dot.style.animation='none'; }
+    if(play)  { play.style.display = 'flex'; play.textContent = '▶'; play.title='Retomar'; }
+    if(pause) pause.style.display = 'none';
+    if(stop)  { stop.style.display = 'flex'; }
+  } else {
+    if(dot)   { dot.style.background='var(--dim)'; dot.style.animation='none'; }
+    if(play)  { play.style.display = 'flex'; play.textContent = '▶'; play.title='Iniciar'; }
+    if(pause) pause.style.display = 'none';
+    if(stop)  stop.style.display  = 'none';
+  }
+}
+
+function formatTime(secs) {
+  const h = Math.floor(secs/3600);
+  const m = Math.floor((secs%3600)/60);
+  const s = secs%60;
+  if(h > 0) return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
 }
 
 function updateTimerDisplay() {
   const el = document.getElementById('timer-display');
-  if(!el) return;
-  const m = String(Math.floor(timerSeconds/60)).padStart(2,'0');
-  const s2 = String(timerSeconds%60).padStart(2,'0');
-  el.textContent = m + ':' + s2;
+  if(el) el.textContent = formatTime(timerSeconds);
+}
+
+// Compatibilidade com toggleTimer antigo
+function toggleTimer() { timerRunning ? timerPause() : timerPlay(); }
+
+function toggleTimerHistorico() {
+  const panel = document.getElementById('timer-hist-panel');
+  if(!panel) return;
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  if(!isOpen) renderTimerHistorico();
+}
+
+function renderTimerHistorico() {
+  const wrap = document.getElementById('timer-hist-content');
+  if(!wrap) return;
+
+  const minhas = TIMER_SESSOES.filter(s => !s.usuario_email || s.usuario_email === currentUser?.email);
+  if(minhas.length === 0) {
+    wrap.innerHTML = '<div class="f11 cm" style="text-align:center;padding:20px;color:var(--dim);">Nenhuma sessão registrada ainda.<br>Inicie o timer acima para começar.</div>';
+    return;
+  }
+
+  // Agrupar por data
+  const porData = {};
+  minhas.forEach(s => {
+    const data = s.data || '—';
+    if(!porData[data]) porData[data] = {sessoes:[], totalSeg:0};
+    porData[data].sessoes.push(s);
+    porData[data].totalSeg += s.duracao_seg || (s.duracao_min*60) || 0;
+  });
+
+  wrap.innerHTML = Object.entries(porData).slice(0,10).map(([data, {sessoes, totalSeg}]) => {
+    const totalFmt = formatTime(totalSeg);
+    return `<div style="margin-bottom:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid var(--border);">
+        <div class="f12 fw6" style="color:var(--text);">${data}</div>
+        <div class="f10 cm">Total: <strong style="color:var(--cyan);">${totalFmt}</strong></div>
+      </div>
+      ${sessoes.map(s=>`
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;background:var(--card2);border-radius:6px;margin-bottom:4px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--cyan));display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;">⏱</div>
+          <div style="flex:1;min-width:0;">
+            <div class="f11 fw5" style="color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.tarefa}</div>
+            <div class="f10 cm">Início: ${s.inicio}</div>
+          </div>
+          <span style="background:rgba(0,212,200,.12);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700;white-space:nowrap;">${s.duracao_fmt}</span>
+        </div>`).join('')}
+    </div>`;
+  }).join('');
 }
 
 function popularTimerTarefas() {
@@ -2111,51 +2373,35 @@ function popularTimerTarefas() {
   if(!sel) return;
   while(sel.options.length > 1) sel.remove(1);
 
-  // 1. Tarefas fixas do dia (definidas pelo master ou pela própria)
+  // Tarefas fixas
   if(TAREFAS_FIXAS && TAREFAS_FIXAS.length > 0) {
-    const hoje = new Date().toDateString();
-    const concluidasHoje = JSON.parse(localStorage.getItem('cs_fixas_concluidas_' + hoje) || '[]');
-    const fixas = TAREFAS_FIXAS.filter(f =>
-      (f.escopo === 'geral' || f.criado_por === currentUser.email) &&
-      !concluidasHoje.includes(f.id)
-    );
-    if(fixas.length > 0) {
-      const grp = document.createElement('optgroup');
-      grp.label = '📌 Tarefas Fixas';
-      fixas.forEach(f => {
+    const grp = document.createElement('optgroup');
+    grp.label = '📌 Tarefas Fixas';
+    TAREFAS_FIXAS.filter(f => f.escopo==='geral' || f.criado_por===currentUser?.email)
+      .forEach(f => {
         const opt = document.createElement('option');
-        opt.value = 'fixa:' + f.id;
-        opt.textContent = (f.urgencia==='urgente'?'🔴 ':'🟡 ') + f.titulo.substring(0,28);
+        opt.value = 'fixa:'+f.id;
+        opt.textContent = f.titulo.substring(0,35);
         grp.appendChild(opt);
       });
-      sel.appendChild(grp);
-    }
+    if(grp.children.length > 0) sel.appendChild(grp);
   }
 
-  // 2. Tarefas pendentes do dia
-  const pendentes = document.querySelectorAll('#h-pend .ti .tt');
+  // Tarefas pendentes da lista
+  const pendentes = (LISTA_TAREFAS||[]).filter(t => t.status !== 'concluida');
   if(pendentes.length > 0) {
     const grp2 = document.createElement('optgroup');
-    grp2.label = '⏳ Pendentes hoje';
-    pendentes.forEach(tt => {
-      if(tt.classList.contains('struck')) return; // pular concluídas
+    grp2.label = '⏳ Pendentes';
+    pendentes.forEach(t => {
       const opt = document.createElement('option');
-      opt.value = 'pend:' + tt.textContent;
-      opt.textContent = tt.textContent.substring(0,30) + (tt.textContent.length>30?'...':'');
+      opt.value = t.id;
+      opt.textContent = t.titulo.substring(0,35);
       grp2.appendChild(opt);
     });
-    if(grp2.children.length > 0) sel.appendChild(grp2);
-  }
-
-  // Se não tiver nada, mostrar aviso
-  if(sel.options.length === 1) {
-    const opt = document.createElement('option');
-    opt.value = '';
-    opt.textContent = 'Sem tarefas pendentes';
-    opt.disabled = true;
-    sel.appendChild(opt);
+    sel.appendChild(grp2);
   }
 }
+
 
 // ── REAÇÕES DO CANAL - versão corrigida ──
 // Cada usuário pode reagir UMA vez por emoji por post
@@ -2440,11 +2686,7 @@ function scheduleNextMinute(){
 }
 
 let alarmCheckInterval=null;
-let ALARMS = [
-  { id:'a1', hora:'08:30', msg:'Bom dia! Confira suas tarefas do dia.', ativo:true,  disparado:false },
-  { id:'a2', hora:'12:00', msg:'Lembrete: verifique tarefas urgentes!', ativo:true,  disparado:false },
-  { id:'a3', hora:'17:00', msg:'Fechamento — atualize suas tarefas.',   ativo:false, disparado:false },
-];
+let ALARMS = []; // Carregado do Sheets via carregarDados()
 
 function startAlarmSystem(){
   if(alarmCheckInterval)clearInterval(alarmCheckInterval);
@@ -3421,6 +3663,64 @@ async function carregarDados() {
   const canalRes = await apiGet('getCanal');
   if(canalRes && canalRes.ok) { renderCanalFeed(canalRes.posts); window.DASH_POSTS = canalRes.posts || []; }
 
+  // Popular Visão Geral (p-dash) com dados reais
+  if(role === 'master') {
+    const dashRes = await apiGet('getDash');
+    if(dashRes && dashRes.ok) {
+      const set = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+      set('dash-abertas', dashRes.pendentes || 0);
+      set('dash-hoje', dashRes.concluidasHoje || 0);
+      set('dash-atrasadas', dashRes.atrasadas || 0);
+      set('dash-membros', (dashRes.usuarios||[]).length);
+
+      // Status do time
+      const statusWrap = document.getElementById('dash-status-time');
+      if(statusWrap && dashRes.usuarios && dashRes.usuarios.length > 0) {
+        const cols = ['linear-gradient(135deg,#7c5cfc,#00d4c8)','linear-gradient(135deg,#ec4899,#7c5cfc)','linear-gradient(135deg,#f59e0b,#ef4444)','linear-gradient(135deg,#10b981,#3b82f6)'];
+        statusWrap.innerHTML = dashRes.usuarios.map((u,i) => {
+          const init = u.nome.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+          const taxa = u.total > 0 ? Math.round((u.feitas/u.total)*100) : 0;
+          const cor = taxa>=75?'var(--ok)':taxa>=50?'var(--warn)':'var(--err)';
+          return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+            <div style="width:32px;height:32px;border-radius:50%;background:${cols[i%cols.length]};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0;">${init}</div>
+            <div style="flex:1;min-width:0;">
+              <div class="f12 fw6" style="color:var(--text);">${u.nome.split(' ')[0]}</div>
+              <div class="f10 cm">${u.cargo||''}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px;color:${cor};font-weight:700;">${taxa}%</div>
+              <div class="f10 cm">${u.feitas} feitas · ${u.pendentes} pend.</div>
+            </div>
+          </div>`;
+        }).join('');
+      } else if(statusWrap) {
+        statusWrap.innerHTML = '<div class="f11 cm" style="text-align:center;padding:16px;color:var(--dim);">Nenhuma atividade registrada hoje.</div>';
+      }
+    }
+
+    // Humor de hoje
+    const humorTimeRes = await apiGet('getHumorTime');
+    if(humorTimeRes && humorTimeRes.ok) {
+      const humorWrap = document.getElementById('dash-humor-hoje');
+      const hoje = new Date().toLocaleDateString('pt-BR');
+      const deHoje = (humorTimeRes.humor||[]).filter(h => h.data === hoje);
+      if(humorWrap) {
+        if(deHoje.length === 0) {
+          humorWrap.innerHTML = '<div class="f11 cm" style="text-align:center;padding:16px;color:var(--dim);">Nenhum registro de humor hoje ainda.</div>';
+        } else {
+          const membros = {};
+          deHoje.forEach(h => { membros[h.usuario_email] = h; });
+          humorWrap.innerHTML = Object.values(membros).map(h => `
+            <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);">
+              <span style="font-size:22px;">${h.emoji}</span>
+              <div><div class="f12 fw5" style="color:var(--text);">${h.usuario_nome.split(' ')[0]}</div>
+              <div class="f10 cm">${h.label} · ${h.hora}</div></div>
+            </div>`).join('');
+        }
+      }
+    }
+  }
+
   // Renderizar fixas e limpar antigas
   limparFixasAntigas();
   renderFixasDia();
@@ -3691,6 +3991,7 @@ function renderHumorDetalhado() {
       ${histHtml}
     </div>`;
 }
+
 
 
 
