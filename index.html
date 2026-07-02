@@ -1535,29 +1535,66 @@ function renderFerramentas() {
   }
   if(empty) empty.style.display = 'none';
 
-  grid.innerHTML = FERRAMENTAS.map(f => `
-    <div class="tc" style="position:relative;">
-      <!-- Botões de ação (só master) -->
-      ${role==='master'?`<div style="position:absolute;top:8px;right:8px;display:flex;gap:4px;opacity:0;transition:opacity .15s;" class="tc-actions">
-        <button onclick="editarFerramenta('${f.id}')" style="background:rgba(0,212,200,.15);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;" title="Editar">✏️</button>
-        <button onclick="excluirFerramenta('${f.id}')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;" title="Excluir">🗑</button>
-      </div>`:''}
-      <div onclick="openTool('${f.id}')" style="cursor:pointer;">
-        <div class="tc-ic" style="background:${catColors[f.cat]||'rgba(100,116,139,.12)'};">
-          <span style="font-size:18px;">${f.icon}</span>
-        </div>
-        <div class="fw6 f12 mb6" style="color:var(--text);">${f.nome}</div>
-        <div class="f11 cm mb6">${f.desc}</div>
-        <span class="tag ${catTags[f.cat]||''}" style="margin-top:4px;">${f.cat}</span>
-      </div>
-    </div>`).join('');
+  grid.innerHTML = '';
+  FERRAMENTAS.forEach(function(f) {
+    var div = document.createElement('div');
+    div.className = 'tc';
+    div.style.position = 'relative';
 
-  // Mostrar botões ao hover
-  grid.querySelectorAll('.tc').forEach(card => {
-    const actions = card.querySelector('.tc-actions');
-    if(!actions) return;
-    card.addEventListener('mouseenter', () => actions.style.opacity='1');
-    card.addEventListener('mouseleave', () => actions.style.opacity='0');
+    // Botões de ação (só master)
+    if(role === 'master') {
+      var acts = document.createElement('div');
+      acts.style.cssText = 'position:absolute;top:8px;right:8px;display:flex;gap:4px;opacity:0;transition:opacity .15s;';
+      acts.className = 'tc-actions';
+      var btnEdit = document.createElement('button');
+      btnEdit.textContent = '✏️';
+      btnEdit.title = 'Editar';
+      btnEdit.style.cssText = 'background:rgba(0,212,200,.15);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;';
+      btnEdit.onclick = (function(id){ return function(e){ e.stopPropagation(); editarFerramenta(id); }; })(f.id);
+      var btnDel = document.createElement('button');
+      btnDel.textContent = '🗑';
+      btnDel.title = 'Excluir';
+      btnDel.style.cssText = 'background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;';
+      btnDel.onclick = (function(id){ return function(e){ e.stopPropagation(); excluirFerramenta(id); }; })(f.id);
+      acts.appendChild(btnEdit);
+      acts.appendChild(btnDel);
+      div.appendChild(acts);
+      div.addEventListener('mouseenter', function(){ acts.style.opacity='1'; });
+      div.addEventListener('mouseleave', function(){ acts.style.opacity='0'; });
+    }
+
+    var inner = document.createElement('div');
+    inner.style.cursor = 'pointer';
+    inner.onclick = (function(id){ return function(){ openTool(id); }; })(f.id);
+
+    var icDiv = document.createElement('div');
+    icDiv.className = 'tc-ic';
+    icDiv.style.background = catColors[f.cat] || 'rgba(100,116,139,.12)';
+    var icSpan = document.createElement('span');
+    icSpan.style.fontSize = '18px';
+    icSpan.textContent = f.icon;
+    icDiv.appendChild(icSpan);
+
+    var nomeDiv = document.createElement('div');
+    nomeDiv.className = 'fw6 f12 mb6';
+    nomeDiv.style.color = 'var(--text)';
+    nomeDiv.textContent = f.nome;
+
+    var descDiv = document.createElement('div');
+    descDiv.className = 'f11 cm mb6';
+    descDiv.textContent = f.desc;
+
+    var catSpan = document.createElement('span');
+    catSpan.className = 'tag ' + (catTags[f.cat] || '');
+    catSpan.style.marginTop = '4px';
+    catSpan.textContent = f.cat;
+
+    inner.appendChild(icDiv);
+    inner.appendChild(nomeDiv);
+    inner.appendChild(descDiv);
+    inner.appendChild(catSpan);
+    div.appendChild(inner);
+    grid.appendChild(div);
   });
 }
 
@@ -1627,7 +1664,7 @@ function editarFerramenta(id) {
 function excluirFerramenta(id) {
   const f = FERRAMENTAS.find(x=>x.id===id);
   if(!f) return;
-  if(!confirm(`Excluir a ferramenta "${f.nome}"?`)) return;
+  if(!confirm('Excluir a ferramenta "' + f.nome + '"?')) return;
   FERRAMENTAS = FERRAMENTAS.filter(x=>x.id!==id);
   renderFerramentas();
   showToast('Ferramenta removida.');
@@ -1732,7 +1769,7 @@ function focoAddNew() {
   div.id = newId;
   div.style.cursor = 'pointer';
   div.onclick = () => toggleFocoSelect(newId, txt, 'tag-n', '🟡 Normal', '—');
-  div.innerHTML = `<div class="chk" id="fpc-${newId.replace('fp-','')}"></div><div class="f1 mw0"><div class="tt f12">${txt}</div><div class="tm"><span class="tag tag-n">🟡 Normal</span></div></div>`;
+  div.innerHTML = '<div class="chk" id="fpc-' + newId.replace('fp-','') + '"></div><div class="f1 mw0"><div class="tt f12">' + txt + '</div><div class="tm"><span class="tag tag-n">🟡 Normal</span></div></div>';
   pool.insertBefore(div, pool.firstChild);
   // Selecionar automaticamente
   toggleFocoSelect(newId, txt, 'tag-n', '🟡 Normal', '—');
@@ -1774,18 +1811,21 @@ function focoUpdateFila() {
     const atual = pendentes[0];
     atualWrap.style.display = 'block';
     document.getElementById('foco-atual-txt').textContent = atual.txt;
-    document.getElementById('foco-atual-meta').innerHTML = `<span class="tag ${atual.tagClass}">${atual.tagLabel}</span><span class="ttime" style="margin-left:6px;">⏱ ${atual.time}</span>`;
+    document.getElementById('foco-atual-meta').innerHTML = '<span class="tag ' + atual.tagClass + '">' + atual.tagLabel + '</span><span class="ttime" style="margin-left:6px;">⏱ ' + atual.time + '</span>';
 
     // Fila restante (sem a atual)
     const resto = pendentes.slice(1);
     if (resto.length === 0) {
       list.innerHTML = '<div class="f10 cm" style="padding:6px 0;">Sem mais tarefas na fila.</div>';
     } else {
-      list.innerHTML = '<div class="f10 cm mb6">Na fila:</div>' + resto.map(t => `
-        <div class="ti" style="margin-bottom:4px;">
-          <div class="f1 mw0"><div class="tt f11">${t.txt}</div><div class="tm"><span class="tag ${t.tagClass}" style="font-size:9px;">${t.tagLabel}</span><span class="ttime">${t.time}</span></div></div>
-          <button onclick="focoRemoverDaFila('${t.id}')" style="background:transparent;border:none;color:var(--dim);cursor:pointer;font-size:12px;" title="Remover da fila">✕</button>
-        </div>`).join('');
+      list.innerHTML = '<div class="f10 cm mb6">Na fila:</div>' + resto.map(function(t) {
+        return '<div class="ti" style="margin-bottom:4px;">'
+          + '<div class="f1 mw0"><div class="tt f11">' + t.txt + '</div>'
+          + '<div class="tm"><span class="tag ' + t.tagClass + '" style="font-size:9px;">' + t.tagLabel + '</span>'
+          + '<span class="ttime">' + t.time + '</span></div></div>'
+          + '<button onclick="focoRemoverDaFila('' + t.id + '')" style="background:transparent;border:none;color:var(--dim);cursor:pointer;font-size:12px;" title="Remover da fila">✕</button>'
+          + '</div>';
+      }).join('');
     }
   }
 
@@ -1868,20 +1908,20 @@ function renderPdiMaster(){
     const nObjs=pdi?pdi.objetivos.length:0;
     const prog=pdi&&nObjs>0?Math.round(pdi.objetivos.reduce((s,o)=>s+o.progresso,0)/nObjs):0;
     const cor=prog>=75?'var(--ok)':prog>=40?'var(--warn)':'var(--err)';
-    return `<div class="card" style="cursor:pointer;transition:all .15s;" onclick="abrirPdiColaboradora('${u.email}')"
-      onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='var(--border)'">
-      <div class="fx ic gap10 mb10">
-        <div class="m-av" style="background:${cols[i%cols.length]};width:38px;height:38px;">${init}</div>
-        <div class="f1 mw0">
-          <div class="f13 fw6" style="color:var(--text);">${u.nome}</div>
-          <div class="f10 cm">${u.cargo}</div>
-        </div>
-        <span class="tag ${nObjs>0?'tag-l':'tag-n'}">${nObjs} objetivo${nObjs!==1?'s':''}</span>
-      </div>
-      <div class="fx jb f10 mb5"><span class="cm">Progresso geral</span><span style="color:${cor};">${prog}%</span></div>
-      <div class="prog"><div class="pf" style="width:${prog}%;background:${cor};"></div></div>
-      <div class="f10 cdim mt8">Clique para editar o PDI ›</div>
-    </div>`;
+    return '<div class="card" style="cursor:pointer;transition:all .15s;" onclick="abrirPdiColaboradora(\'' + u.email + '\')"'
+      + ' onmouseover="this.style.borderColor=\'var(--cyan)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'
+      + '<div class="fx ic gap10 mb10">'
+      + '<div class="m-av" style="background:' + cols[i%cols.length] + ';width:38px;height:38px;">' + init + '</div>'
+      + '<div class="f1 mw0">'
+      + '<div class="f13 fw6" style="color:var(--text);">' + u.nome + '</div>'
+      + '<div class="f10 cm">' + u.cargo + '</div>'
+      + '</div>'
+      + '<span class="tag ' + (nObjs>0?'tag-l':'tag-n') + '">' + nObjs + ' objetivo' + (nObjs!==1?'s':'') + '</span>'
+      + '</div>'
+      + '<div class="fx jb f10 mb5"><span class="cm">Progresso geral</span><span style="color:' + cor + ';">' + prog + '%</span></div>'
+      + '<div class="prog"><div class="pf" style="width:' + prog + '%;background:' + cor + ';"></div></div>'
+      + '<div class="f10 cdim mt8">Clique para editar o PDI ›</div>'
+      + '</div>';
   }).join('');
 }
 
@@ -2954,7 +2994,7 @@ function renderDashboard() {
       <div style="margin-bottom:10px;">
         <div class="fx jb f11 mb5"><span class="fw5" style="color:var(--text);">🎯 ${o.titulo}</span><span style="color:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};">${o.progresso}%</span></div>
         <div class="prog"><div class="pf" style="width:${o.progresso}%;background:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};"></div></div>
-        ${o.prazo?`<div class="f10 cdim mt8">Prazo: ${o.prazo}</div>`:''}
+        ${o.prazo?'<div class="f10 cdim mt8">Prazo: '+o.prazo+'</div>':''}
       </div>`).join('') || '<div class="f11 cm">Sem objetivos no PDI.</div>';
 
     html += `<div class="card mb12">
