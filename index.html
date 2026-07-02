@@ -150,7 +150,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
     </div>
     <div class="mb10"><label class="lbl">E-mail</label><input type="email" id="l-email" placeholder="seu@cellfy.com.br"></div>
     <div class="mb12"><label class="lbl">Senha</label><input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button onclick="initAudio();doLogin()" style="width:100%;padding:10px;border-radius:7px;border:none;background:var(--purple);color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Entrar</button>
+    <button onclick="doLogin()" style="width:100%;padding:10px;border-radius:7px;border:none;background:var(--purple);color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Entrar</button>
   </div>
 </div>
 <div id="app" style="display:none;">
@@ -217,7 +217,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 
 <!-- MEU DIA -->
 <div id="p-hoje" class="page">
-  <div class="alert al-i" id="banner-lembretes" style="display:none;flex-wrap:wrap;gap:6px;align-items:flex-start;"></div>
+  <div class="alert al-i" id="banner-lembretes" style="display:none;"></div>
   <div class="g4 mb12">
     <div class="mc"><div class="ml">Total hoje</div><div class="mv cc" id="cnt-total">0</div><div class="ms">tarefas</div></div>
     <div class="mc"><div class="ml">Concluídas</div><div class="mv cs" id="cnt-feitas">0</div><div class="ms">hoje</div></div>
@@ -564,23 +564,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
     <div class="fx jb f11 mb6"><span class="cm">Meta junho: 200 tarefas</span><span class="cc">168/200</span></div>
     <div class="prog" style="height:5px;"><div class="pf" style="width:84%;"></div></div>
   </div></div>
-
-  <!-- RELATÓRIO DE HUMOR -->
-  <div class="card" style="margin-top:12px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-      <div class="ct" style="margin-bottom:0;">😊 Relatório de Humor do Time</div>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <select id="humor-periodo" onchange="getRelatorioHumor(this.value)" style="font-size:11px;padding:4px 8px;width:130px;">
-          <option value="semana">Últimos 7 dias</option>
-          <option value="mes">Últimos 30 dias</option>
-        </select>
-        <button class="btn" onclick="getRelatorioHumor(document.getElementById('humor-periodo').value)" style="font-size:10px;padding:4px 10px;">🔄 Atualizar</button>
-      </div>
-    </div>
-    <div id="humor-relatorio-wrap">
-      <div class="f11 cm" style="padding:20px;text-align:center;color:var(--dim);">Clique em Atualizar para carregar o relatório de humor do time.</div>
-    </div>
-  </div>
 </div>
 
 <!-- TIME CS -->
@@ -768,11 +751,8 @@ async function carregarDados() {
     const urgClass = {urgente:'tag-u', normal:'tag-n', baixa:'tag-l'};
     let total=0, feitas=0, urgentes=0;
     res.tarefas.forEach(t => {
-      // Mostrar só tarefas do usuário logado (criadas por ele ou designadas para ele)
-      const emailAtual = currentUser.email.toLowerCase();
-      const emailDono = (t.usuario_email || '').toLowerCase();
-      const emailDesig = (t.designado_para || '').toLowerCase();
-      if(emailDono !== emailAtual && emailDesig !== emailAtual) return;
+      var _em = currentUser.email.toLowerCase();
+      if((t.usuario_email||'').toLowerCase()!==_em && (t.designado_para||'').toLowerCase()!==_em) return;
       total++;
       const tid = t.id;
       const urg = t.urgencia || 'normal';
@@ -811,7 +791,7 @@ async function carregarDados() {
     ALARMS = alRes.alarmes.map(a => ({
       hora: a.hora, msg: a.mensagem, ativo: a.ativo, disparado: false, id: a.id
     }));
-    if(document.getElementById('alarm-list')) renderAlarms(); renderBannerLembretes();
+    if(document.getElementById('alarm-list')) renderAlarms();
   }
 
   // Sincronizar tarefas pendentes com o Modo Foco
@@ -821,16 +801,14 @@ async function carregarDados() {
     if(pendentes.length > 0) {
       const urgMap = {urgente:'🔴 Urgente', normal:'🟡 Normal', baixa:'🟢 Baixa'};
       const urgClass = {urgente:'tag-u', normal:'tag-n', baixa:'tag-l'};
-      pool.innerHTML = pendentes.map(function(t) {
-        var urg = t.urgencia || 'normal';
-        var fid = 'fp-' + t.id;
-        var titulo_safe = t.titulo.replace(/'/g, '&apos;');
-        return '<div class="ti" id="'+fid+'" style="cursor:pointer;" onclick="toggleFocoSelect(''+fid+'',''+titulo_safe+'',''+urgClass[urg]+'',''+urgMap[urg]+'',''+(t.tempo||'—')+'')">'
-          +'<div class="chk" id="fpc-'+t.id+'"></div>'
-          +'<div class="f1 mw0"><div class="tt f12">'+t.titulo+'</div>'
-          +'<div class="tm"><span class="tag '+urgClass[urg]+'">'+urgMap[urg]+'</span>'
-          +'<span class="ttime">'+(t.tempo||'—')+'</span></div></div>'
-          +'</div>';
+      pool.innerHTML = pendentes.map(t => {
+        const urg = t.urgencia || 'normal';
+        const fid = 'fp-' + t.id;
+        return `<div class="ti" id="${fid}" style="cursor:pointer;" onclick="toggleFocoSelect('${fid}','${t.titulo.replace(/'/g,"\'")}','${urgClass[urg]}','${urgMap[urg]}','${t.tempo||'—'}')">
+          <div class="chk" id="fpc-${t.id}"></div>
+          <div class="f1 mw0"><div class="tt f12">${t.titulo}</div>
+          <div class="tm"><span class="tag ${urgClass[urg]}">${urgMap[urg]}</span><span class="ttime">${t.tempo||'—'}</span></div></div>
+        </div>`;
       }).join('');
     }
   }
@@ -889,27 +867,15 @@ function renderCanalFeed(posts) {
         <div id="lido-${p.id}" style="width:8px;height:8px;border-radius:50%;background:var(--purple);flex-shrink:0;"></div>
       </div>
       <div class="p-body">${p.mensagem}</div>
-      <div class="fx gap6" style="flex-wrap:wrap;">
+      <div class="fx gap6">
         <button class="react" onclick="toggleReacao(this,'👍','post-${p.id}')">👍 <span class="cnt-reacao">0</span></button>
         <button class="react" onclick="toggleReacao(this,'❤️','post-${p.id}')">❤️ <span class="cnt-reacao">0</span></button>
         <button class="react" onclick="toggleReacao(this,'🔥','post-${p.id}')">🔥 <span class="cnt-reacao">0</span></button>
-        <button class="react" onclick="toggleReacao(this,'👏','post-${p.id}')">👏 <span class="cnt-reacao">0</span></button>
         <button class="react" onclick="toggleReply(this)">💬 Responder</button>
+        <button class="react" onclick="excluirPost('post-${p.id}')" style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3);color:#fca5a5;">🗑</button>
         <button class="react" onclick="markPostRead('post-${p.id}','lido-${p.id}')" style="margin-left:auto;">✓ Lido</button>
       </div>
-
-      <div class="reply-area" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;">
-        <div class="respostas-list" style="margin-bottom:8px;"></div>
-        <div style="display:flex;gap:6px;">
-          <input class="reply-input" placeholder="Escreva uma resposta..." style="flex:1;font-size:11px;">
-          <button onclick="enviarResposta(this)" style="background:var(--purple);border:none;color:white;border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap;">Enviar</button>
-        </div>
-      </div>
-      <div style="display:flex;gap:5px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
-        <button onclick="editarPost('post-${p.id}',this)" style="background:rgba(0,212,200,.1);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 9px;font-size:10px;cursor:pointer;font-family:inherit;">✏️ Editar</button>
-        <button onclick="excluirPost('post-${p.id}')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 9px;font-size:10px;cursor:pointer;font-family:inherit;">🗑 Excluir</button>
-      </div>
-
+      <div class="reply-area" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;"><input placeholder="Resposta..."></div>
     </div>`;
   }).join('');
   // Só contar como não lido posts das últimas 24h
@@ -1024,11 +990,10 @@ function sp(p){
 
   if(p==='pdi') renderPdi();
   if(p==='config') renderAlarms();
-  if(p==='hoje') { renderFixasDia(); renderBannerLembretes(); }
+  if(p==='hoje'){renderFixasDia();renderBannerLembretes();}
   if(p==='time') renderTimeCS();
   if(p==='cadastro') renderCadList();
   if(p==='pdi-master') renderPdiMaster();
-  if(p==='dash') getRelatorioHumor('semana');
   if(p==='dashboard') initDashboard();
   if(p==='ferramentas') renderFerramentas();
 }
@@ -1089,42 +1054,13 @@ function toggleAdd(){
   p.style.display = isOpen ? 'none' : 'block';
   if(!isOpen) setTimeout(()=>{const i=document.getElementById('nt-d');if(i)i.focus();},50);
 }
-// toggleTF já definida abaixo
+function toggleTF(){const f=document.getElementById('tf');f.style.display=f.style.display==='none'?'block':'none';}
 function togglePF(){const f=document.getElementById('pf');f.style.display=f.style.display==='none'?'block':'none';}
 // ── TAREFAS FIXAS DIÁRIAS ──
 let TAREFAS_FIXAS = JSON.parse(localStorage.getItem('cs_fixas') || '[]');
 
 function salvarFixasLocal() {
   localStorage.setItem('cs_fixas', JSON.stringify(TAREFAS_FIXAS));
-}
-
-function renderBannerLembretes() {
-  const banner = document.getElementById('banner-lembretes');
-  if(!banner) return;
-
-  // Pegar alarmes ativos do usuário logado
-  const ativos = ALARMS.filter(function(a) { return a.ativo; });
-
-  if(ativos.length === 0) {
-    banner.style.display = 'none';
-    return;
-  }
-
-  // Ordenar por hora
-  ativos.sort(function(a, b) {
-    return a.hora.localeCompare(b.hora);
-  });
-
-  banner.style.display = 'flex';
-  banner.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>'
-    + '<div style="flex:1;min-width:0;">'
-    + '<span style="font-weight:700;margin-right:8px;">Seus lembretes de hoje:</span>'
-    + ativos.map(function(a) {
-        return '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);border-radius:20px;padding:1px 10px;font-size:11px;margin:2px 4px 2px 0;">'
-          + '🕐 ' + a.hora + ' — ' + a.msg
-          + '</span>';
-      }).join('')
-    + '</div>';
 }
 
 function renderFixasDia() {
@@ -1151,24 +1087,22 @@ function renderFixasDia() {
   const urgClass = {urgente:'tag-u', normal:'tag-n', baixa:'tag-l'};
   const urgMap = {urgente:'🔴 Urgente', normal:'🟡 Normal', baixa:'🟢 Baixa'};
 
-  list.innerHTML = minhas.map(function(f) {
-    var feita = concluidasHoje.includes(f.id);
-    var chkClass = 'chk' + (feita?' done':'');
-    var checkSvg = feita?'<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>':'';
-    var ttClass = 'tt' + (feita?' struck':'');
-    var escopoTag = f.escopo==='geral'?'<span class="tag tag-c">🌐 Geral</span>':'<span class="tag tag-p">👤 Pessoal</span>';
-    var feitaSpan = feita?'<span class="f10" style="color:var(--ok);flex-shrink:0;">✓ Feita hoje</span>':'';
-    return '<div class="ti" id="fixa-row-'+f.id+'" style="margin-bottom:5px;'+(feita?'opacity:.6;':'')+'">'
-      +'<div class="'+chkClass+'" onclick="toggleFixa(''+f.id+'')" style="flex-shrink:0;">'+checkSvg+'</div>'
-      +'<div class="f1 mw0">'
-      +'<div class="'+ttClass+'">'+f.titulo+'</div>'
-      +'<div class="tm">'
-      +'<span class="tag '+(urgClass[f.urgencia]||'tag-n')+'">'+(urgMap[f.urgencia]||'🟡 Normal')+'</span>'
-      +'<span class="tag">'+f.categoria+'</span>'
-      +escopoTag
-      +'</div></div>'
-      +feitaSpan
-      +'</div>';
+  list.innerHTML = minhas.map(f => {
+    const feita = concluidasHoje.includes(f.id);
+    return `<div class="ti" id="fixa-row-${f.id}" style="margin-bottom:5px;${feita?'opacity:.6;':''}">
+      <div class="chk ${feita?'done':''}" onclick="toggleFixa('${f.id}')" style="flex-shrink:0;">
+        ${feita?'<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>':''}
+      </div>
+      <div class="f1 mw0">
+        <div class="tt ${feita?'struck':''}">${f.titulo}</div>
+        <div class="tm">
+          <span class="tag ${urgClass[f.urgencia]||'tag-n'}">${urgMap[f.urgencia]||'🟡 Normal'}</span>
+          <span class="tag">${f.categoria}</span>
+          ${f.escopo==='geral'?'<span class="tag tag-c">🌐 Geral</span>':'<span class="tag tag-p">👤 Pessoal</span>'}
+        </div>
+      </div>
+      ${feita?'<span class="f10" style="color:var(--ok);flex-shrink:0;">✓ Feita hoje</span>':''}
+    </div>`;
   }).join('');
 }
 
@@ -1318,25 +1252,15 @@ async function publishPost(){
       <span class="tag tag-i">${tipo}</span>
     </div>
     <div class="p-body">${textarea.value}</div>
-    <div class="fx gap6" style="flex-wrap:wrap;">
+    <div class="fx gap6">
       <button class="react" onclick="toggleReacao(this,'👍','${newId}')">👍 <span class="cnt-reacao">0</span></button>
       <button class="react" onclick="toggleReacao(this,'❤️','${newId}')">❤️ <span class="cnt-reacao">0</span></button>
       <button class="react" onclick="toggleReacao(this,'🔥','${newId}')">🔥 <span class="cnt-reacao">0</span></button>
-      <button class="react" onclick="toggleReacao(this,'👏','${newId}')">👏 <span class="cnt-reacao">0</span></button>
       <button class="react" onclick="toggleReply(this)">💬 Responder</button>
+      <button class="react" onclick="excluirPost('${newId}')" style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3);color:#fca5a5;">🗑</button>
       <button class="react" onclick="markPostRead('${newId}','${lidoId}')" id="btn-${lidoId}" style="margin-left:auto;">✓ Marcar como lido</button>
     </div>
-    <div class="reply-area" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;">
-      <div class="respostas-list" style="margin-bottom:8px;"></div>
-      <div style="display:flex;gap:6px;">
-        <input class="reply-input" placeholder="Escreva uma resposta..." style="flex:1;font-size:11px;">
-        <button onclick="enviarResposta(this)" style="background:var(--purple);border:none;color:white;border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap;">Enviar</button>
-      </div>
-    </div>
-    <div style="display:flex;gap:5px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
-      <button onclick="editarPost('${newId}',this)" style="background:rgba(0,212,200,.1);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 9px;font-size:10px;cursor:pointer;font-family:inherit;">✏️ Editar</button>
-      <button onclick="excluirPost('${newId}')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 9px;font-size:10px;cursor:pointer;font-family:inherit;">🗑 Excluir</button>
-    </div>\`;
+    <div class="reply-area" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;"><input placeholder="Resposta..."></div>`;
   feed.insertBefore(div, feed.firstChild);
   textarea.value = '';
   document.getElementById('pf').style.display = 'none';
@@ -1348,99 +1272,31 @@ async function publishPost(){
 // Inicializar badge
 setTimeout(updateCanalBadge, 200);
 
-// Armazena reações por post
-const REACOES = {};
-
-function toggleReacao(btn, emoji, postId) {
-  if(!REACOES[postId]) REACOES[postId] = {};
-  if(!REACOES[postId][emoji]) REACOES[postId][emoji] = [];
-  const lista = REACOES[postId][emoji];
-  const email = currentUser.email;
-  const idx = lista.indexOf(email);
-  const countEl = btn.querySelector('.cnt-reacao');
-  if(idx >= 0) {
-    lista.splice(idx, 1);
-    btn.classList.remove('on');
-  } else {
-    lista.push(email);
-    btn.classList.add('on');
-  }
-  if(countEl) countEl.textContent = lista.length > 0 ? lista.length : '0';
+const REACOES={};
+function toggleReacao(btn,emoji,postId){
+  if(!REACOES[postId])REACOES[postId]={};
+  if(!REACOES[postId][emoji])REACOES[postId][emoji]=[];
+  var lista=REACOES[postId][emoji],email=currentUser.email,idx=lista.indexOf(email);
+  var cel=btn.querySelector('.cnt-reacao');
+  if(idx>=0){lista.splice(idx,1);btn.classList.remove('on');}else{lista.push(email);btn.classList.add('on');}
+  if(cel)cel.textContent=lista.length>0?lista.length:'0';
 }
-
-function toggleReply(btn){
-  const ra=btn.closest('.post').querySelector('.reply-area');
-  if(!ra) return;
-  const isOpen = ra.style.display !== 'none';
-  ra.style.display = isOpen ? 'none' : 'block';
-  if(!isOpen) setTimeout(()=>{ const inp=ra.querySelector('.reply-input'); if(inp)inp.focus(); },50);
+function excluirPost(id){
+  if(!confirm('Excluir este post?'))return;
+  var el=document.getElementById(id);
+  if(el){el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(function(){el.remove();},300);showToast('Post excluído.');}
 }
-
-function enviarResposta(btn) {
-  const area = btn.closest('.reply-area');
-  const input = area.querySelector('.reply-input');
-  if(!input || !input.value.trim()) return;
-  const lista = area.querySelector('.respostas-list');
-  if(!lista) return;
-  const agora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-  const init = currentUser.nome.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
-  const div = document.createElement('div');
-  div.style.cssText = 'background:var(--card2);border-radius:7px;padding:7px 10px;margin-bottom:5px;display:flex;align-items:flex-start;gap:8px;';
-  div.innerHTML = '<div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:white;flex-shrink:0;">'+init+'</div>'
-    +'<div style="flex:1;min-width:0;"><div style="font-size:11px;font-weight:600;color:var(--text);">'+currentUser.nome.split(' ')[0]+'</div>'
-    +'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+input.value.trim()+'</div>'
-    +'<div style="font-size:10px;color:var(--dim);margin-top:3px;">agora '+agora+'</div></div>';
-  lista.appendChild(div);
-  input.value = '';
+function renderBannerLembretes(){
+  var b=document.getElementById('banner-lembretes');if(!b)return;
+  var ativos=ALARMS.filter(function(a){return a.ativo;});
+  if(!ativos.length){b.style.display='none';return;}
+  ativos.sort(function(a,c){return a.hora.localeCompare(c.hora);});
+  b.style.display='flex';b.style.flexWrap='wrap';b.style.gap='6px';b.style.alignItems='center';
+  b.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>'
+    +'<strong style="margin-right:4px;">Lembretes:</strong>'
+    +ativos.map(function(a){return '<span style="background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);border-radius:20px;padding:1px 10px;font-size:11px;">🕐 '+a.hora+' — '+a.msg+'</span>';}).join('');
 }
-
-function editarPost(postId, btn) {
-  const post = document.getElementById(postId);
-  if(!post) return;
-  const body = post.querySelector('.p-body');
-  if(!body) return;
-  // Se já está editando, cancelar
-  const existing = post.querySelector('.edit-form');
-  if(existing) { existing.remove(); body.style.display = ''; btn.textContent = '✏️ Editar'; return; }
-  const textoAtual = body.textContent;
-  body.style.display = 'none';
-  btn.textContent = '✕ Cancelar';
-  const form = document.createElement('div');
-  form.className = 'edit-form';
-  form.style.cssText = 'margin:8px 0;';
-  form.innerHTML = '<textarea style="width:100%;height:70px;resize:none;font-size:12px;margin-bottom:6px;">' + textoAtual + '</textarea>'
-    + '<button onclick="salvarEdicaoPost('' + postId + '',this)" style="background:var(--purple);border:none;color:white;border-radius:6px;padding:4px 14px;font-size:11px;cursor:pointer;font-family:inherit;">💾 Salvar</button>';
-  body.insertAdjacentElement('afterend', form);
-  form.querySelector('textarea').focus();
-}
-
-function salvarEdicaoPost(postId, btn) {
-  const post = document.getElementById(postId);
-  if(!post) return;
-  const form = post.querySelector('.edit-form');
-  const body = post.querySelector('.p-body');
-  const ta = form ? form.querySelector('textarea') : null;
-  if(!ta || !ta.value.trim()) return;
-  body.textContent = ta.value.trim();
-  body.style.display = '';
-  if(form) form.remove();
-  // Restaurar texto do botão editar
-  const editBtn = post.querySelector('button[onclick*="editarPost"]');
-  if(editBtn) editBtn.textContent = '✏️ Editar';
-  showToast('Post editado! ✓');
-}
-
-function excluirPost(postId) {
-  if(!confirm('Excluir este post?')) return;
-  const el = document.getElementById(postId);
-  if(el) {
-    el.style.transition = 'opacity .3s, height .3s';
-    el.style.opacity = '0';
-    setTimeout(()=>{ el.style.height='0'; el.style.overflow='hidden'; el.style.marginBottom='0'; el.style.padding='0'; }, 300);
-    setTimeout(()=>el.remove(), 600);
-    showToast('Post excluído.');
-  }
-}
+function toggleReply(btn){const ra=btn.closest('.post').querySelector('.reply-area');if(ra)ra.style.display=ra.style.display==='none'?'block':'none';}
 
 async function createTask(){
   const desc=document.getElementById('nt-d').value.trim();if(!desc)return;
@@ -1539,85 +1395,30 @@ function renderFerramentas() {
   }
   if(empty) empty.style.display = 'none';
 
-  grid.innerHTML = '';
-  FERRAMENTAS.forEach(function(f) {
-    var div = document.createElement('div');
-    div.className = 'tc';
-    div.style.position = 'relative';
+  grid.innerHTML = FERRAMENTAS.map(f => `
+    <div class="tc" style="position:relative;">
+      <!-- Botões de ação (só master) -->
+      ${role==='master'?'<div style="position:absolute;top:8px;right:8px;display:flex;gap:4px;opacity:0;transition:opacity .15s;" class="tc-actions"><button onclick="editarFerramenta(\''+f.id+'\')" style="background:rgba(0,212,200,.15);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;" title="Editar">✏️</button><button onclick="excluirFerramenta(\''+f.id+'\')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;" title="Excluir">🗑</button></div>':''}
+      <div onclick="openTool('${f.id}')" style="cursor:pointer;">
+        <div class="tc-ic" style="background:${catColors[f.cat]||'rgba(100,116,139,.12)'};">
+          <span style="font-size:18px;">${f.icon}</span>
+        </div>
+        <div class="fw6 f12 mb6" style="color:var(--text);">${f.nome}</div>
+        <div class="f11 cm mb6">${f.desc}</div>
+        <span class="tag ${catTags[f.cat]||''}" style="margin-top:4px;">${f.cat}</span>
+      </div>
+    </div>`).join('');
 
-    // Botões de ação (só master)
-    if(role === 'master') {
-      var acts = document.createElement('div');
-      acts.style.cssText = 'position:absolute;top:8px;right:8px;display:flex;gap:4px;opacity:0;transition:opacity .15s;';
-      acts.className = 'tc-actions';
-      var btnEdit = document.createElement('button');
-      btnEdit.textContent = '✏️';
-      btnEdit.title = 'Editar';
-      btnEdit.style.cssText = 'background:rgba(0,212,200,.15);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;';
-      btnEdit.onclick = (function(id){ return function(e){ e.stopPropagation(); editarFerramenta(id); }; })(f.id);
-      var btnDel = document.createElement('button');
-      btnDel.textContent = '🗑';
-      btnDel.title = 'Excluir';
-      btnDel.style.cssText = 'background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;';
-      btnDel.onclick = (function(id){ return function(e){ e.stopPropagation(); excluirFerramenta(id); }; })(f.id);
-      acts.appendChild(btnEdit);
-      acts.appendChild(btnDel);
-      div.appendChild(acts);
-      div.addEventListener('mouseenter', function(){ acts.style.opacity='1'; });
-      div.addEventListener('mouseleave', function(){ acts.style.opacity='0'; });
-    }
-
-    var inner = document.createElement('div');
-    inner.style.cursor = 'pointer';
-    inner.onclick = (function(id){ return function(){ openTool(id); }; })(f.id);
-
-    var icDiv = document.createElement('div');
-    icDiv.className = 'tc-ic';
-    icDiv.style.background = catColors[f.cat] || 'rgba(100,116,139,.12)';
-    var icSpan = document.createElement('span');
-    icSpan.style.fontSize = '18px';
-    icSpan.textContent = f.icon;
-    icDiv.appendChild(icSpan);
-
-    var nomeDiv = document.createElement('div');
-    nomeDiv.className = 'fw6 f12 mb6';
-    nomeDiv.style.color = 'var(--text)';
-    nomeDiv.textContent = f.nome;
-
-    var descDiv = document.createElement('div');
-    descDiv.className = 'f11 cm mb6';
-    descDiv.textContent = f.desc;
-
-    var catSpan = document.createElement('span');
-    catSpan.className = 'tag ' + (catTags[f.cat] || '');
-    catSpan.style.marginTop = '4px';
-    catSpan.textContent = f.cat;
-
-    inner.appendChild(icDiv);
-    inner.appendChild(nomeDiv);
-    inner.appendChild(descDiv);
-    inner.appendChild(catSpan);
-    div.appendChild(inner);
-    grid.appendChild(div);
+  // Mostrar botões ao hover
+  grid.querySelectorAll('.tc').forEach(card => {
+    const actions = card.querySelector('.tc-actions');
+    if(!actions) return;
+    card.addEventListener('mouseenter', () => actions.style.opacity='1');
+    card.addEventListener('mouseleave', () => actions.style.opacity='0');
   });
 }
 
-function toggleTF() {
-  const tf = document.getElementById('tf');
-  if(!tf) return;
-  const isOpen = tf.style.display !== 'none';
-  if(isOpen) { cancelarFerramenta(); return; }
-  // Resetar para modo adicionar
-  document.getElementById('tf-title').textContent = '➕ Nova ferramenta';
-  document.getElementById('tf-editing-id').value = '';
-  document.getElementById('tf-nome').value = '';
-  document.getElementById('tf-url').value = '';
-  document.getElementById('tf-desc').value = '';
-  document.getElementById('tf-cat').value = 'Formulário';
-  document.getElementById('tf-icon').value = '📄';
-  tf.style.display = 'block';
-  setTimeout(() => document.getElementById('tf-nome').focus(), 50);
-}
+// toggleTF já definida acima
 
 function cancelarFerramenta() {
   const tf = document.getElementById('tf');
@@ -1668,7 +1469,7 @@ function editarFerramenta(id) {
 function excluirFerramenta(id) {
   const f = FERRAMENTAS.find(x=>x.id===id);
   if(!f) return;
-  if(!confirm('Excluir a ferramenta "' + f.nome + '"?')) return;
+  if(!confirm(`Excluir a ferramenta "${f.nome}"?`)) return;
   FERRAMENTAS = FERRAMENTAS.filter(x=>x.id!==id);
   renderFerramentas();
   showToast('Ferramenta removida.');
@@ -1690,36 +1491,16 @@ function openTool(id) {
 
 function pickTab(el){el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));el.classList.add('act');}
 function switchPdiTab(el,tabId){el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));el.classList.add('act');document.querySelectorAll('.pdi-tab').forEach(t=>{t.classList.remove('act');t.style.display='none';});const tg=document.getElementById(tabId);if(tg){tg.classList.add('act');tg.style.display='block';}}
-function pickMood(el) {
-  // Destacar emoji selecionado
-  el.parentElement.querySelectorAll('span').forEach(function(s) {
-    s.style.opacity = '0.4';
-    s.style.transform = 'scale(1)';
-  });
-  el.style.opacity = '1';
-  el.style.transform = 'scale(1.3)';
-
-  // Mapear emoji para label e nível
-  var emoji = el.textContent.trim();
-  var mapa = {'😴':'Esgotada','😐':'Neutro','🙂':'Bem','🔥':'Produtiva'};
-  var label = mapa[emoji] || '';
-  var agora = new Date();
-  var hora = agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-  var data = agora.toLocaleDateString('pt-BR');
-
-  // Salvar no Sheets
-  apiPost('salvarHumor', {
-    usuario_email: currentUser.email,
-    usuario_nome: currentUser.nome,
-    emoji: emoji,
-    label: label,
-    data: data,
-    hora: hora,
-    timestamp: Date.now()
-  });
-
-  // Feedback visual
-  showToast('Humor registrado: ' + emoji + ' ' + label);
+function pickMood(el){
+  el.parentElement.querySelectorAll('span').forEach(function(s){s.style.opacity='0.4';s.style.transform='scale(1)';});
+  el.style.opacity='1'; el.style.transform='scale(1.3)';
+  var emoji=el.textContent.trim();
+  var mapa={'😴':'Esgotada','😐':'Neutro','🙂':'Bem','🔥':'Produtiva'};
+  var label=mapa[emoji]||'';
+  var agora=new Date();
+  apiPost('salvarHumor',{usuario_email:currentUser.email,usuario_nome:currentUser.nome,emoji:emoji,label:label,
+    data:agora.toLocaleDateString('pt-BR'),hora:agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),timestamp:Date.now()});
+  showToast('Humor registrado: '+emoji+' '+label);
 }
 
 function setSync(s){const b=document.getElementById('sync-b');const t=document.getElementById('sync-t');const now=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});if(s==='ok'){b.className='sync-b s-ok';b.innerHTML='&#10003; Atualizado';t.textContent=now;}else if(s==='ld'){b.className='sync-b s-ld';b.innerHTML='&#8635; Atualizando...';}else{b.className='sync-b s-er';b.innerHTML='&#33; Sem conexão';t.textContent=now;}}
@@ -1773,7 +1554,7 @@ function focoAddNew() {
   div.id = newId;
   div.style.cursor = 'pointer';
   div.onclick = () => toggleFocoSelect(newId, txt, 'tag-n', '🟡 Normal', '—');
-  div.innerHTML = '<div class="chk" id="fpc-' + newId.replace('fp-','') + '"></div><div class="f1 mw0"><div class="tt f12">' + txt + '</div><div class="tm"><span class="tag tag-n">🟡 Normal</span></div></div>';
+  div.innerHTML = `<div class="chk" id="fpc-${newId.replace('fp-','')}"></div><div class="f1 mw0"><div class="tt f12">${txt}</div><div class="tm"><span class="tag tag-n">🟡 Normal</span></div></div>`;
   pool.insertBefore(div, pool.firstChild);
   // Selecionar automaticamente
   toggleFocoSelect(newId, txt, 'tag-n', '🟡 Normal', '—');
@@ -1815,21 +1596,18 @@ function focoUpdateFila() {
     const atual = pendentes[0];
     atualWrap.style.display = 'block';
     document.getElementById('foco-atual-txt').textContent = atual.txt;
-    document.getElementById('foco-atual-meta').innerHTML = '<span class="tag ' + atual.tagClass + '">' + atual.tagLabel + '</span><span class="ttime" style="margin-left:6px;">⏱ ' + atual.time + '</span>';
+    document.getElementById('foco-atual-meta').innerHTML = `<span class="tag ${atual.tagClass}">${atual.tagLabel}</span><span class="ttime" style="margin-left:6px;">⏱ ${atual.time}</span>`;
 
     // Fila restante (sem a atual)
     const resto = pendentes.slice(1);
     if (resto.length === 0) {
       list.innerHTML = '<div class="f10 cm" style="padding:6px 0;">Sem mais tarefas na fila.</div>';
     } else {
-      list.innerHTML = '<div class="f10 cm mb6">Na fila:</div>' + resto.map(function(t) {
-        return '<div class="ti" style="margin-bottom:4px;">'
-          + '<div class="f1 mw0"><div class="tt f11">' + t.txt + '</div>'
-          + '<div class="tm"><span class="tag ' + t.tagClass + '" style="font-size:9px;">' + t.tagLabel + '</span>'
-          + '<span class="ttime">' + t.time + '</span></div></div>'
-          + '<button onclick="focoRemoverDaFila('' + t.id + '')" style="background:transparent;border:none;color:var(--dim);cursor:pointer;font-size:12px;" title="Remover da fila">✕</button>'
-          + '</div>';
-      }).join('');
+      list.innerHTML = '<div class="f10 cm mb6">Na fila:</div>' + resto.map(t => `
+        <div class="ti" style="margin-bottom:4px;">
+          <div class="f1 mw0"><div class="tt f11">${t.txt}</div><div class="tm"><span class="tag ${t.tagClass}" style="font-size:9px;">${t.tagLabel}</span><span class="ttime">${t.time}</span></div></div>
+          <button onclick="focoRemoverDaFila('${t.id}')" style="background:transparent;border:none;color:var(--dim);cursor:pointer;font-size:12px;" title="Remover da fila">✕</button>
+        </div>`).join('');
     }
   }
 
@@ -1912,20 +1690,20 @@ function renderPdiMaster(){
     const nObjs=pdi?pdi.objetivos.length:0;
     const prog=pdi&&nObjs>0?Math.round(pdi.objetivos.reduce((s,o)=>s+o.progresso,0)/nObjs):0;
     const cor=prog>=75?'var(--ok)':prog>=40?'var(--warn)':'var(--err)';
-    return '<div class="card" style="cursor:pointer;transition:all .15s;" onclick="abrirPdiColaboradora(\'' + u.email + '\')"'
-      + ' onmouseover="this.style.borderColor=\'var(--cyan)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'
-      + '<div class="fx ic gap10 mb10">'
-      + '<div class="m-av" style="background:' + cols[i%cols.length] + ';width:38px;height:38px;">' + init + '</div>'
-      + '<div class="f1 mw0">'
-      + '<div class="f13 fw6" style="color:var(--text);">' + u.nome + '</div>'
-      + '<div class="f10 cm">' + u.cargo + '</div>'
-      + '</div>'
-      + '<span class="tag ' + (nObjs>0?'tag-l':'tag-n') + '">' + nObjs + ' objetivo' + (nObjs!==1?'s':'') + '</span>'
-      + '</div>'
-      + '<div class="fx jb f10 mb5"><span class="cm">Progresso geral</span><span style="color:' + cor + ';">' + prog + '%</span></div>'
-      + '<div class="prog"><div class="pf" style="width:' + prog + '%;background:' + cor + ';"></div></div>'
-      + '<div class="f10 cdim mt8">Clique para editar o PDI ›</div>'
-      + '</div>';
+    return `<div class="card" style="cursor:pointer;transition:all .15s;" onclick="abrirPdiColaboradora('${u.email}')"
+      onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div class="fx ic gap10 mb10">
+        <div class="m-av" style="background:${cols[i%cols.length]};width:38px;height:38px;">${init}</div>
+        <div class="f1 mw0">
+          <div class="f13 fw6" style="color:var(--text);">${u.nome}</div>
+          <div class="f10 cm">${u.cargo}</div>
+        </div>
+        <span class="tag ${nObjs>0?'tag-l':'tag-n'}">${nObjs} objetivo${nObjs!==1?'s':''}</span>
+      </div>
+      <div class="fx jb f10 mb5"><span class="cm">Progresso geral</span><span style="color:${cor};">${prog}%</span></div>
+      <div class="prog"><div class="pf" style="width:${prog}%;background:${cor};"></div></div>
+      <div class="f10 cdim mt8">Clique para editar o PDI ›</div>
+    </div>`;
   }).join('');
 }
 
@@ -1976,52 +1754,52 @@ function renderEditorPdi(){
   const objsEl=document.getElementById('pdi-editor-objs');
   objsEl.innerHTML = data.objetivos.length===0
     ? '<div class="f11 cm mb12" style="text-align:center;padding:16px;background:var(--card2);border-radius:8px;color:var(--dim);">Nenhum objetivo ainda. Adicione o primeiro abaixo.</div>'
-    : data.objetivos.map(function(o,i) {
-      var corBorda = o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)';
-      var corProg  = o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)';
-      var corText  = o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)';
-      return '<div class="card mb10" style="border-left:3px solid '+corBorda+';">'
-        +'<div class="fx ic jb mb8">'
-        +'<div class="f12 fw6" style="color:var(--text);">🎯 '+o.titulo+'</div>'
-        +'<div class="fx gap5">'
-        +'<button onclick="editarObjPara('+i+')" style="background:rgba(0,212,200,.1);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">✏️ Editar</button>'
-        +'<button onclick="excluirObjPara('+i+')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">🗑</button>'
-        +'</div></div>'
-        +'<div class="f11 cm mb6">'+o.meta+'</div>'
-        +'<div class="fx ic gap12 mb8">'
-        +'<span class="f10 cdim">📅 Prazo: <strong style="color:var(--text);">'+(o.prazo||'—')+'</strong></span>'
-        +'<span class="f10 cdim">Progresso: <strong style="color:'+corText+';">'+o.progresso+'%</strong></span>'
-        +'</div>'
-        +'<div class="prog"><div class="pf" style="width:'+o.progresso+'%;background:'+corProg+';"></div></div>'
-        +'<div id="edit-obj-para-'+i+'" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">'
-        +'<div class="g2 mb8">'
-        +'<div><label class="lbl">Título</label><input id="eopt-'+i+'" value="'+o.titulo+'"></div>'
-        +'<div><label class="lbl">Prazo de entrega</label><input type="date" id="eopp-'+i+'" value="'+(o.prazo||'')+'"></div>'
-        +'</div>'
-        +'<div class="mb8"><label class="lbl">Meta / descrição</label>'
-        +'<textarea id="eopm-'+i+'" style="height:55px;resize:none;">'+o.meta+'</textarea></div>'
-        +'<div class="mb10"><label class="lbl">Progresso: <span id="eoppr-lbl-'+i+'">'+o.progresso+'%</span></label>'
-        +'<input type="range" id="eoppr-'+i+'" min="0" max="100" value="'+o.progresso+'"'
-        +' oninput="document.getElementById('eoppr-lbl-'+i+'').textContent=this.value+'%'"'
-        +' style="width:100%;accent-color:var(--cyan);"></div>'
-        +'<div class="fx gap6">'
-        +'<button class="btn-p" style="font-size:10px;" onclick="confirmarEdicaoObjPara('+i+')">💾 Salvar</button>'
-        +'<button class="btn" style="font-size:10px;" onclick="document.getElementById('edit-obj-para-'+i+'').style.display='none'">✕</button>'
-        +'</div></div>'
-        +'</div>';
-    }).join('');
+    : data.objetivos.map((o,i)=>`
+      <div class="card mb10" style="border-left:3px solid ${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};">
+        <div class="fx ic jb mb8">
+          <div class="f12 fw6" style="color:var(--text);">🎯 ${o.titulo}</div>
+          <div class="fx gap5">
+            <button onclick="editarObjPara(${i})" style="background:rgba(0,212,200,.1);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">✏️ Editar</button>
+            <button onclick="excluirObjPara(${i})" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">🗑</button>
+          </div>
+        </div>
+        <div class="f11 cm mb6">${o.meta}</div>
+        <div class="fx ic gap12 mb8">
+          <span class="f10 cdim">📅 Prazo: <strong style="color:var(--text);">${o.prazo||'—'}</strong></span>
+          <span class="f10 cdim">Progresso: <strong style="color:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};">${o.progresso}%</strong></span>
+        </div>
+        <div class="prog"><div class="pf" style="width:${o.progresso}%;background:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};"></div></div>
+
+        <!-- Form editar inline -->
+        <div id="edit-obj-para-${i}" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+          <div class="g2 mb8">
+            <div><label class="lbl">Título</label><input id="eopt-${i}" value="${o.titulo}"></div>
+            <div><label class="lbl">Prazo de entrega</label><input type="date" id="eopp-${i}" value="${o.prazo||''}"></div>
+          </div>
+          <div class="mb8"><label class="lbl">Meta / descrição</label>
+            <textarea id="eopm-${i}" style="height:55px;resize:none;">${o.meta}</textarea>
+          </div>
+          <div class="mb10"><label class="lbl">Progresso: <span id="eoppr-lbl-${i}">${o.progresso}%</span></label>
+            <input type="range" id="eoppr-${i}" min="0" max="100" value="${o.progresso}"
+              oninput="document.getElementById('eoppr-lbl-${i}').textContent=this.value+'%'"
+              style="width:100%;accent-color:var(--cyan);">
+          </div>
+          <div class="fx gap6">
+            <button class="btn-p" style="font-size:10px;" onclick="confirmarEdicaoObjPara(${i})">💾 Salvar</button>
+            <button class="btn" style="font-size:10px;" onclick="document.getElementById('edit-obj-para-${i}').style.display='none'">✕</button>
+          </div>
+        </div>
+      </div>`).join('');
 
   // Notas
   const notasEl=document.getElementById('pdi-editor-notas');
   notasEl.innerHTML=(data.notas||[]).length===0
     ?'<div class="f11 cm mb8">Sem anotações ainda.</div>'
-    :(data.notas||[]).map(function(n) {
-      var corNota = n.tipo==='master'?'var(--cyan)':'var(--purple)';
-      return '<div style="background:var(--card2);border-left:2px solid '+corNota+';border-radius:0 6px 6px 0;padding:8px 10px;margin-bottom:6px;">'
-        +'<div class="f10 fw6" style="color:'+corNota+';">'+n.autor+' · '+n.data+'</div>'
-        +'<div class="f11 cm" style="margin-top:3px;">'+n.texto+'</div>'
-        +'</div>';
-    }).join('');
+    :(data.notas||[]).map(n=>`
+      <div style="background:var(--card2);border-left:2px solid ${n.tipo==='master'?'var(--cyan)':'var(--purple)'};border-radius:0 6px 6px 0;padding:8px 10px;margin-bottom:6px;">
+        <div class="f10 fw6" style="color:${n.tipo==='master'?'var(--cyan)':'var(--purple)'};">${n.autor} · ${n.data}</div>
+        <div class="f11 cm" style="margin-top:3px;">${n.texto}</div>
+      </div>`).join('');
 }
 
 function abrirFormObjetivoPara(){
@@ -2286,82 +2064,6 @@ const PDI_DATA = {
     feedbacks: []
   }
 };
-
-function getRelatorioHumor(periodo) {
-  // Período: 'semana' (7 dias) ou 'mes' (30 dias)
-  var dias = periodo === 'mes' ? 30 : 7;
-  var corte = Date.now() - (dias * 24 * 60 * 60 * 1000);
-
-  return apiGet('getHumorTime').then(function(res) {
-    if(!res || !res.ok) return;
-    var humor = res.humor.filter(function(h) {
-      return h.timestamp > corte;
-    });
-    renderRelatorioHumor(humor);
-  });
-}
-
-function renderRelatorioHumor(humor) {
-  var wrap = document.getElementById('humor-relatorio-wrap');
-  if(!wrap) return;
-
-  var membros = USERS.filter(function(u){ return u.nivel === 'membro'; });
-  var nivelMap = {'😴':1,'😐':2,'🙂':3,'🔥':4};
-  var labelMap = {'😴':'Esgotada','😐':'Neutro','🙂':'Bem','🔥':'Produtiva'};
-
-  var html2 = '';
-  membros.forEach(function(u, idx) {
-    var registros = humor.filter(function(h){ return h.usuario_email === u.email; });
-    if(registros.length === 0) return;
-
-    var total = registros.length;
-    var media = registros.reduce(function(s,h){ return s + (Number(h.nivel)||0); },0) / total;
-    var corMedia = media >= 3.5 ? 'var(--ok)' : media >= 2.5 ? 'var(--warn)' : 'var(--err)';
-    var init = u.nome.split(' ').map(function(n){ return n[0]; }).join('').substring(0,2).toUpperCase();
-    var cols = ['linear-gradient(135deg,#7c5cfc,#00d4c8)','linear-gradient(135deg,#ec4899,#7c5cfc)','linear-gradient(135deg,#f59e0b,#ef4444)','linear-gradient(135deg,#10b981,#3b82f6)'];
-
-    // Contagem por emoji
-    var contagem = {'😴':0,'😐':0,'🙂':0,'🔥':0};
-    registros.forEach(function(h){ if(contagem[h.emoji]!==undefined) contagem[h.emoji]++; });
-
-    // Último registro
-    var ultimo = registros.sort(function(a,b){ return b.timestamp - a.timestamp; })[0];
-
-    html2 += '<div style="background:var(--card2);border-radius:10px;padding:14px;margin-bottom:10px;">'
-      + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">'
-      + '<div style="width:34px;height:34px;border-radius:50%;background:'+cols[idx%cols.length]+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0;">'+init+'</div>'
-      + '<div style="flex:1;">'
-      + '<div class="f12 fw6" style="color:var(--text);">'+u.nome+'</div>'
-      + '<div class="f10 cm">'+total+' registros · Média: <strong style="color:'+corMedia+';">'+media.toFixed(1)+'</strong> · Último: '+ultimo.emoji+' '+ultimo.hora+' ('+ultimo.data+')</div>'
-      + '</div></div>'
-      // Barra de emojis
-      + '<div style="display:flex;gap:6px;flex-wrap:wrap;">'
-      + Object.entries(contagem).map(function(entry) {
-          var emoji2 = entry[0], count = entry[1];
-          if(count === 0) return '';
-          return '<span style="background:rgba(255,255,255,.07);border-radius:20px;padding:3px 10px;font-size:11px;">'
-            + emoji2 + ' ' + labelMap[emoji2] + ': <strong>' + count + 'x</strong></span>';
-        }).join('')
-      // Todos os horários
-      + '</div>'
-      + '<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px;">'
-      + '<div class="f10 cm" style="margin-bottom:5px;">Horários registrados:</div>'
-      + '<div style="display:flex;flex-wrap:wrap;gap:4px;">'
-      + registros.sort(function(a,b){ return a.timestamp - b.timestamp; }).map(function(h) {
-          var cor2 = h.nivel >= 3 ? 'rgba(16,185,129,.15)' : h.nivel === 2 ? 'rgba(245,158,11,.15)' : 'rgba(239,68,68,.15)';
-          return '<span style="background:'+cor2+';border-radius:20px;padding:2px 8px;font-size:10px;">'
-            + h.emoji + ' ' + h.hora + ' (' + h.data + ')</span>';
-        }).join('')
-      + '</div></div>'
-      + '</div>';
-  });
-
-  if(!html2) {
-    wrap.innerHTML = '<div class="f11 cm" style="padding:20px;text-align:center;color:var(--dim);">Nenhum registro de humor no período selecionado.</div>';
-    return;
-  }
-  wrap.innerHTML = html2;
-}
 
 function renderPdi() {
   const email = currentUser.email.toLowerCase();
@@ -2711,7 +2413,6 @@ function renderAlarms() {
       <div class="tog ${a.ativo?'on':''}" id="alarm-tog-${i}" onclick="toggleAlarm(${i})" title="${a.ativo?'Ativo':'Inativo'}"></div>
       <button onclick="saveAlarm(${i})" style="background:rgba(0,212,200,.12);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;white-space:nowrap;font-family:inherit;">💾 Salvar</button>
       <button onclick="testAlarm(${i})" style="background:rgba(124,92,252,.12);border:1px solid var(--purple);color:#a78bfa;border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;white-space:nowrap;font-family:inherit;">▶ Testar</button>
-      <button onclick="enviarAlarmeEmail(${i})" style="background:rgba(59,130,246,.12);border:1px solid #3b82f6;color:#93c5fd;border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;white-space:nowrap;font-family:inherit;">📧 E-mail</button>
       <button onclick="removeAlarm(${i})" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:3px 7px;font-size:11px;cursor:pointer;font-family:inherit;">✕</button>
     </div>`).join('');
 }
@@ -2746,7 +2447,7 @@ function saveAlarm(i) {
     ativo: true,
     email: currentUser.email
   });
-  showToast('Lembrete salvo! ✓'); renderBannerLembretes();
+  showToast('Lembrete salvo! ✓');renderBannerLembretes();
   checkAlarms();
 }
 
@@ -2754,7 +2455,6 @@ function toggleAlarm(i) {
   ALARMS[i].ativo = !ALARMS[i].ativo;
   const tog = document.getElementById('alarm-tog-'+i);
   if(tog) tog.classList.toggle('on');
-  renderBannerLembretes();
 }
 
 function removeAlarm(i) {
@@ -2798,29 +2498,6 @@ function scheduleNextMinute() {
   const now = new Date();
   const msAteProx = (60 - now.getSeconds()) * 1000 - now.getMilliseconds() + 100;
   setTimeout(() => { checkAlarms(); scheduleNextMinute(); }, msAteProx);
-}
-
-function enviarAlarmeEmail(i) {
-  const alarm = ALARMS[i];
-  if(!alarm) return;
-  // Salva/atualiza o alarme no Sheets com flag de e-mail ativo
-  apiPost('salvarAlarme', {
-    id: alarm.id,
-    hora: alarm.hora,
-    mensagem: alarm.msg,
-    ativo: true,
-    enviar_email: true,
-    email: currentUser.email,
-    nome: currentUser.nome
-  }).then(res => {
-    if(res && res.ok) {
-      showToast('✓ Lembrete salvo! Você receberá e-mail às ' + alarm.hora + '.');
-    } else {
-      showToast('⚠️ Salvo localmente. Configure o gatilho no Apps Script para receber e-mails.');
-    }
-  }).catch(() => {
-    showToast('⚠️ Configure o gatilho no Apps Script para receber e-mails.');
-  });
 }
 
 function startAlarmSystem() {
