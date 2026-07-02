@@ -1087,7 +1087,7 @@ function toggleAdd(){
   p.style.display = isOpen ? 'none' : 'block';
   if(!isOpen) setTimeout(()=>{const i=document.getElementById('nt-d');if(i)i.focus();},50);
 }
-function toggleTF(){const f=document.getElementById('tf');f.style.display=f.style.display==='none'?'block':'none';}
+// toggleTF já definida abaixo
 function togglePF(){const f=document.getElementById('pf');f.style.display=f.style.display==='none'?'block':'none';}
 // ── TAREFAS FIXAS DIÁRIAS ──
 let TAREFAS_FIXAS = JSON.parse(localStorage.getItem('cs_fixas') || '[]');
@@ -2686,17 +2686,9 @@ let ALARMS = [
 let alarmCheckInterval = null;
 let audioCtx = null;
 
-function initAudio() {
-  try {
-    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if(audioCtx.state === 'suspended') audioCtx.resume();
-  } catch(e) {}
-}
+// initAudio já definida acima
 
-function getAudioCtx() {
-  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  return audioCtx;
-}
+// getAudioCtx já definida acima
 
 function renderAlarms() {
   const wrap = document.getElementById('alarm-list');
@@ -2843,17 +2835,9 @@ function showToast(msg){
   setTimeout(()=>t.style.opacity='0',2500);
 }
 
-function testAlarm(i) {
-  // Inicializar contexto de áudio via gesto do usuário
-  try { getAudioCtx().resume(); } catch(e){}
-  showAlarm(ALARMS[i].msg);
-}
+// testAlarm já definida acima
 
-function addAlarm() {
-  ALARMS.push({ hora:'09:00', msg:'Novo lembrete — edite aqui...', ativo:true, disparado:false });
-  renderAlarms();
-  showToast('Lembrete adicionado! Configure o horário e a mensagem.');
-}
+// addAlarm já definida acima
 
 // ── DASHBOARD COMPLETA ──
 function initDashboard() {
