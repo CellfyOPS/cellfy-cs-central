@@ -217,7 +217,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 
 <!-- MEU DIA -->
 <div id="p-hoje" class="page">
-  <div class="alert al-i"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Lembrete 08:30 — Confira suas tarefas! | Reunião OPS Leaders — 14h</div>
+  <div class="alert al-i" id="banner-lembretes" style="display:none;flex-wrap:wrap;gap:6px;align-items:flex-start;"></div>
   <div class="g4 mb12">
     <div class="mc"><div class="ml">Total hoje</div><div class="mv cc" id="cnt-total">0</div><div class="ms">tarefas</div></div>
     <div class="mc"><div class="ml">Concluídas</div><div class="mv cs" id="cnt-feitas">0</div><div class="ms">hoje</div></div>
@@ -751,6 +751,11 @@ async function carregarDados() {
     const urgClass = {urgente:'tag-u', normal:'tag-n', baixa:'tag-l'};
     let total=0, feitas=0, urgentes=0;
     res.tarefas.forEach(t => {
+      // Mostrar só tarefas do usuário logado (criadas por ele ou designadas para ele)
+      const emailAtual = currentUser.email.toLowerCase();
+      const emailDono = (t.usuario_email || '').toLowerCase();
+      const emailDesig = (t.designado_para || '').toLowerCase();
+      if(emailDono !== emailAtual && emailDesig !== emailAtual) return;
       total++;
       const tid = t.id;
       const urg = t.urgencia || 'normal';
@@ -789,7 +794,7 @@ async function carregarDados() {
     ALARMS = alRes.alarmes.map(a => ({
       hora: a.hora, msg: a.mensagem, ativo: a.ativo, disparado: false, id: a.id
     }));
-    if(document.getElementById('alarm-list')) renderAlarms();
+    if(document.getElementById('alarm-list')) renderAlarms(); renderBannerLembretes();
   }
 
   // Sincronizar tarefas pendentes com o Modo Foco
@@ -865,13 +870,27 @@ function renderCanalFeed(posts) {
         <div id="lido-${p.id}" style="width:8px;height:8px;border-radius:50%;background:var(--purple);flex-shrink:0;"></div>
       </div>
       <div class="p-body">${p.mensagem}</div>
-      <div class="fx gap6">
-        <button class="react" onclick="this.classList.toggle('on')">👍</button>
-        <button class="react" onclick="this.classList.toggle('on')">❤️</button>
+      <div class="fx gap6" style="flex-wrap:wrap;">
+        <button class="react" onclick="toggleReacao(this,'👍','post-${p.id}')">👍 <span class="cnt-reacao">0</span></button>
+        <button class="react" onclick="toggleReacao(this,'❤️','post-${p.id}')">❤️ <span class="cnt-reacao">0</span></button>
+        <button class="react" onclick="toggleReacao(this,'🔥','post-${p.id}')">🔥 <span class="cnt-reacao">0</span></button>
+        <button class="react" onclick="toggleReacao(this,'👏','post-${p.id}')">👏 <span class="cnt-reacao">0</span></button>
         <button class="react" onclick="toggleReply(this)">💬 Responder</button>
         <button class="react" onclick="markPostRead('post-${p.id}','lido-${p.id}')" style="margin-left:auto;">✓ Lido</button>
       </div>
-      <div class="reply-area" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;"><input placeholder="Resposta..."></div>
+
+      <div class="reply-area" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;">
+        <div class="respostas-list" style="margin-bottom:8px;"></div>
+        <div style="display:flex;gap:6px;">
+          <input class="reply-input" placeholder="Escreva uma resposta..." style="flex:1;font-size:11px;">
+          <button onclick="enviarResposta(this)" style="background:var(--purple);border:none;color:white;border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap;">Enviar</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:5px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+        <button onclick="editarPost('post-${p.id}',this)" style="background:rgba(0,212,200,.1);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 9px;font-size:10px;cursor:pointer;font-family:inherit;">✏️ Editar</button>
+        <button onclick="excluirPost('post-${p.id}')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 9px;font-size:10px;cursor:pointer;font-family:inherit;">🗑 Excluir</button>
+      </div>
+
     </div>`;
   }).join('');
   // Só contar como não lido posts das últimas 24h
@@ -986,7 +1005,7 @@ function sp(p){
 
   if(p==='pdi') renderPdi();
   if(p==='config') renderAlarms();
-  if(p==='hoje') renderFixasDia();
+  if(p==='hoje') { renderFixasDia(); renderBannerLembretes(); }
   if(p==='time') renderTimeCS();
   if(p==='cadastro') renderCadList();
   if(p==='pdi-master') renderPdiMaster();
@@ -1057,6 +1076,35 @@ let TAREFAS_FIXAS = JSON.parse(localStorage.getItem('cs_fixas') || '[]');
 
 function salvarFixasLocal() {
   localStorage.setItem('cs_fixas', JSON.stringify(TAREFAS_FIXAS));
+}
+
+function renderBannerLembretes() {
+  const banner = document.getElementById('banner-lembretes');
+  if(!banner) return;
+
+  // Pegar alarmes ativos do usuário logado
+  const ativos = ALARMS.filter(function(a) { return a.ativo; });
+
+  if(ativos.length === 0) {
+    banner.style.display = 'none';
+    return;
+  }
+
+  // Ordenar por hora
+  ativos.sort(function(a, b) {
+    return a.hora.localeCompare(b.hora);
+  });
+
+  banner.style.display = 'flex';
+  banner.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>'
+    + '<div style="flex:1;min-width:0;">'
+    + '<span style="font-weight:700;margin-right:8px;">Seus lembretes de hoje:</span>'
+    + ativos.map(function(a) {
+        return '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);border-radius:20px;padding:1px 10px;font-size:11px;margin:2px 4px 2px 0;">'
+          + '🕐 ' + a.hora + ' — ' + a.msg
+          + '</span>';
+      }).join('')
+    + '</div>';
 }
 
 function renderFixasDia() {
@@ -1248,12 +1296,25 @@ async function publishPost(){
       <span class="tag tag-i">${tipo}</span>
     </div>
     <div class="p-body">${textarea.value}</div>
-    <div class="fx gap6">
-      <button class="react" onclick="this.classList.toggle('on')">👍 0</button>
+    <div class="fx gap6" style="flex-wrap:wrap;">
+      <button class="react" onclick="toggleReacao(this,'👍','${newId}')">👍 <span class="cnt-reacao">0</span></button>
+      <button class="react" onclick="toggleReacao(this,'❤️','${newId}')">❤️ <span class="cnt-reacao">0</span></button>
+      <button class="react" onclick="toggleReacao(this,'🔥','${newId}')">🔥 <span class="cnt-reacao">0</span></button>
+      <button class="react" onclick="toggleReacao(this,'👏','${newId}')">👏 <span class="cnt-reacao">0</span></button>
       <button class="react" onclick="toggleReply(this)">💬 Responder</button>
       <button class="react" onclick="markPostRead('${newId}','${lidoId}')" id="btn-${lidoId}" style="margin-left:auto;">✓ Marcar como lido</button>
     </div>
-    <div class="reply-area" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;"><input placeholder="Resposta..."></div>`;
+    <div class="reply-area" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;">
+      <div class="respostas-list" style="margin-bottom:8px;"></div>
+      <div style="display:flex;gap:6px;">
+        <input class="reply-input" placeholder="Escreva uma resposta..." style="flex:1;font-size:11px;">
+        <button onclick="enviarResposta(this)" style="background:var(--purple);border:none;color:white;border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap;">Enviar</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:5px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+      <button onclick="editarPost('${newId}',this)" style="background:rgba(0,212,200,.1);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 9px;font-size:10px;cursor:pointer;font-family:inherit;">✏️ Editar</button>
+      <button onclick="excluirPost('${newId}')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 9px;font-size:10px;cursor:pointer;font-family:inherit;">🗑 Excluir</button>
+    </div>\`;
   feed.insertBefore(div, feed.firstChild);
   textarea.value = '';
   document.getElementById('pf').style.display = 'none';
@@ -1265,7 +1326,99 @@ async function publishPost(){
 // Inicializar badge
 setTimeout(updateCanalBadge, 200);
 
-function toggleReply(btn){const ra=btn.closest('.post').querySelector('.reply-area');if(ra)ra.style.display=ra.style.display==='none'?'block':'none';}
+// Armazena reações por post
+const REACOES = {};
+
+function toggleReacao(btn, emoji, postId) {
+  if(!REACOES[postId]) REACOES[postId] = {};
+  if(!REACOES[postId][emoji]) REACOES[postId][emoji] = [];
+  const lista = REACOES[postId][emoji];
+  const email = currentUser.email;
+  const idx = lista.indexOf(email);
+  const countEl = btn.querySelector('.cnt-reacao');
+  if(idx >= 0) {
+    lista.splice(idx, 1);
+    btn.classList.remove('on');
+  } else {
+    lista.push(email);
+    btn.classList.add('on');
+  }
+  if(countEl) countEl.textContent = lista.length > 0 ? lista.length : '0';
+}
+
+function toggleReply(btn){
+  const ra=btn.closest('.post').querySelector('.reply-area');
+  if(!ra) return;
+  const isOpen = ra.style.display !== 'none';
+  ra.style.display = isOpen ? 'none' : 'block';
+  if(!isOpen) setTimeout(()=>{ const inp=ra.querySelector('.reply-input'); if(inp)inp.focus(); },50);
+}
+
+function enviarResposta(btn) {
+  const area = btn.closest('.reply-area');
+  const input = area.querySelector('.reply-input');
+  if(!input || !input.value.trim()) return;
+  const lista = area.querySelector('.respostas-list');
+  if(!lista) return;
+  const agora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const init = currentUser.nome.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+  const div = document.createElement('div');
+  div.style.cssText = 'background:var(--card2);border-radius:7px;padding:7px 10px;margin-bottom:5px;display:flex;align-items:flex-start;gap:8px;';
+  div.innerHTML = '<div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:white;flex-shrink:0;">'+init+'</div>'
+    +'<div style="flex:1;min-width:0;"><div style="font-size:11px;font-weight:600;color:var(--text);">'+currentUser.nome.split(' ')[0]+'</div>'
+    +'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+input.value.trim()+'</div>'
+    +'<div style="font-size:10px;color:var(--dim);margin-top:3px;">agora '+agora+'</div></div>';
+  lista.appendChild(div);
+  input.value = '';
+}
+
+function editarPost(postId, btn) {
+  const post = document.getElementById(postId);
+  if(!post) return;
+  const body = post.querySelector('.p-body');
+  if(!body) return;
+  // Se já está editando, cancelar
+  const existing = post.querySelector('.edit-form');
+  if(existing) { existing.remove(); body.style.display = ''; btn.textContent = '✏️ Editar'; return; }
+  const textoAtual = body.textContent;
+  body.style.display = 'none';
+  btn.textContent = '✕ Cancelar';
+  const form = document.createElement('div');
+  form.className = 'edit-form';
+  form.style.cssText = 'margin:8px 0;';
+  form.innerHTML = '<textarea style="width:100%;height:70px;resize:none;font-size:12px;margin-bottom:6px;">' + textoAtual + '</textarea>'
+    + '<button onclick="salvarEdicaoPost('' + postId + '',this)" style="background:var(--purple);border:none;color:white;border-radius:6px;padding:4px 14px;font-size:11px;cursor:pointer;font-family:inherit;">💾 Salvar</button>';
+  body.insertAdjacentElement('afterend', form);
+  form.querySelector('textarea').focus();
+}
+
+function salvarEdicaoPost(postId, btn) {
+  const post = document.getElementById(postId);
+  if(!post) return;
+  const form = post.querySelector('.edit-form');
+  const body = post.querySelector('.p-body');
+  const ta = form ? form.querySelector('textarea') : null;
+  if(!ta || !ta.value.trim()) return;
+  body.textContent = ta.value.trim();
+  body.style.display = '';
+  if(form) form.remove();
+  // Restaurar texto do botão editar
+  const editBtn = post.querySelector('button[onclick*="editarPost"]');
+  if(editBtn) editBtn.textContent = '✏️ Editar';
+  showToast('Post editado! ✓');
+}
+
+function excluirPost(postId) {
+  if(!confirm('Excluir este post?')) return;
+  const el = document.getElementById(postId);
+  if(el) {
+    el.style.transition = 'opacity .3s, height .3s';
+    el.style.opacity = '0';
+    setTimeout(()=>{ el.style.height='0'; el.style.overflow='hidden'; el.style.marginBottom='0'; el.style.padding='0'; }, 300);
+    setTimeout(()=>el.remove(), 600);
+    showToast('Post excluído.');
+  }
+}
 
 async function createTask(){
   const desc=document.getElementById('nt-d').value.trim();if(!desc)return;
@@ -2398,6 +2551,7 @@ function renderAlarms() {
       <div class="tog ${a.ativo?'on':''}" id="alarm-tog-${i}" onclick="toggleAlarm(${i})" title="${a.ativo?'Ativo':'Inativo'}"></div>
       <button onclick="saveAlarm(${i})" style="background:rgba(0,212,200,.12);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;white-space:nowrap;font-family:inherit;">💾 Salvar</button>
       <button onclick="testAlarm(${i})" style="background:rgba(124,92,252,.12);border:1px solid var(--purple);color:#a78bfa;border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;white-space:nowrap;font-family:inherit;">▶ Testar</button>
+      <button onclick="enviarAlarmeEmail(${i})" style="background:rgba(59,130,246,.12);border:1px solid #3b82f6;color:#93c5fd;border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;white-space:nowrap;font-family:inherit;">📧 E-mail</button>
       <button onclick="removeAlarm(${i})" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:3px 7px;font-size:11px;cursor:pointer;font-family:inherit;">✕</button>
     </div>`).join('');
 }
@@ -2432,7 +2586,7 @@ function saveAlarm(i) {
     ativo: true,
     email: currentUser.email
   });
-  showToast('Lembrete salvo! ✓');
+  showToast('Lembrete salvo! ✓'); renderBannerLembretes();
   checkAlarms();
 }
 
@@ -2440,6 +2594,7 @@ function toggleAlarm(i) {
   ALARMS[i].ativo = !ALARMS[i].ativo;
   const tog = document.getElementById('alarm-tog-'+i);
   if(tog) tog.classList.toggle('on');
+  renderBannerLembretes();
 }
 
 function removeAlarm(i) {
@@ -2483,6 +2638,29 @@ function scheduleNextMinute() {
   const now = new Date();
   const msAteProx = (60 - now.getSeconds()) * 1000 - now.getMilliseconds() + 100;
   setTimeout(() => { checkAlarms(); scheduleNextMinute(); }, msAteProx);
+}
+
+function enviarAlarmeEmail(i) {
+  const alarm = ALARMS[i];
+  if(!alarm) return;
+  // Salva/atualiza o alarme no Sheets com flag de e-mail ativo
+  apiPost('salvarAlarme', {
+    id: alarm.id,
+    hora: alarm.hora,
+    mensagem: alarm.msg,
+    ativo: true,
+    enviar_email: true,
+    email: currentUser.email,
+    nome: currentUser.nome
+  }).then(res => {
+    if(res && res.ok) {
+      showToast('✓ Lembrete salvo! Você receberá e-mail às ' + alarm.hora + '.');
+    } else {
+      showToast('⚠️ Salvo localmente. Configure o gatilho no Apps Script para receber e-mails.');
+    }
+  }).catch(() => {
+    showToast('⚠️ Configure o gatilho no Apps Script para receber e-mails.');
+  });
 }
 
 function startAlarmSystem() {
@@ -2831,5 +3009,3 @@ setTimeout(()=>{renderCadList();renderTimeCS();atualizarSeletores();},100);
 
 </body>
 </html>
-
-
