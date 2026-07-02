@@ -821,14 +821,16 @@ async function carregarDados() {
     if(pendentes.length > 0) {
       const urgMap = {urgente:'🔴 Urgente', normal:'🟡 Normal', baixa:'🟢 Baixa'};
       const urgClass = {urgente:'tag-u', normal:'tag-n', baixa:'tag-l'};
-      pool.innerHTML = pendentes.map(t => {
-        const urg = t.urgencia || 'normal';
-        const fid = 'fp-' + t.id;
-        return `<div class="ti" id="${fid}" style="cursor:pointer;" onclick="toggleFocoSelect('${fid}','${t.titulo.replace(/'/g,"\'")}','${urgClass[urg]}','${urgMap[urg]}','${t.tempo||'—'}')">
-          <div class="chk" id="fpc-${t.id}"></div>
-          <div class="f1 mw0"><div class="tt f12">${t.titulo}</div>
-          <div class="tm"><span class="tag ${urgClass[urg]}">${urgMap[urg]}</span><span class="ttime">${t.tempo||'—'}</span></div></div>
-        </div>`;
+      pool.innerHTML = pendentes.map(function(t) {
+        var urg = t.urgencia || 'normal';
+        var fid = 'fp-' + t.id;
+        var titulo_safe = t.titulo.replace(/'/g, '&apos;');
+        return '<div class="ti" id="'+fid+'" style="cursor:pointer;" onclick="toggleFocoSelect(''+fid+'',''+titulo_safe+'',''+urgClass[urg]+'',''+urgMap[urg]+'',''+(t.tempo||'—')+'')">'
+          +'<div class="chk" id="fpc-'+t.id+'"></div>'
+          +'<div class="f1 mw0"><div class="tt f12">'+t.titulo+'</div>'
+          +'<div class="tm"><span class="tag '+urgClass[urg]+'">'+urgMap[urg]+'</span>'
+          +'<span class="ttime">'+(t.tempo||'—')+'</span></div></div>'
+          +'</div>';
       }).join('');
     }
   }
@@ -1149,22 +1151,24 @@ function renderFixasDia() {
   const urgClass = {urgente:'tag-u', normal:'tag-n', baixa:'tag-l'};
   const urgMap = {urgente:'🔴 Urgente', normal:'🟡 Normal', baixa:'🟢 Baixa'};
 
-  list.innerHTML = minhas.map(f => {
-    const feita = concluidasHoje.includes(f.id);
-    return `<div class="ti" id="fixa-row-${f.id}" style="margin-bottom:5px;${feita?'opacity:.6;':''}">
-      <div class="chk ${feita?'done':''}" onclick="toggleFixa('${f.id}')" style="flex-shrink:0;">
-        ${feita?'<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>':''}
-      </div>
-      <div class="f1 mw0">
-        <div class="tt ${feita?'struck':''}">${f.titulo}</div>
-        <div class="tm">
-          <span class="tag ${urgClass[f.urgencia]||'tag-n'}">${urgMap[f.urgencia]||'🟡 Normal'}</span>
-          <span class="tag">${f.categoria}</span>
-          ${f.escopo==='geral'?'<span class="tag tag-c">🌐 Geral</span>':'<span class="tag tag-p">👤 Pessoal</span>'}
-        </div>
-      </div>
-      ${feita?'<span class="f10" style="color:var(--ok);flex-shrink:0;">✓ Feita hoje</span>':''}
-    </div>`;
+  list.innerHTML = minhas.map(function(f) {
+    var feita = concluidasHoje.includes(f.id);
+    var chkClass = 'chk' + (feita?' done':'');
+    var checkSvg = feita?'<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>':'';
+    var ttClass = 'tt' + (feita?' struck':'');
+    var escopoTag = f.escopo==='geral'?'<span class="tag tag-c">🌐 Geral</span>':'<span class="tag tag-p">👤 Pessoal</span>';
+    var feitaSpan = feita?'<span class="f10" style="color:var(--ok);flex-shrink:0;">✓ Feita hoje</span>':'';
+    return '<div class="ti" id="fixa-row-'+f.id+'" style="margin-bottom:5px;'+(feita?'opacity:.6;':'')+'">'
+      +'<div class="'+chkClass+'" onclick="toggleFixa(''+f.id+'')" style="flex-shrink:0;">'+checkSvg+'</div>'
+      +'<div class="f1 mw0">'
+      +'<div class="'+ttClass+'">'+f.titulo+'</div>'
+      +'<div class="tm">'
+      +'<span class="tag '+(urgClass[f.urgencia]||'tag-n')+'">'+(urgMap[f.urgencia]||'🟡 Normal')+'</span>'
+      +'<span class="tag">'+f.categoria+'</span>'
+      +escopoTag
+      +'</div></div>'
+      +feitaSpan
+      +'</div>';
   }).join('');
 }
 
@@ -1972,52 +1976,52 @@ function renderEditorPdi(){
   const objsEl=document.getElementById('pdi-editor-objs');
   objsEl.innerHTML = data.objetivos.length===0
     ? '<div class="f11 cm mb12" style="text-align:center;padding:16px;background:var(--card2);border-radius:8px;color:var(--dim);">Nenhum objetivo ainda. Adicione o primeiro abaixo.</div>'
-    : data.objetivos.map((o,i)=>`
-      <div class="card mb10" style="border-left:3px solid ${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};">
-        <div class="fx ic jb mb8">
-          <div class="f12 fw6" style="color:var(--text);">🎯 ${o.titulo}</div>
-          <div class="fx gap5">
-            <button onclick="editarObjPara(${i})" style="background:rgba(0,212,200,.1);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">✏️ Editar</button>
-            <button onclick="excluirObjPara(${i})" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">🗑</button>
-          </div>
-        </div>
-        <div class="f11 cm mb6">${o.meta}</div>
-        <div class="fx ic gap12 mb8">
-          <span class="f10 cdim">📅 Prazo: <strong style="color:var(--text);">${o.prazo||'—'}</strong></span>
-          <span class="f10 cdim">Progresso: <strong style="color:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};">${o.progresso}%</strong></span>
-        </div>
-        <div class="prog"><div class="pf" style="width:${o.progresso}%;background:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};"></div></div>
-
-        <!-- Form editar inline -->
-        <div id="edit-obj-para-${i}" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
-          <div class="g2 mb8">
-            <div><label class="lbl">Título</label><input id="eopt-${i}" value="${o.titulo}"></div>
-            <div><label class="lbl">Prazo de entrega</label><input type="date" id="eopp-${i}" value="${o.prazo||''}"></div>
-          </div>
-          <div class="mb8"><label class="lbl">Meta / descrição</label>
-            <textarea id="eopm-${i}" style="height:55px;resize:none;">${o.meta}</textarea>
-          </div>
-          <div class="mb10"><label class="lbl">Progresso: <span id="eoppr-lbl-${i}">${o.progresso}%</span></label>
-            <input type="range" id="eoppr-${i}" min="0" max="100" value="${o.progresso}"
-              oninput="document.getElementById('eoppr-lbl-${i}').textContent=this.value+'%'"
-              style="width:100%;accent-color:var(--cyan);">
-          </div>
-          <div class="fx gap6">
-            <button class="btn-p" style="font-size:10px;" onclick="confirmarEdicaoObjPara(${i})">💾 Salvar</button>
-            <button class="btn" style="font-size:10px;" onclick="document.getElementById('edit-obj-para-${i}').style.display='none'">✕</button>
-          </div>
-        </div>
-      </div>`).join('');
+    : data.objetivos.map(function(o,i) {
+      var corBorda = o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)';
+      var corProg  = o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)';
+      var corText  = o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)';
+      return '<div class="card mb10" style="border-left:3px solid '+corBorda+';">'
+        +'<div class="fx ic jb mb8">'
+        +'<div class="f12 fw6" style="color:var(--text);">🎯 '+o.titulo+'</div>'
+        +'<div class="fx gap5">'
+        +'<button onclick="editarObjPara('+i+')" style="background:rgba(0,212,200,.1);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">✏️ Editar</button>'
+        +'<button onclick="excluirObjPara('+i+')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">🗑</button>'
+        +'</div></div>'
+        +'<div class="f11 cm mb6">'+o.meta+'</div>'
+        +'<div class="fx ic gap12 mb8">'
+        +'<span class="f10 cdim">📅 Prazo: <strong style="color:var(--text);">'+(o.prazo||'—')+'</strong></span>'
+        +'<span class="f10 cdim">Progresso: <strong style="color:'+corText+';">'+o.progresso+'%</strong></span>'
+        +'</div>'
+        +'<div class="prog"><div class="pf" style="width:'+o.progresso+'%;background:'+corProg+';"></div></div>'
+        +'<div id="edit-obj-para-'+i+'" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">'
+        +'<div class="g2 mb8">'
+        +'<div><label class="lbl">Título</label><input id="eopt-'+i+'" value="'+o.titulo+'"></div>'
+        +'<div><label class="lbl">Prazo de entrega</label><input type="date" id="eopp-'+i+'" value="'+(o.prazo||'')+'"></div>'
+        +'</div>'
+        +'<div class="mb8"><label class="lbl">Meta / descrição</label>'
+        +'<textarea id="eopm-'+i+'" style="height:55px;resize:none;">'+o.meta+'</textarea></div>'
+        +'<div class="mb10"><label class="lbl">Progresso: <span id="eoppr-lbl-'+i+'">'+o.progresso+'%</span></label>'
+        +'<input type="range" id="eoppr-'+i+'" min="0" max="100" value="'+o.progresso+'"'
+        +' oninput="document.getElementById('eoppr-lbl-'+i+'').textContent=this.value+'%'"'
+        +' style="width:100%;accent-color:var(--cyan);"></div>'
+        +'<div class="fx gap6">'
+        +'<button class="btn-p" style="font-size:10px;" onclick="confirmarEdicaoObjPara('+i+')">💾 Salvar</button>'
+        +'<button class="btn" style="font-size:10px;" onclick="document.getElementById('edit-obj-para-'+i+'').style.display='none'">✕</button>'
+        +'</div></div>'
+        +'</div>';
+    }).join('');
 
   // Notas
   const notasEl=document.getElementById('pdi-editor-notas');
   notasEl.innerHTML=(data.notas||[]).length===0
     ?'<div class="f11 cm mb8">Sem anotações ainda.</div>'
-    :(data.notas||[]).map(n=>`
-      <div style="background:var(--card2);border-left:2px solid ${n.tipo==='master'?'var(--cyan)':'var(--purple)'};border-radius:0 6px 6px 0;padding:8px 10px;margin-bottom:6px;">
-        <div class="f10 fw6" style="color:${n.tipo==='master'?'var(--cyan)':'var(--purple)'};">${n.autor} · ${n.data}</div>
-        <div class="f11 cm" style="margin-top:3px;">${n.texto}</div>
-      </div>`).join('');
+    :(data.notas||[]).map(function(n) {
+      var corNota = n.tipo==='master'?'var(--cyan)':'var(--purple)';
+      return '<div style="background:var(--card2);border-left:2px solid '+corNota+';border-radius:0 6px 6px 0;padding:8px 10px;margin-bottom:6px;">'
+        +'<div class="f10 fw6" style="color:'+corNota+';">'+n.autor+' · '+n.data+'</div>'
+        +'<div class="f11 cm" style="margin-top:3px;">'+n.texto+'</div>'
+        +'</div>';
+    }).join('');
 }
 
 function abrirFormObjetivoPara(){
