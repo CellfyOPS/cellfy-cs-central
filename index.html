@@ -150,7 +150,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
     </div>
     <div class="mb10"><label class="lbl">E-mail</label><input type="email" id="l-email" placeholder="seu@cellfy.com.br"></div>
     <div class="mb12"><label class="lbl">Senha</label><input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button onclick="doLogin()" style="width:100%;padding:10px;border-radius:7px;border:none;background:var(--purple);color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Entrar</button>
+    <button onclick="initAudio();doLogin()" style="width:100%;padding:10px;border-radius:7px;border:none;background:var(--purple);color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Entrar</button>
   </div>
 </div>
 <div id="app" style="display:none;">
@@ -217,7 +217,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 
 <!-- MEU DIA -->
 <div id="p-hoje" class="page">
-  <div class="alert al-i" id="banner-lembretes" style="display:none;"></div>
+  <div class="alert al-i"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Lembrete 08:30 — Confira suas tarefas! | Reunião OPS Leaders — 14h</div>
   <div class="g4 mb12">
     <div class="mc"><div class="ml">Total hoje</div><div class="mv cc" id="cnt-total">0</div><div class="ms">tarefas</div></div>
     <div class="mc"><div class="ml">Concluídas</div><div class="mv cs" id="cnt-feitas">0</div><div class="ms">hoje</div></div>
@@ -725,8 +725,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 <!-- ALARME POPUP -->
 </div><!-- /app -->
 
-<script type="module">
-
+<script>
 // ── PERSISTÊNCIA DE SESSÃO (sobrevive ao F5) ──
 function saveSession(user, role) {
   try {
@@ -869,11 +868,9 @@ function renderCanalFeed(posts) {
       </div>
       <div class="p-body">${p.mensagem}</div>
       <div class="fx gap6">
-        <button class="react" onclick="toggleReacao(this,'👍','post-${p.id}')">👍 <span class="cnt-reacao">0</span></button>
-        <button class="react" onclick="toggleReacao(this,'❤️','post-${p.id}')">❤️ <span class="cnt-reacao">0</span></button>
-        <button class="react" onclick="toggleReacao(this,'🔥','post-${p.id}')">🔥 <span class="cnt-reacao">0</span></button>
+        <button class="react" onclick="this.classList.toggle('on')">👍</button>
+        <button class="react" onclick="this.classList.toggle('on')">❤️</button>
         <button class="react" onclick="toggleReply(this)">💬 Responder</button>
-        <button class="react" onclick="excluirPost('post-${p.id}')" style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3);color:#fca5a5;">🗑</button>
         <button class="react" onclick="markPostRead('post-${p.id}','lido-${p.id}')" style="margin-left:auto;">✓ Lido</button>
       </div>
       <div class="reply-area" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;"><input placeholder="Resposta..."></div>
@@ -991,7 +988,7 @@ function sp(p){
 
   if(p==='pdi') renderPdi();
   if(p==='config') renderAlarms();
-  if(p==='hoje'){renderFixasDia();renderBannerLembretes();}
+  if(p==='hoje') renderFixasDia();
   if(p==='time') renderTimeCS();
   if(p==='cadastro') renderCadList();
   if(p==='pdi-master') renderPdiMaster();
@@ -1254,11 +1251,8 @@ async function publishPost(){
     </div>
     <div class="p-body">${textarea.value}</div>
     <div class="fx gap6">
-      <button class="react" onclick="toggleReacao(this,'👍','${newId}')">👍 <span class="cnt-reacao">0</span></button>
-      <button class="react" onclick="toggleReacao(this,'❤️','${newId}')">❤️ <span class="cnt-reacao">0</span></button>
-      <button class="react" onclick="toggleReacao(this,'🔥','${newId}')">🔥 <span class="cnt-reacao">0</span></button>
+      <button class="react" onclick="this.classList.toggle('on')">👍 0</button>
       <button class="react" onclick="toggleReply(this)">💬 Responder</button>
-      <button class="react" onclick="excluirPost('${newId}')" style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3);color:#fca5a5;">🗑</button>
       <button class="react" onclick="markPostRead('${newId}','${lidoId}')" id="btn-${lidoId}" style="margin-left:auto;">✓ Marcar como lido</button>
     </div>
     <div class="reply-area" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;"><input placeholder="Resposta..."></div>`;
@@ -1273,30 +1267,6 @@ async function publishPost(){
 // Inicializar badge
 setTimeout(updateCanalBadge, 200);
 
-const REACOES={};
-function toggleReacao(btn,emoji,postId){
-  if(!REACOES[postId])REACOES[postId]={};
-  if(!REACOES[postId][emoji])REACOES[postId][emoji]=[];
-  var lista=REACOES[postId][emoji],email=currentUser.email,idx=lista.indexOf(email);
-  var cel=btn.querySelector('.cnt-reacao');
-  if(idx>=0){lista.splice(idx,1);btn.classList.remove('on');}else{lista.push(email);btn.classList.add('on');}
-  if(cel)cel.textContent=lista.length>0?lista.length:'0';
-}
-function excluirPost(id){
-  if(!confirm('Excluir este post?'))return;
-  var el=document.getElementById(id);
-  if(el){el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(function(){el.remove();},300);showToast('Post excluído.');}
-}
-function renderBannerLembretes(){
-  var b=document.getElementById('banner-lembretes');if(!b)return;
-  var ativos=ALARMS.filter(function(a){return a.ativo;});
-  if(!ativos.length){b.style.display='none';return;}
-  ativos.sort(function(a,c){return a.hora.localeCompare(c.hora);});
-  b.style.display='flex';b.style.flexWrap='wrap';b.style.gap='6px';b.style.alignItems='center';
-  b.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>'
-    +'<strong style="margin-right:4px;">Lembretes:</strong>'
-    +ativos.map(function(a){return '<span style="background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);border-radius:20px;padding:1px 10px;font-size:11px;">🕐 '+a.hora+' — '+a.msg+'</span>';}).join('');
-}
 function toggleReply(btn){const ra=btn.closest('.post').querySelector('.reply-area');if(ra)ra.style.display=ra.style.display==='none'?'block':'none';}
 
 async function createTask(){
@@ -1399,7 +1369,10 @@ function renderFerramentas() {
   grid.innerHTML = FERRAMENTAS.map(f => `
     <div class="tc" style="position:relative;">
       <!-- Botões de ação (só master) -->
-      ${role==='master'?'<div style="position:absolute;top:8px;right:8px;display:flex;gap:4px;opacity:0;transition:opacity .15s;" class="tc-actions"><button onclick="editarFerramenta(\''+f.id+'\')" style="background:rgba(0,212,200,.15);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;" title="Editar">✏️</button><button onclick="excluirFerramenta(\''+f.id+'\')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;" title="Excluir">🗑</button></div>':''}
+      ${role==='master'?`<div style="position:absolute;top:8px;right:8px;display:flex;gap:4px;opacity:0;transition:opacity .15s;" class="tc-actions">
+        <button onclick="editarFerramenta('${f.id}')" style="background:rgba(0,212,200,.15);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;" title="Editar">✏️</button>
+        <button onclick="excluirFerramenta('${f.id}')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;" title="Excluir">🗑</button>
+      </div>`:''}
       <div onclick="openTool('${f.id}')" style="cursor:pointer;">
         <div class="tc-ic" style="background:${catColors[f.cat]||'rgba(100,116,139,.12)'};">
           <span style="font-size:18px;">${f.icon}</span>
@@ -1419,7 +1392,22 @@ function renderFerramentas() {
   });
 }
 
-// toggleTF já definida acima
+function toggleTF() {
+  const tf = document.getElementById('tf');
+  if(!tf) return;
+  const isOpen = tf.style.display !== 'none';
+  if(isOpen) { cancelarFerramenta(); return; }
+  // Resetar para modo adicionar
+  document.getElementById('tf-title').textContent = '➕ Nova ferramenta';
+  document.getElementById('tf-editing-id').value = '';
+  document.getElementById('tf-nome').value = '';
+  document.getElementById('tf-url').value = '';
+  document.getElementById('tf-desc').value = '';
+  document.getElementById('tf-cat').value = 'Formulário';
+  document.getElementById('tf-icon').value = '📄';
+  tf.style.display = 'block';
+  setTimeout(() => document.getElementById('tf-nome').focus(), 50);
+}
 
 function cancelarFerramenta() {
   const tf = document.getElementById('tf');
@@ -1492,17 +1480,7 @@ function openTool(id) {
 
 function pickTab(el){el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));el.classList.add('act');}
 function switchPdiTab(el,tabId){el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));el.classList.add('act');document.querySelectorAll('.pdi-tab').forEach(t=>{t.classList.remove('act');t.style.display='none';});const tg=document.getElementById(tabId);if(tg){tg.classList.add('act');tg.style.display='block';}}
-function pickMood(el){
-  el.parentElement.querySelectorAll('span').forEach(function(s){s.style.opacity='0.4';s.style.transform='scale(1)';});
-  el.style.opacity='1'; el.style.transform='scale(1.3)';
-  var emoji=el.textContent.trim();
-  var mapa={'😴':'Esgotada','😐':'Neutro','🙂':'Bem','🔥':'Produtiva'};
-  var label=mapa[emoji]||'';
-  var agora=new Date();
-  apiPost('salvarHumor',{usuario_email:currentUser.email,usuario_nome:currentUser.nome,emoji:emoji,label:label,
-    data:agora.toLocaleDateString('pt-BR'),hora:agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),timestamp:Date.now()});
-  showToast('Humor registrado: '+emoji+' '+label);
-}
+function pickMood(el){el.parentElement.querySelectorAll('span').forEach(s=>s.style.opacity='0.4');el.style.opacity='1';}
 
 function setSync(s){const b=document.getElementById('sync-b');const t=document.getElementById('sync-t');const now=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});if(s==='ok'){b.className='sync-b s-ok';b.innerHTML='&#10003; Atualizado';t.textContent=now;}else if(s==='ld'){b.className='sync-b s-ld';b.innerHTML='&#8635; Atualizando...';}else{b.className='sync-b s-er';b.innerHTML='&#33; Sem conexão';t.textContent=now;}}
 function doRefresh(){
@@ -2393,9 +2371,17 @@ let ALARMS = [
 let alarmCheckInterval = null;
 let audioCtx = null;
 
-// initAudio já definida acima
+function initAudio() {
+  try {
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+  } catch(e) {}
+}
 
-// getAudioCtx já definida acima
+function getAudioCtx() {
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
 
 function renderAlarms() {
   const wrap = document.getElementById('alarm-list');
@@ -2448,7 +2434,7 @@ function saveAlarm(i) {
     ativo: true,
     email: currentUser.email
   });
-  showToast('Lembrete salvo! ✓');renderBannerLembretes();
+  showToast('Lembrete salvo! ✓');
   checkAlarms();
 }
 
@@ -2517,9 +2503,17 @@ function showToast(msg){
   setTimeout(()=>t.style.opacity='0',2500);
 }
 
-// testAlarm já definida acima
+function testAlarm(i) {
+  // Inicializar contexto de áudio via gesto do usuário
+  try { getAudioCtx().resume(); } catch(e){}
+  showAlarm(ALARMS[i].msg);
+}
 
-// addAlarm já definida acima
+function addAlarm() {
+  ALARMS.push({ hora:'09:00', msg:'Novo lembrete — edite aqui...', ativo:true, disparado:false });
+  renderAlarms();
+  showToast('Lembrete adicionado! Configure o horário e a mensagem.');
+}
 
 // ── DASHBOARD COMPLETA ──
 function initDashboard() {
@@ -2660,7 +2654,7 @@ function renderDashboard() {
       <div style="margin-bottom:10px;">
         <div class="fx jb f11 mb5"><span class="fw5" style="color:var(--text);">🎯 ${o.titulo}</span><span style="color:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};">${o.progresso}%</span></div>
         <div class="prog"><div class="pf" style="width:${o.progresso}%;background:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};"></div></div>
-        ${o.prazo?'<div class="f10 cdim mt8">Prazo: '+o.prazo+'</div>':''}
+        ${o.prazo?`<div class="f10 cdim mt8">Prazo: ${o.prazo}</div>`:''}
       </div>`).join('') || '<div class="f11 cm">Sem objetivos no PDI.</div>';
 
     html += `<div class="card mb12">
@@ -2776,7 +2770,6 @@ function showPwdMsg(txt,cor){
   setTimeout(()=>el.style.display='none',3500);
 }
 setTimeout(()=>{renderCadList();renderTimeCS();atualizarSeletores();},100);
-
 </script>
 
 <!-- PAINEL DE NOTIFICAÇÕES -->
