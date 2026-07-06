@@ -150,7 +150,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
     </div>
     <div class="mb10"><label class="lbl">E-mail</label><input type="email" id="l-email" placeholder="seu@cellfy.com.br"></div>
     <div class="mb12"><label class="lbl">Senha</label><input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button onclick="initAudio();doLogin()" style="width:100%;padding:10px;border-radius:7px;border:none;background:var(--purple);color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Entrar</button>
+    <button onclick="doLogin()" style="width:100%;padding:10px;border-radius:7px;border:none;background:var(--purple);color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Entrar</button>
   </div>
 </div>
 <div id="app" style="display:none;">
@@ -726,6 +726,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 </div><!-- /app -->
 
 <script>
+// ── PERSI
 // ── PERSISTÊNCIA DE SESSÃO (sobrevive ao F5) ──
 function saveSession(user, role) {
   try {
@@ -1369,10 +1370,7 @@ function renderFerramentas() {
   grid.innerHTML = FERRAMENTAS.map(f => `
     <div class="tc" style="position:relative;">
       <!-- Botões de ação (só master) -->
-      ${role==='master'?`<div style="position:absolute;top:8px;right:8px;display:flex;gap:4px;opacity:0;transition:opacity .15s;" class="tc-actions">
-        <button onclick="editarFerramenta('${f.id}')" style="background:rgba(0,212,200,.15);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;" title="Editar">✏️</button>
-        <button onclick="excluirFerramenta('${f.id}')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;" title="Excluir">🗑</button>
-      </div>`:''}
+      ${role==='master'?'<div style="position:absolute;top:8px;right:8px;display:flex;gap:4px;opacity:0;transition:opacity .15s;" class="tc-actions"><button onclick="editarFerramenta(\''+f.id+'\')" style="background:rgba(0,212,200,.15);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;" title="Editar">✏️</button><button onclick="excluirFerramenta(\''+f.id+'\')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;" title="Excluir">🗑</button></div>':''}
       <div onclick="openTool('${f.id}')" style="cursor:pointer;">
         <div class="tc-ic" style="background:${catColors[f.cat]||'rgba(100,116,139,.12)'};">
           <span style="font-size:18px;">${f.icon}</span>
@@ -1392,22 +1390,7 @@ function renderFerramentas() {
   });
 }
 
-function toggleTF() {
-  const tf = document.getElementById('tf');
-  if(!tf) return;
-  const isOpen = tf.style.display !== 'none';
-  if(isOpen) { cancelarFerramenta(); return; }
-  // Resetar para modo adicionar
-  document.getElementById('tf-title').textContent = '➕ Nova ferramenta';
-  document.getElementById('tf-editing-id').value = '';
-  document.getElementById('tf-nome').value = '';
-  document.getElementById('tf-url').value = '';
-  document.getElementById('tf-desc').value = '';
-  document.getElementById('tf-cat').value = 'Formulário';
-  document.getElementById('tf-icon').value = '📄';
-  tf.style.display = 'block';
-  setTimeout(() => document.getElementById('tf-nome').focus(), 50);
-}
+// toggleTF ja definida acima
 
 function cancelarFerramenta() {
   const tf = document.getElementById('tf');
@@ -2371,17 +2354,9 @@ let ALARMS = [
 let alarmCheckInterval = null;
 let audioCtx = null;
 
-function initAudio() {
-  try {
-    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if(audioCtx.state === 'suspended') audioCtx.resume();
-  } catch(e) {}
-}
+// initAudio ja definida acima
 
-function getAudioCtx() {
-  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  return audioCtx;
-}
+// getAudioCtx ja definida acima
 
 function renderAlarms() {
   const wrap = document.getElementById('alarm-list');
@@ -2503,17 +2478,9 @@ function showToast(msg){
   setTimeout(()=>t.style.opacity='0',2500);
 }
 
-function testAlarm(i) {
-  // Inicializar contexto de áudio via gesto do usuário
-  try { getAudioCtx().resume(); } catch(e){}
-  showAlarm(ALARMS[i].msg);
-}
+// testAlarm ja definida acima
 
-function addAlarm() {
-  ALARMS.push({ hora:'09:00', msg:'Novo lembrete — edite aqui...', ativo:true, disparado:false });
-  renderAlarms();
-  showToast('Lembrete adicionado! Configure o horário e a mensagem.');
-}
+// addAlarm ja definida acima
 
 // ── DASHBOARD COMPLETA ──
 function initDashboard() {
@@ -2654,7 +2621,7 @@ function renderDashboard() {
       <div style="margin-bottom:10px;">
         <div class="fx jb f11 mb5"><span class="fw5" style="color:var(--text);">🎯 ${o.titulo}</span><span style="color:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};">${o.progresso}%</span></div>
         <div class="prog"><div class="pf" style="width:${o.progresso}%;background:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};"></div></div>
-        ${o.prazo?`<div class="f10 cdim mt8">Prazo: ${o.prazo}</div>`:''}
+        ${o.prazo?'<div class="f10 cdim mt8">Prazo: '+o.prazo+'</div>':''}
       </div>`).join('') || '<div class="f11 cm">Sem objetivos no PDI.</div>';
 
     html += `<div class="card mb12">
@@ -2770,9 +2737,7 @@ function showPwdMsg(txt,cor){
   setTimeout(()=>el.style.display='none',3500);
 }
 setTimeout(()=>{renderCadList();renderTimeCS();atualizarSeletores();},100);
-</script>
-
-<!-- PAINEL DE NOTIFICAÇÕES -->
+!-- PAINEL DE NOTIFICAÇÕES -->
 <div id="notif-panel" style="display:none;position:fixed;top:56px;right:16px;width:300px;background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:9990;overflow:hidden;">
   <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
     <span style="font-size:12px;font-weight:700;color:var(--text);">🔔 Notificações</span>
