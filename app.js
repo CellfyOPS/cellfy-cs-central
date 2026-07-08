@@ -1,4 +1,3 @@
-
 // ── PERSISTÊNCIA DE SESSÃO (sobrevive ao F5) ──
 function saveSession(user, role) {
   try {
@@ -24,8 +23,8 @@ async function carregarDados() {
     const urgClass = {urgente:'tag-u', normal:'tag-n', baixa:'tag-l'};
     let total=0, feitas=0, urgentes=0;
     res.tarefas.forEach(t => {
-      var _em = currentUser.email.toLowerCase();
-      if((t.usuario_email||'').toLowerCase()!==_em && (t.designado_para||'').toLowerCase()!==_em) return;
+      var _em=currentUser.email.toLowerCase();
+      if((t.usuario_email||'').toLowerCase()!==_em&&(t.designado_para||'').toLowerCase()!==_em)return;
       total++;
       const tid = t.id;
       const urg = t.urgencia || 'normal';
@@ -140,17 +139,28 @@ function renderCanalFeed(posts) {
         <div id="lido-${p.id}" style="width:8px;height:8px;border-radius:50%;background:var(--purple);flex-shrink:0;"></div>
       </div>
       <div class="p-body">${p.mensagem}</div>
-      <div class="fx gap6">
-        <button class="react" onclick="toggleReacao(this,'👍','post-${p.id}')">👍 <span class="cnt-reacao">0</span></button>
-        <button class="react" onclick="toggleReacao(this,'❤️','post-${p.id}')">❤️ <span class="cnt-reacao">0</span></button>
-        <button class="react" onclick="toggleReacao(this,'🔥','post-${p.id}')">🔥 <span class="cnt-reacao">0</span></button>
+      <div class="fx gap6" style="flex-wrap:wrap;">
+        <button class="react" onclick="toggleReacao(this,'like','post-${p.id}')">👍 <span class="cnt-reacao">0</span></button>
+        <button class="react" onclick="toggleReacao(this,'love','post-${p.id}')">❤️ <span class="cnt-reacao">0</span></button>
+        <button class="react" onclick="toggleReacao(this,'fire','post-${p.id}')">🔥 <span class="cnt-reacao">0</span></button>
+        <button class="react" onclick="toggleReacao(this,'haha','post-${p.id}')">😂 <span class="cnt-reacao">0</span></button>
         <button class="react" onclick="toggleReply(this)">💬 Responder</button>
-        <button class="react" onclick="excluirPost('post-${p.id}')" style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3);color:#fca5a5;">🗑</button>
         <button class="react" onclick="markPostRead('post-${p.id}','lido-${p.id}')" style="margin-left:auto;">✓ Lido</button>
+        <button class="react del-post" id="delp-${p.id}" onclick="excluirPost('post-${p.id}')" style="color:#fca5a5;border-color:rgba(239,68,68,.3);display:none;">Excluir</button>
       </div>
-      <div class="reply-area" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;"><input placeholder="Resposta..."></div>
+      <div class="reply-area" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;">
+        <div class="respostas-list" style="margin-bottom:6px;"></div>
+        <div style="display:flex;gap:6px;">
+          <input class="reply-input" placeholder="Escreva uma resposta..." style="flex:1;font-size:11px;">
+          <button onclick="enviarResposta(this)" style="background:var(--purple);border:none;color:white;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:inherit;">Enviar</button>
+        </div>
+      </div>
     </div>`;
   }).join('');
+  posts.forEach(function(p){
+    var db=document.getElementById('delp-'+p.id);
+    if(db&&(p.autor_email===currentUser.email||role==='master')) db.style.display='inline-flex';
+  });
   // Só contar como não lido posts das últimas 24h
   const ontem = Date.now() - 86400000;
   canalUnread = posts.filter(p => new Date(p.criado_em).getTime() > ontem).length;
@@ -262,6 +272,7 @@ function sp(p){
   document.getElementById('add-panel').style.display='none';
 
   if(p==='pdi') renderPdi();
+  if(p==='tarefas'){var dc=document.getElementById('designadas-card');if(dc)dc.style.display=role==='master'?'block':'none';}
   if(p==='config') renderAlarms();
   if(p==='hoje'){renderFixasDia();renderBannerLembretes();}
   if(p==='time') renderTimeCS();
@@ -525,15 +536,22 @@ async function publishPost(){
       <span class="tag tag-i">${tipo}</span>
     </div>
     <div class="p-body">${textarea.value}</div>
-    <div class="fx gap6">
-      <button class="react" onclick="toggleReacao(this,'👍','${newId}')">👍 <span class="cnt-reacao">0</span></button>
-      <button class="react" onclick="toggleReacao(this,'❤️','${newId}')">❤️ <span class="cnt-reacao">0</span></button>
-      <button class="react" onclick="toggleReacao(this,'🔥','${newId}')">🔥 <span class="cnt-reacao">0</span></button>
+    <div class="fx gap6" style="flex-wrap:wrap;">
+      <button class="react" onclick="toggleReacao(this,'like','${newId}')">👍 <span class="cnt-reacao">0</span></button>
+      <button class="react" onclick="toggleReacao(this,'love','${newId}')">❤️ <span class="cnt-reacao">0</span></button>
+      <button class="react" onclick="toggleReacao(this,'fire','${newId}')">🔥 <span class="cnt-reacao">0</span></button>
+      <button class="react" onclick="toggleReacao(this,'haha','${newId}')">😂 <span class="cnt-reacao">0</span></button>
       <button class="react" onclick="toggleReply(this)">💬 Responder</button>
-      <button class="react" onclick="excluirPost('${newId}')" style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3);color:#fca5a5;">🗑</button>
-      <button class="react" onclick="markPostRead('${newId}','${lidoId}')" id="btn-${lidoId}" style="margin-left:auto;">✓ Marcar como lido</button>
+      <button class="react" onclick="markPostRead('${newId}','${lidoId}')" id="btn-${lidoId}" style="margin-left:auto;">✓ Lido</button>
+      <button class="react" onclick="excluirPost('${newId}')" style="color:#fca5a5;border-color:rgba(239,68,68,.3);">Excluir</button>
     </div>
-    <div class="reply-area" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;"><input placeholder="Resposta..."></div>`;
+    <div class="reply-area" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;">
+      <div class="respostas-list" style="margin-bottom:6px;"></div>
+      <div style="display:flex;gap:6px;">
+        <input class="reply-input" placeholder="Escreva uma resposta..." style="flex:1;font-size:11px;">
+        <button onclick="enviarResposta(this)" style="background:var(--purple);border:none;color:white;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:inherit;">Enviar</button>
+      </div>
+    </div>\`;
   feed.insertBefore(div, feed.firstChild);
   textarea.value = '';
   document.getElementById('pf').style.display = 'none';
@@ -546,30 +564,40 @@ async function publishPost(){
 setTimeout(updateCanalBadge, 200);
 
 const REACOES={};
-function toggleReacao(btn,emoji,postId){
+function toggleReacao(btn,tipo,postId){
   if(!REACOES[postId])REACOES[postId]={};
-  if(!REACOES[postId][emoji])REACOES[postId][emoji]=[];
-  var lista=REACOES[postId][emoji],email=currentUser.email,idx=lista.indexOf(email);
+  if(!REACOES[postId][tipo])REACOES[postId][tipo]=[];
+  var lista=REACOES[postId][tipo],email=currentUser.email,idx=lista.indexOf(email);
   var cel=btn.querySelector('.cnt-reacao');
-  if(idx>=0){lista.splice(idx,1);btn.classList.remove('on');}else{lista.push(email);btn.classList.add('on');}
-  if(cel)cel.textContent=lista.length>0?lista.length:'0';
+  if(idx>=0){lista.splice(idx,1);btn.classList.remove('on');}
+  else{lista.push(email);btn.classList.add('on');}
+  if(cel)cel.textContent=lista.length>0?String(lista.length):'0';
 }
-function excluirPost(id){
+function excluirPost(postId){
   if(!confirm('Excluir este post?'))return;
-  var el=document.getElementById(id);
-  if(el){el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(function(){el.remove();},300);showToast('Post excluído.');}
+  var el=document.getElementById(postId);
+  if(el){el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(function(){el.remove();},300);showToast('Post excluido.');}
 }
-function renderBannerLembretes(){
-  var b=document.getElementById('banner-lembretes');if(!b)return;
-  var ativos=ALARMS.filter(function(a){return a.ativo;});
-  if(!ativos.length){b.style.display='none';return;}
-  ativos.sort(function(a,c){return a.hora.localeCompare(c.hora);});
-  b.style.display='flex';b.style.flexWrap='wrap';b.style.gap='6px';b.style.alignItems='center';
-  b.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>'
-    +'<strong style="margin-right:4px;">Lembretes:</strong>'
-    +ativos.map(function(a){return '<span style="background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);border-radius:20px;padding:1px 10px;font-size:11px;">🕐 '+a.hora+' — '+a.msg+'</span>';}).join('');
+function enviarResposta(btn){
+  var area=btn.closest('.reply-area'),input=area.querySelector('.reply-input');
+  if(!input||!input.value.trim())return;
+  var lista=area.querySelector('.respostas-list');if(!lista)return;
+  var agora=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  var init=currentUser.nome.split(' ').map(function(n){return n[0];}).join('').substring(0,2).toUpperCase();
+  var div=document.createElement('div');
+  div.style.cssText='background:var(--card2);border-radius:7px;padding:7px 10px;margin-bottom:5px;display:flex;align-items:flex-start;gap:8px;';
+  div.innerHTML='<div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:white;flex-shrink:0;">'+init+'</div>'
+    +'<div style="flex:1;min-width:0;"><div style="font-size:11px;font-weight:600;color:var(--text);">'+currentUser.nome.split(' ')[0]+'</div>'
+    +'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+input.value.trim()+'</div>'
+    +'<div style="font-size:10px;color:var(--dim);margin-top:3px;">'+agora+'</div></div>';
+  lista.appendChild(div);input.value='';
 }
-function toggleReply(btn){const ra=btn.closest('.post').querySelector('.reply-area');if(ra)ra.style.display=ra.style.display==='none'?'block':'none';}
+function toggleReply(btn){
+  var ra=btn.closest('.post').querySelector('.reply-area');if(!ra)return;
+  var isOpen=ra.style.display==='block';
+  ra.style.display=isOpen?'none':'block';
+  if(!isOpen){var inp=ra.querySelector('.reply-input');if(inp)setTimeout(function(){inp.focus();},50);}
+}
 
 async function createTask(){
   const desc=document.getElementById('nt-d').value.trim();if(!desc)return;
@@ -581,10 +609,26 @@ async function createTask(){
   const URC={urgente:'tag-u',normal:'tag-n',baixa:'tag-l'};
   const FORM={eu:'mim mesma',rose:'Rose',larissa:'Larissa',sarah:'Sarah'};
   const tid='t'+Date.now();
-  const list=document.getElementById('h-pend');
+  var ehParaMim=(forVal==='eu');
+  const list=ehParaMim?document.getElementById('h-pend'):null;
   const div=document.createElement('div');div.className='ti';div.id=tid;
   div.innerHTML='<div class="chk" onclick="ckTask(event,\''+tid+'\',this)"></div><div class="f1 mw0"><div class="tt">'+desc+'</div><div class="tm"><span class="tag '+URC[urg]+'">'+URM[urg]+'</span><span class="ttime">'+time+'</span>'+(obs?'<span class="ttime cdim" style="font-style:italic;">&quot;'+obs+'&quot;</span>':'')+'</div></div>';
-  list.prepend(div);
+  if(list)list.prepend(div);
+  if(!ehParaMim){
+    var nomeDesig=forVal==='rose'?'Roseane':forVal==='larissa'?'Larissa':forVal==='sarah'?'Sarah':forVal;
+    var desEl=document.getElementById('designadas-list');
+    if(desEl){
+      var dDiv=document.createElement('div');dDiv.className='ti';dDiv.id='des-'+tid;
+      dDiv.style.borderLeft='3px solid var(--purple)';
+      dDiv.innerHTML='<div class="f1 mw0"><div class="tt">'+desc+'</div>'
+        +'<div class="tm"><span class="tag '+URC[urg]+'">'+URM[urg]+'</span>'
+        +'<span class="tag tag-p" style="font-size:9px;">para: '+nomeDesig+'</span>'
+        +'<span class="tag tag-n" style="font-size:9px;">Pendente</span></div></div>';
+      desEl.prepend(dDiv);
+      var emDes=document.getElementById('designadas-empty');if(emDes)emDes.style.display='none';
+    }
+    showToast('Tarefa designada para '+nomeDesig+' ✓');
+  }
   const hist=document.getElementById('hist-list');
   if(hist){const now=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});const row=document.createElement('div');row.className='hist-r';row.style.cssText='background:rgba(124,92,252,.05);border-radius:6px;padding:8px;';row.innerHTML='<div class="m-av" style="background:linear-gradient(135deg,var(--purple),var(--cyan));width:28px;height:28px;font-size:10px;">'+document.getElementById('sb-av').textContent+'</div><div class="f1 mw0" style="margin-left:8px;"><div class="f12 fw6 mb6" style="color:var(--text);"><span class="cc">'+currentUser.nome.split(' ')[0]+'</span> → <span style="color:#a78bfa;">'+FORM[forVal]+'</span> — &quot;'+desc+'&quot;</div><div class="tm"><span class="tag '+URC[urg]+'">'+URM[urg]+'</span><span class="ttime">agora '+now+'</span><span class="tag tag-c">Pendente</span></div></div>';hist.insertBefore(row,hist.firstChild);}
   ['nt-d','nt-t','nt-o'].forEach(id=>document.getElementById(id).value='');
@@ -657,41 +701,42 @@ const catTags = {
 };
 
 function renderFerramentas() {
-  const grid = document.getElementById('ferramentas-grid');
-  const empty = document.getElementById('ferr-empty');
+  var grid = document.getElementById('ferramentas-grid');
+  var empty = document.getElementById('ferr-empty');
   if(!grid) return;
-
-  if(FERRAMENTAS.length === 0) {
-    grid.innerHTML = '';
-    if(empty) empty.style.display = 'block';
-    return;
-  }
+  if(FERRAMENTAS.length === 0) { grid.innerHTML = ''; if(empty) empty.style.display='block'; return; }
   if(empty) empty.style.display = 'none';
-
-  grid.innerHTML = FERRAMENTAS.map(f => `
-    <div class="tc" style="position:relative;">
-      <!-- Botões de ação (só master) -->
-      ${role==='master'?'<div style="position:absolute;top:8px;right:8px;display:flex;gap:4px;opacity:0;transition:opacity .15s;" class="tc-actions"><button onclick="editarFerramenta(\''+f.id+'\')" style="background:rgba(0,212,200,.15);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;" title="Editar">✏️</button><button onclick="excluirFerramenta(\''+f.id+'\')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;" title="Excluir">🗑</button></div>':''}
-      <div onclick="openTool('${f.id}')" style="cursor:pointer;">
-        <div class="tc-ic" style="background:${catColors[f.cat]||'rgba(100,116,139,.12)'};">
-          <span style="font-size:18px;">${f.icon}</span>
-        </div>
-        <div class="fw6 f12 mb6" style="color:var(--text);">${f.nome}</div>
-        <div class="f11 cm mb6">${f.desc}</div>
-        <span class="tag ${catTags[f.cat]||''}" style="margin-top:4px;">${f.cat}</span>
-      </div>
-    </div>`).join('');
-
-  // Mostrar botões ao hover
-  grid.querySelectorAll('.tc').forEach(card => {
-    const actions = card.querySelector('.tc-actions');
-    if(!actions) return;
-    card.addEventListener('mouseenter', () => actions.style.opacity='1');
-    card.addEventListener('mouseleave', () => actions.style.opacity='0');
+  grid.innerHTML = '';
+  FERRAMENTAS.forEach(function(f) {
+    var card = document.createElement('div');
+    card.className = 'tc'; card.style.position = 'relative';
+    if(role === 'master') {
+      var acts = document.createElement('div');
+      acts.style.cssText = 'position:absolute;top:8px;right:8px;display:flex;gap:4px;opacity:0;transition:opacity .15s;';
+      var b1 = document.createElement('button');
+      b1.textContent = 'Editar'; b1.title = 'Editar';
+      b1.style.cssText = 'background:rgba(0,212,200,.15);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;';
+      b1.onclick = (function(id){ return function(e){ e.stopPropagation(); editarFerramenta(id); }; })(f.id);
+      var b2 = document.createElement('button');
+      b2.textContent = 'Excluir'; b2.title = 'Excluir';
+      b2.style.cssText = 'background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;';
+      b2.onclick = (function(id){ return function(e){ e.stopPropagation(); excluirFerramenta(id); }; })(f.id);
+      acts.appendChild(b1); acts.appendChild(b2); card.appendChild(acts);
+      card.addEventListener('mouseenter', function(){ acts.style.opacity='1'; });
+      card.addEventListener('mouseleave', function(){ acts.style.opacity='0'; });
+    }
+    var inner = document.createElement('div'); inner.style.cursor='pointer';
+    inner.onclick = (function(id){ return function(){ openTool(id); }; })(f.id);
+    var ic = document.createElement('div'); ic.className='tc-ic';
+    ic.style.background = catColors[f.cat]||'rgba(100,116,139,.12)';
+    var icsp = document.createElement('span'); icsp.style.fontSize='18px'; icsp.textContent=f.icon; ic.appendChild(icsp);
+    var nome = document.createElement('div'); nome.className='fw6 f12 mb6'; nome.style.color='var(--text)'; nome.textContent=f.nome;
+    var desc = document.createElement('div'); desc.className='f11 cm mb6'; desc.textContent=f.desc;
+    var cat = document.createElement('span'); cat.className='tag '+(catTags[f.cat]||''); cat.style.marginTop='4px'; cat.textContent=f.cat;
+    inner.appendChild(ic); inner.appendChild(nome); inner.appendChild(desc); inner.appendChild(cat);
+    card.appendChild(inner); grid.appendChild(card);
   });
 }
-
-// toggleTF já definida acima
 
 function cancelarFerramenta() {
   const tf = document.getElementById('tf');
@@ -742,7 +787,7 @@ function editarFerramenta(id) {
 function excluirFerramenta(id) {
   const f = FERRAMENTAS.find(x=>x.id===id);
   if(!f) return;
-  if(!confirm(`Excluir a ferramenta "${f.nome}"?`)) return;
+  if(!confirm('Excluir a ferramenta "'+f.nome+'"?')) return;
   FERRAMENTAS = FERRAMENTAS.filter(x=>x.id!==id);
   renderFerramentas();
   showToast('Ferramenta removida.');
@@ -764,17 +809,7 @@ function openTool(id) {
 
 function pickTab(el){el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));el.classList.add('act');}
 function switchPdiTab(el,tabId){el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));el.classList.add('act');document.querySelectorAll('.pdi-tab').forEach(t=>{t.classList.remove('act');t.style.display='none';});const tg=document.getElementById(tabId);if(tg){tg.classList.add('act');tg.style.display='block';}}
-function pickMood(el){
-  el.parentElement.querySelectorAll('span').forEach(function(s){s.style.opacity='0.4';s.style.transform='scale(1)';});
-  el.style.opacity='1'; el.style.transform='scale(1.3)';
-  var emoji=el.textContent.trim();
-  var mapa={'😴':'Esgotada','😐':'Neutro','🙂':'Bem','🔥':'Produtiva'};
-  var label=mapa[emoji]||'';
-  var agora=new Date();
-  apiPost('salvarHumor',{usuario_email:currentUser.email,usuario_nome:currentUser.nome,emoji:emoji,label:label,
-    data:agora.toLocaleDateString('pt-BR'),hora:agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),timestamp:Date.now()});
-  showToast('Humor registrado: '+emoji+' '+label);
-}
+function pickMood(el){el.parentElement.querySelectorAll('span').forEach(s=>s.style.opacity='0.4');el.style.opacity='1';}
 
 function setSync(s){const b=document.getElementById('sync-b');const t=document.getElementById('sync-t');const now=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});if(s==='ok'){b.className='sync-b s-ok';b.innerHTML='&#10003; Atualizado';t.textContent=now;}else if(s==='ld'){b.className='sync-b s-ld';b.innerHTML='&#8635; Atualizando...';}else{b.className='sync-b s-er';b.innerHTML='&#33; Sem conexão';t.textContent=now;}}
 function doRefresh(){
@@ -1665,9 +1700,9 @@ let ALARMS = [
 let alarmCheckInterval = null;
 let audioCtx = null;
 
-// initAudio já definida acima
+// initAudio removida
 
-// getAudioCtx já definida acima
+// getAudioCtx removida
 
 function renderAlarms() {
   const wrap = document.getElementById('alarm-list');
@@ -1773,6 +1808,14 @@ function scheduleNextMinute() {
   setTimeout(() => { checkAlarms(); scheduleNextMinute(); }, msAteProx);
 }
 
+function renderBannerLembretes() {
+  var b=document.getElementById('banner-lembretes');if(!b)return;
+  var ativos=ALARMS.filter(function(a){return a.ativo;});
+  if(!ativos.length){b.style.display='none';return;}
+  b.style.display='flex';b.style.cssText=b.style.cssText+';flex-wrap:wrap;gap:6px;align-items:center;';
+  b.innerHTML='<strong style="margin-right:4px;">Lembretes:</strong>'
+    +ativos.map(function(a){return '<span style="background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);border-radius:20px;padding:1px 10px;font-size:11px;display:inline-block;">'+a.hora+' - '+a.msg+'</span>';}).join('');
+}
 function startAlarmSystem() {
   if(alarmCheckInterval) clearInterval(alarmCheckInterval);
   alarmCheckInterval = setInterval(checkAlarms, 10000);
@@ -1789,9 +1832,9 @@ function showToast(msg){
   setTimeout(()=>t.style.opacity='0',2500);
 }
 
-// testAlarm já definida acima
+// testAlarm removida
 
-// addAlarm já definida acima
+// addAlarm removida
 
 // ── DASHBOARD COMPLETA ──
 function initDashboard() {
