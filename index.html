@@ -726,7 +726,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 </div><!-- /app -->
 
 <script>
-// ── PERSI
+// <script>
+
 // ── PERSISTÊNCIA DE SESSÃO (sobrevive ao F5) ──
 function saveSession(user, role) {
   try {
@@ -752,8 +753,8 @@ async function carregarDados() {
     const urgClass = {urgente:'tag-u', normal:'tag-n', baixa:'tag-l'};
     let total=0, feitas=0, urgentes=0;
     res.tarefas.forEach(t => {
-      var _em = currentUser.email.toLowerCase();
-      if((t.usuario_email||'').toLowerCase()!==_em && (t.designado_para||'').toLowerCase()!==_em) return;
+      var _em=currentUser.email.toLowerCase();
+      if((t.usuario_email||'').toLowerCase()!==_em&&(t.designado_para||'').toLowerCase()!==_em)return;
       total++;
       const tid = t.id;
       const urg = t.urgencia || 'normal';
@@ -1370,7 +1371,7 @@ function renderFerramentas() {
   grid.innerHTML = FERRAMENTAS.map(f => `
     <div class="tc" style="position:relative;">
       <!-- Botões de ação (só master) -->
-      ${role==='master'?'<div style="position:absolute;top:8px;right:8px;display:flex;gap:4px;opacity:0;transition:opacity .15s;" class="tc-actions"><button onclick="editarFerramenta(\''+f.id+'\')" style="background:rgba(0,212,200,.15);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;" title="Editar">✏️</button><button onclick="excluirFerramenta(\''+f.id+'\')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;" title="Excluir">🗑</button></div>':''}
+      ${role==='master'?'<div style="position:absolute;top:8px;right:8px;display:flex;gap:4px;opacity:0;transition:opacity .15s;" class="tc-actions"><button onclick="editarFerramenta(\''+f.id+'\')" style="background:rgba(0,212,200,.15);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;">✏️</button><button onclick="excluirFerramenta(\''+f.id+'\')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;">🗑</button></div>':''}
       <div onclick="openTool('${f.id}')" style="cursor:pointer;">
         <div class="tc-ic" style="background:${catColors[f.cat]||'rgba(100,116,139,.12)'};">
           <span style="font-size:18px;">${f.icon}</span>
@@ -1390,7 +1391,7 @@ function renderFerramentas() {
   });
 }
 
-// toggleTF ja definida acima
+// toggleTF ja definida
 
 function cancelarFerramenta() {
   const tf = document.getElementById('tf');
@@ -2354,9 +2355,9 @@ let ALARMS = [
 let alarmCheckInterval = null;
 let audioCtx = null;
 
-// initAudio ja definida acima
+// initAudio ja definida
 
-// getAudioCtx ja definida acima
+// getAudioCtx ja definida
 
 function renderAlarms() {
   const wrap = document.getElementById('alarm-list');
@@ -2478,9 +2479,9 @@ function showToast(msg){
   setTimeout(()=>t.style.opacity='0',2500);
 }
 
-// testAlarm ja definida acima
+// testAlarm ja definida
 
-// addAlarm ja definida acima
+// addAlarm ja definida
 
 // ── DASHBOARD COMPLETA ──
 function initDashboard() {
@@ -2737,7 +2738,8 @@ function showPwdMsg(txt,cor){
   setTimeout(()=>el.style.display='none',3500);
 }
 setTimeout(()=>{renderCadList();renderTimeCS();atualizarSeletores();},100);
-!-- PAINEL DE NOTIFICAÇÕES -->
+
+</script>L DE NOTIFICAÇÕES -->
 <div id="notif-panel" style="display:none;position:fixed;top:56px;right:16px;width:300px;background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:9990;overflow:hidden;">
   <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
     <span style="font-size:12px;font-weight:700;color:var(--text);">🔔 Notificações</span>
