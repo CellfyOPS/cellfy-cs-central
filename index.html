@@ -217,7 +217,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
 
 <!-- MEU DIA -->
 <div id="p-hoje" class="page">
-  <div class="alert al-i" id="banner-lembretes" style="display:none;align-items:center;"> Lembrete 08:30 — Confira suas tarefas! | Reunião OPS Leaders — 14h</div>
+  <div class="alert al-i" id="banner-lembretes" style="display:none;flex-wrap:wrap;gap:6px;align-items:center;"> Lembrete 08:30 — Confira suas tarefas! | Reunião OPS Leaders — 14h</div>
   <div class="g4 mb12">
     <div class="mc"><div class="ml">Total hoje</div><div class="mv cc" id="cnt-total">0</div><div class="ms">tarefas</div></div>
     <div class="mc"><div class="ml">Concluídas</div><div class="mv cs" id="cnt-feitas">0</div><div class="ms">hoje</div></div>
@@ -408,10 +408,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--cyan);}
   </div>
   <div class="card mb12" id="designadas-card" style="display:none;">
     <div class="ct">Tarefas que designei</div>
-    <div class="f10 cm mb8">Tarefas criadas por você e designadas para outras colaboradoras</div>
-    <div id="designadas-list">
-      <div id="designadas-empty" class="f11 cm" style="padding:14px;text-align:center;color:var(--dim);">Nenhuma tarefa designada ainda.</div>
-    </div>
+    <div id="designadas-list"><div id="designadas-empty" class="f11 cm" style="padding:14px;text-align:center;color:var(--dim);">Nenhuma tarefa designada ainda.</div></div>
   </div>
   <div class="card">
     <div class="ct"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/></svg> Histórico de designações</div>
