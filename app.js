@@ -23,8 +23,14 @@ async function carregarDados() {
     const urgClass = {urgente:'tag-u', normal:'tag-n', baixa:'tag-l'};
     let total=0, feitas=0, urgentes=0;
     res.tarefas.forEach(t => {
-      var _em=currentUser.email.toLowerCase();
-      if((t.usuario_email||'').toLowerCase()!==_em&&(t.designado_para||'').toLowerCase()!==_em)return;
+      var _em=currentUser.email.trim().toLowerCase();
+      var _tu=(t.usuario_email||'').trim().toLowerCase();
+      var _td=(t.designado_para||'').trim().toLowerCase();
+      // Mostrar apenas tarefas onde o usuário logado é dono OU destinatário
+      // Se ambos os campos estiverem vazios, ocultar (dado corrompido)
+      var ehDono = _tu === _em;
+      var ehDestinatario = _td !== '' && _td === _em;
+      if(!ehDono && !ehDestinatario) return;
       total++;
       const tid = t.id;
       const urg = t.urgencia || 'normal';
