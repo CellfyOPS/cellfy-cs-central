@@ -146,7 +146,7 @@ function renderCanalFeed(posts) {
         <button class="react" onclick="toggleReacao(this,'haha','post-${p.id}')">😂 <span class="cnt-reacao">0</span></button>
         <button class="react" onclick="toggleReply(this)">💬 Responder</button>
         <button class="react" onclick="markPostRead('post-${p.id}','lido-${p.id}')" style="margin-left:auto;">✓ Lido</button>
-        <button class="react del-post" id="delp-${p.id}" onclick="excluirPost('post-${p.id}')" style="color:#fca5a5;border-color:rgba(239,68,68,.3);display:none;">Excluir</button>
+        <button class="react" id="delp-${p.id}" onclick="excluirPost('post-${p.id}')" style="color:#fca5a5;border-color:rgba(239,68,68,.3);display:none;">Excluir</button>
       </div>
       <div class="reply-area" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;">
         <div class="respostas-list" style="margin-bottom:6px;"></div>
@@ -157,10 +157,7 @@ function renderCanalFeed(posts) {
       </div>
     </div>`;
   }).join('');
-  posts.forEach(function(p){
-    var db=document.getElementById('delp-'+p.id);
-    if(db&&(p.autor_email===currentUser.email||role==='master')) db.style.display='inline-flex';
-  });
+  posts.forEach(function(p){var db=document.getElementById('delp-'+p.id);if(db&&(p.autor_email===currentUser.email||role==='master'))db.style.display='inline-flex';});
   // Só contar como não lido posts das últimas 24h
   const ontem = Date.now() - 86400000;
   canalUnread = posts.filter(p => new Date(p.criado_em).getTime() > ontem).length;
@@ -551,7 +548,7 @@ async function publishPost(){
         <input class="reply-input" placeholder="Escreva uma resposta..." style="flex:1;font-size:11px;">
         <button onclick="enviarResposta(this)" style="background:var(--purple);border:none;color:white;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:inherit;">Enviar</button>
       </div>
-    </div>\`;
+    </div>`;
   feed.insertBefore(div, feed.firstChild);
   textarea.value = '';
   document.getElementById('pf').style.display = 'none';
@@ -571,7 +568,7 @@ function toggleReacao(btn,tipo,postId){
   var cel=btn.querySelector('.cnt-reacao');
   if(idx>=0){lista.splice(idx,1);btn.classList.remove('on');}
   else{lista.push(email);btn.classList.add('on');}
-  if(cel)cel.textContent=lista.length>0?String(lista.length):'0';
+  if(cel)cel.textContent=lista.length?String(lista.length):'0';
 }
 function excluirPost(postId){
   if(!confirm('Excluir este post?'))return;
@@ -622,12 +619,11 @@ async function createTask(){
       dDiv.style.borderLeft='3px solid var(--purple)';
       dDiv.innerHTML='<div class="f1 mw0"><div class="tt">'+desc+'</div>'
         +'<div class="tm"><span class="tag '+URC[urg]+'">'+URM[urg]+'</span>'
-        +'<span class="tag tag-p" style="font-size:9px;">para: '+nomeDesig+'</span>'
-        +'<span class="tag tag-n" style="font-size:9px;">Pendente</span></div></div>';
+        +'<span class="tag tag-p" style="font-size:9px;">para: '+nomeDesig+'</span></div></div>';
       desEl.prepend(dDiv);
       var emDes=document.getElementById('designadas-empty');if(emDes)emDes.style.display='none';
     }
-    showToast('Tarefa designada para '+nomeDesig+' ✓');
+    showToast('Designada para '+nomeDesig+' ✓');
   }
   const hist=document.getElementById('hist-list');
   if(hist){const now=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});const row=document.createElement('div');row.className='hist-r';row.style.cssText='background:rgba(124,92,252,.05);border-radius:6px;padding:8px;';row.innerHTML='<div class="m-av" style="background:linear-gradient(135deg,var(--purple),var(--cyan));width:28px;height:28px;font-size:10px;">'+document.getElementById('sb-av').textContent+'</div><div class="f1 mw0" style="margin-left:8px;"><div class="f12 fw6 mb6" style="color:var(--text);"><span class="cc">'+currentUser.nome.split(' ')[0]+'</span> → <span style="color:#a78bfa;">'+FORM[forVal]+'</span> — &quot;'+desc+'&quot;</div><div class="tm"><span class="tag '+URC[urg]+'">'+URM[urg]+'</span><span class="ttime">agora '+now+'</span><span class="tag tag-c">Pendente</span></div></div>';hist.insertBefore(row,hist.firstChild);}
@@ -701,38 +697,35 @@ const catTags = {
 };
 
 function renderFerramentas() {
-  var grid = document.getElementById('ferramentas-grid');
-  var empty = document.getElementById('ferr-empty');
+  var grid=document.getElementById('ferramentas-grid');
+  var empty=document.getElementById('ferr-empty');
   if(!grid) return;
-  if(FERRAMENTAS.length === 0) { grid.innerHTML = ''; if(empty) empty.style.display='block'; return; }
-  if(empty) empty.style.display = 'none';
-  grid.innerHTML = '';
-  FERRAMENTAS.forEach(function(f) {
-    var card = document.createElement('div');
-    card.className = 'tc'; card.style.position = 'relative';
-    if(role === 'master') {
-      var acts = document.createElement('div');
-      acts.style.cssText = 'position:absolute;top:8px;right:8px;display:flex;gap:4px;opacity:0;transition:opacity .15s;';
-      var b1 = document.createElement('button');
-      b1.textContent = 'Editar'; b1.title = 'Editar';
-      b1.style.cssText = 'background:rgba(0,212,200,.15);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;';
-      b1.onclick = (function(id){ return function(e){ e.stopPropagation(); editarFerramenta(id); }; })(f.id);
-      var b2 = document.createElement('button');
-      b2.textContent = 'Excluir'; b2.title = 'Excluir';
-      b2.style.cssText = 'background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;';
-      b2.onclick = (function(id){ return function(e){ e.stopPropagation(); excluirFerramenta(id); }; })(f.id);
+  if(!FERRAMENTAS.length){ grid.innerHTML=''; if(empty)empty.style.display='block'; return; }
+  if(empty) empty.style.display='none';
+  grid.innerHTML='';
+  FERRAMENTAS.forEach(function(f){
+    var card=document.createElement('div'); card.className='tc'; card.style.position='relative';
+    if(role==='master'){
+      var acts=document.createElement('div');
+      acts.style.cssText='position:absolute;top:8px;right:8px;display:flex;gap:4px;opacity:0;transition:opacity .15s;';
+      var b1=document.createElement('button'); b1.textContent='Editar';
+      b1.style.cssText='background:rgba(0,212,200,.15);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;';
+      b1.onclick=(function(id){return function(ev){ev.stopPropagation();editarFerramenta(id);};})(f.id);
+      var b2=document.createElement('button'); b2.textContent='Excluir';
+      b2.style.cssText='background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;';
+      b2.onclick=(function(id){return function(ev){ev.stopPropagation();excluirFerramenta(id);};})(f.id);
       acts.appendChild(b1); acts.appendChild(b2); card.appendChild(acts);
-      card.addEventListener('mouseenter', function(){ acts.style.opacity='1'; });
-      card.addEventListener('mouseleave', function(){ acts.style.opacity='0'; });
+      card.addEventListener('mouseenter',function(){acts.style.opacity='1';});
+      card.addEventListener('mouseleave',function(){acts.style.opacity='0';});
     }
-    var inner = document.createElement('div'); inner.style.cursor='pointer';
-    inner.onclick = (function(id){ return function(){ openTool(id); }; })(f.id);
-    var ic = document.createElement('div'); ic.className='tc-ic';
-    ic.style.background = catColors[f.cat]||'rgba(100,116,139,.12)';
-    var icsp = document.createElement('span'); icsp.style.fontSize='18px'; icsp.textContent=f.icon; ic.appendChild(icsp);
-    var nome = document.createElement('div'); nome.className='fw6 f12 mb6'; nome.style.color='var(--text)'; nome.textContent=f.nome;
-    var desc = document.createElement('div'); desc.className='f11 cm mb6'; desc.textContent=f.desc;
-    var cat = document.createElement('span'); cat.className='tag '+(catTags[f.cat]||''); cat.style.marginTop='4px'; cat.textContent=f.cat;
+    var inner=document.createElement('div'); inner.style.cursor='pointer';
+    inner.onclick=(function(id){return function(){openTool(id);};})(f.id);
+    var ic=document.createElement('div'); ic.className='tc-ic';
+    ic.style.background=catColors[f.cat]||'rgba(100,116,139,.12)';
+    var sp=document.createElement('span'); sp.style.fontSize='18px'; sp.textContent=f.icon; ic.appendChild(sp);
+    var nome=document.createElement('div'); nome.className='fw6 f12 mb6'; nome.style.color='var(--text)'; nome.textContent=f.nome;
+    var desc=document.createElement('div'); desc.className='f11 cm mb6'; desc.textContent=f.desc;
+    var cat=document.createElement('span'); cat.className='tag '+(catTags[f.cat]||''); cat.style.marginTop='4px'; cat.textContent=f.cat;
     inner.appendChild(ic); inner.appendChild(nome); inner.appendChild(desc); inner.appendChild(cat);
     card.appendChild(inner); grid.appendChild(card);
   });
@@ -862,7 +855,7 @@ function focoAddNew() {
   div.id = newId;
   div.style.cursor = 'pointer';
   div.onclick = () => toggleFocoSelect(newId, txt, 'tag-n', '🟡 Normal', '—');
-  div.innerHTML = `<div class="chk" id="fpc-${newId.replace('fp-','')}"></div><div class="f1 mw0"><div class="tt f12">${txt}</div><div class="tm"><span class="tag tag-n">🟡 Normal</span></div></div>`;
+  div.innerHTML = '<div class="chk" id="fpc-'+newId.replace('fp-','')+'"></div><div class="f1 mw0"><div class="tt f12">'+txt+'</div><div class="tm"><span class="tag tag-n">Normal</span></div></div>';
   pool.insertBefore(div, pool.firstChild);
   // Selecionar automaticamente
   toggleFocoSelect(newId, txt, 'tag-n', '🟡 Normal', '—');
@@ -904,18 +897,14 @@ function focoUpdateFila() {
     const atual = pendentes[0];
     atualWrap.style.display = 'block';
     document.getElementById('foco-atual-txt').textContent = atual.txt;
-    document.getElementById('foco-atual-meta').innerHTML = `<span class="tag ${atual.tagClass}">${atual.tagLabel}</span><span class="ttime" style="margin-left:6px;">⏱ ${atual.time}</span>`;
+    document.getElementById('foco-atual-meta').innerHTML = '<span class="tag '+(atual.tagClass)+'">'+(atual.tagLabel)+'</span><span class="ttime" style="margin-left:6px;">⏱ '+(atual.time)+'</span>';
 
     // Fila restante (sem a atual)
     const resto = pendentes.slice(1);
     if (resto.length === 0) {
       list.innerHTML = '<div class="f10 cm" style="padding:6px 0;">Sem mais tarefas na fila.</div>';
     } else {
-      list.innerHTML = '<div class="f10 cm mb6">Na fila:</div>' + resto.map(t => `
-        <div class="ti" style="margin-bottom:4px;">
-          <div class="f1 mw0"><div class="tt f11">${t.txt}</div><div class="tm"><span class="tag ${t.tagClass}" style="font-size:9px;">${t.tagLabel}</span><span class="ttime">${t.time}</span></div></div>
-          <button onclick="focoRemoverDaFila('${t.id}')" style="background:transparent;border:none;color:var(--dim);cursor:pointer;font-size:12px;" title="Remover da fila">✕</button>
-        </div>`).join('');
+      list.innerHTML = '<div class="f10 cm mb6">Na fila:</div>' + resto.map(t => '\n        <div class="ti" style="margin-bottom:4px;">\n          <div class="f1 mw0"><div class="tt f11">'+(t.txt)+'</div><div class="tm"><span class="tag '+(t.tagClass)+'" style="font-size:9px;">'+(t.tagLabel)+'</span><span class="ttime">'+(t.time)+'</span></div></div>\n          <button onclick="focoRemoverDaFila(\''+(t.id)+'\')" style="background:transparent;border:none;color:var(--dim);cursor:pointer;font-size:12px;" title="Remover da fila">✕</button>\n        </div>').join('');
     }
   }
 
@@ -998,20 +987,7 @@ function renderPdiMaster(){
     const nObjs=pdi?pdi.objetivos.length:0;
     const prog=pdi&&nObjs>0?Math.round(pdi.objetivos.reduce((s,o)=>s+o.progresso,0)/nObjs):0;
     const cor=prog>=75?'var(--ok)':prog>=40?'var(--warn)':'var(--err)';
-    return `<div class="card" style="cursor:pointer;transition:all .15s;" onclick="abrirPdiColaboradora('${u.email}')"
-      onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='var(--border)'">
-      <div class="fx ic gap10 mb10">
-        <div class="m-av" style="background:${cols[i%cols.length]};width:38px;height:38px;">${init}</div>
-        <div class="f1 mw0">
-          <div class="f13 fw6" style="color:var(--text);">${u.nome}</div>
-          <div class="f10 cm">${u.cargo}</div>
-        </div>
-        <span class="tag ${nObjs>0?'tag-l':'tag-n'}">${nObjs} objetivo${nObjs!==1?'s':''}</span>
-      </div>
-      <div class="fx jb f10 mb5"><span class="cm">Progresso geral</span><span style="color:${cor};">${prog}%</span></div>
-      <div class="prog"><div class="pf" style="width:${prog}%;background:${cor};"></div></div>
-      <div class="f10 cdim mt8">Clique para editar o PDI ›</div>
-    </div>`;
+    return '<div class="card" style="cursor:pointer;transition:all .15s;" onclick="abrirPdiColaboradora(\''+(u.email)+'\')"\n      onmouseover="this.style.borderColor=\'var(--cyan)\'" onmouseout="this.style.borderColor=\'var(--border)\'">\n      <div class="fx ic gap10 mb10">\n        <div class="m-av" style="background:'+(cols[i%cols.length])+';width:38px;height:38px;">'+(init)+'</div>\n        <div class="f1 mw0">\n          <div class="f13 fw6" style="color:var(--text);">'+(u.nome)+'</div>\n          <div class="f10 cm">'+(u.cargo)+'</div>\n        </div>\n        <span class="tag '+(nObjs>0?'tag-l':'tag-n')+'">'+(nObjs)+' objetivo'+(nObjs!==1?'s':'')+'</span>\n      </div>\n      <div class="fx jb f10 mb5"><span class="cm">Progresso geral</span><span style="color:'+(cor)+';">'+(prog)+'%</span></div>\n      <div class="prog"><div class="pf" style="width:'+(prog)+'%;background:'+(cor)+';"></div></div>\n      <div class="f10 cdim mt8">Clique para editar o PDI ›</div>\n    </div>';
   }).join('');
 }
 
@@ -1062,52 +1038,13 @@ function renderEditorPdi(){
   const objsEl=document.getElementById('pdi-editor-objs');
   objsEl.innerHTML = data.objetivos.length===0
     ? '<div class="f11 cm mb12" style="text-align:center;padding:16px;background:var(--card2);border-radius:8px;color:var(--dim);">Nenhum objetivo ainda. Adicione o primeiro abaixo.</div>'
-    : data.objetivos.map((o,i)=>`
-      <div class="card mb10" style="border-left:3px solid ${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};">
-        <div class="fx ic jb mb8">
-          <div class="f12 fw6" style="color:var(--text);">🎯 ${o.titulo}</div>
-          <div class="fx gap5">
-            <button onclick="editarObjPara(${i})" style="background:rgba(0,212,200,.1);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">✏️ Editar</button>
-            <button onclick="excluirObjPara(${i})" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">🗑</button>
-          </div>
-        </div>
-        <div class="f11 cm mb6">${o.meta}</div>
-        <div class="fx ic gap12 mb8">
-          <span class="f10 cdim">📅 Prazo: <strong style="color:var(--text);">${o.prazo||'—'}</strong></span>
-          <span class="f10 cdim">Progresso: <strong style="color:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};">${o.progresso}%</strong></span>
-        </div>
-        <div class="prog"><div class="pf" style="width:${o.progresso}%;background:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};"></div></div>
-
-        <!-- Form editar inline -->
-        <div id="edit-obj-para-${i}" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
-          <div class="g2 mb8">
-            <div><label class="lbl">Título</label><input id="eopt-${i}" value="${o.titulo}"></div>
-            <div><label class="lbl">Prazo de entrega</label><input type="date" id="eopp-${i}" value="${o.prazo||''}"></div>
-          </div>
-          <div class="mb8"><label class="lbl">Meta / descrição</label>
-            <textarea id="eopm-${i}" style="height:55px;resize:none;">${o.meta}</textarea>
-          </div>
-          <div class="mb10"><label class="lbl">Progresso: <span id="eoppr-lbl-${i}">${o.progresso}%</span></label>
-            <input type="range" id="eoppr-${i}" min="0" max="100" value="${o.progresso}"
-              oninput="document.getElementById('eoppr-lbl-${i}').textContent=this.value+'%'"
-              style="width:100%;accent-color:var(--cyan);">
-          </div>
-          <div class="fx gap6">
-            <button class="btn-p" style="font-size:10px;" onclick="confirmarEdicaoObjPara(${i})">💾 Salvar</button>
-            <button class="btn" style="font-size:10px;" onclick="document.getElementById('edit-obj-para-${i}').style.display='none'">✕</button>
-          </div>
-        </div>
-      </div>`).join('');
+    : data.objetivos.map((o,i)=>'\n      <div class="card mb10" style="border-left:3px solid '+(o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)')+';">\n        <div class="fx ic jb mb8">\n          <div class="f12 fw6" style="color:var(--text);">🎯 '+(o.titulo)+'</div>\n          <div class="fx gap5">\n            <button onclick="editarObjPara('+(i)+')" style="background:rgba(0,212,200,.1);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">✏️ Editar</button>\n            <button onclick="excluirObjPara('+(i)+')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">🗑</button>\n          </div>\n        </div>\n        <div class="f11 cm mb6">'+(o.meta)+'</div>\n        <div class="fx ic gap12 mb8">\n          <span class="f10 cdim">📅 Prazo: <strong style="color:var(--text);">'+(o.prazo||'—')+'</strong></span>\n          <span class="f10 cdim">Progresso: <strong style="color:'+(o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)')+';">'+(o.progresso)+'%</strong></span>\n        </div>\n        <div class="prog"><div class="pf" style="width:'+(o.progresso)+'%;background:'+(o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)')+';"></div></div>\n\n        <!-- Form editar inline -->\n        <div id="edit-obj-para-'+(i)+'" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">\n          <div class="g2 mb8">\n            <div><label class="lbl">Título</label><input id="eopt-'+(i)+'" value="'+(o.titulo)+'"></div>\n            <div><label class="lbl">Prazo de entrega</label><input type="date" id="eopp-'+(i)+'" value="'+(o.prazo||'')+'"></div>\n          </div>\n          <div class="mb8"><label class="lbl">Meta / descrição</label>\n            <textarea id="eopm-'+(i)+'" style="height:55px;resize:none;">'+(o.meta)+'</textarea>\n          </div>\n          <div class="mb10"><label class="lbl">Progresso: <span id="eoppr-lbl-'+(i)+'">'+(o.progresso)+'%</span></label>\n            <input type="range" id="eoppr-'+(i)+'" min="0" max="100" value="'+(o.progresso)+'"\n              oninput="document.getElementById(\'eoppr-lbl-'+(i)+'\').textContent=this.value+\'%\'"\n              style="width:100%;accent-color:var(--cyan);">\n          </div>\n          <div class="fx gap6">\n            <button class="btn-p" style="font-size:10px;" onclick="confirmarEdicaoObjPara('+(i)+')">💾 Salvar</button>\n            <button class="btn" style="font-size:10px;" onclick="document.getElementById(\'edit-obj-para-'+(i)+'\').style.display=\'none\'">✕</button>\n          </div>\n        </div>\n      </div>').join('');
 
   // Notas
   const notasEl=document.getElementById('pdi-editor-notas');
   notasEl.innerHTML=(data.notas||[]).length===0
     ?'<div class="f11 cm mb8">Sem anotações ainda.</div>'
-    :(data.notas||[]).map(n=>`
-      <div style="background:var(--card2);border-left:2px solid ${n.tipo==='master'?'var(--cyan)':'var(--purple)'};border-radius:0 6px 6px 0;padding:8px 10px;margin-bottom:6px;">
-        <div class="f10 fw6" style="color:${n.tipo==='master'?'var(--cyan)':'var(--purple)'};">${n.autor} · ${n.data}</div>
-        <div class="f11 cm" style="margin-top:3px;">${n.texto}</div>
-      </div>`).join('');
+    :(data.notas||[]).map(n=>'\n      <div style="background:var(--card2);border-left:2px solid '+(n.tipo==='master'?'var(--cyan)':'var(--purple)')+';border-radius:0 6px 6px 0;padding:8px 10px;margin-bottom:6px;">\n        <div class="f10 fw6" style="color:'+(n.tipo==='master'?'var(--cyan)':'var(--purple)')+';">'+(n.autor)+' · '+(n.data)+'</div>\n        <div class="f11 cm" style="margin-top:3px;">'+(n.texto)+'</div>\n      </div>').join('');
 }
 
 function abrirFormObjetivoPara(){
@@ -1204,17 +1141,7 @@ function renderTimeCS(){
   } else {
     listCS.innerHTML = noTime.map((u,i)=>{
       const init = u.nome.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
-      return `<div class="m-row">
-        <div class="m-av" style="background:${cols[i%cols.length]};">${init}</div>
-        <div class="f1 mw0" style="margin-left:8px;">
-          <div class="f12 fw6" style="color:var(--text);">${u.nome}</div>
-          <div class="f10 cm">${u.cargo}</div>
-        </div>
-        <div class="fx gap5">
-          <button class="btn" style="font-size:10px;" onclick="toggleAdd();document.getElementById('nt-f').value='${u.email}'">✈️ Designar</button>
-          <button class="btn" style="font-size:10px;color:var(--err);" onclick="removerDoTime('${u.email}')">✕</button>
-        </div>
-      </div>`;
+      return '<div class="m-row">\n        <div class="m-av" style="background:'+(cols[i%cols.length])+';">'+(init)+'</div>\n        <div class="f1 mw0" style="margin-left:8px;">\n          <div class="f12 fw6" style="color:var(--text);">'+(u.nome)+'</div>\n          <div class="f10 cm">'+(u.cargo)+'</div>\n        </div>\n        <div class="fx gap5">\n          <button class="btn" style="font-size:10px;" onclick="toggleAdd();document.getElementById(\'nt-f\').value=\''+(u.email)+'\'">✈️ Designar</button>\n          <button class="btn" style="font-size:10px;color:var(--err);" onclick="removerDoTime(\''+(u.email)+'\')">✕</button>\n        </div>\n      </div>';
     }).join('');
   }
 
@@ -1222,15 +1149,7 @@ function renderTimeCS(){
   listGer.innerHTML = membros.map((u,i)=>{
     const init = u.nome.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
     const ativo = u.no_time;
-    return `<div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--card2);border-radius:7px;margin-bottom:5px;">
-      <div class="m-av" style="background:${cols[i%cols.length]};width:30px;height:30px;font-size:10px;">${init}</div>
-      <div style="flex:1;min-width:0;">
-        <div class="f12 fw5" style="color:var(--text);">${u.nome}</div>
-        <div class="f10 cm">${u.cargo}</div>
-      </div>
-      <div class="tog ${ativo?'on':''}" onclick="toggleTimeCS('${u.email}',this)" title="${ativo?'Remover do Time CS':'Adicionar ao Time CS'}"></div>
-      <span class="f10" style="color:${ativo?'var(--ok)':'var(--dim)'};min-width:40px;">${ativo?'Ativo':'Inativo'}</span>
-    </div>`;
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--card2);border-radius:7px;margin-bottom:5px;">\n      <div class="m-av" style="background:'+(cols[i%cols.length])+';width:30px;height:30px;font-size:10px;">'+(init)+'</div>\n      <div style="flex:1;min-width:0;">\n        <div class="f12 fw5" style="color:var(--text);">'+(u.nome)+'</div>\n        <div class="f10 cm">'+(u.cargo)+'</div>\n      </div>\n      <div class="tog '+(ativo?'on':'')+'" onclick="toggleTimeCS(\''+(u.email)+'\',this)" title="'+(ativo?'Remover do Time CS':'Adicionar ao Time CS')+'"></div>\n      <span class="f10" style="color:'+(ativo?'var(--ok)':'var(--dim)')+';min-width:40px;">'+(ativo?'Ativo':'Inativo')+'</span>\n    </div>';
   }).join('');
 }
 
@@ -1381,12 +1300,7 @@ function renderPdi() {
   if(!wrap) return;
 
   if (!data) {
-    wrap.innerHTML = `<div class="card" style="grid-column:1/-1;">
-      <div class="f12 cm" style="text-align:center;padding:20px;">Nenhum PDI cadastrado ainda.</div>
-      <div style="text-align:center;">
-        <button class="btn-p" onclick="abrirNovoObjetivo()">➕ Adicionar primeiro objetivo</button>
-      </div>
-    </div>`;
+    wrap.innerHTML = '<div class="card" style="grid-column:1/-1;">\n      <div class="f12 cm" style="text-align:center;padding:20px;">Nenhum PDI cadastrado ainda.</div>\n      <div style="text-align:center;">\n        <button class="btn-p" onclick="abrirNovoObjetivo()">➕ Adicionar primeiro objetivo</button>\n      </div>\n    </div>';
     return;
   }
 
@@ -1397,75 +1311,11 @@ function renderPdi() {
 
   const objHtml = data.objetivos.length === 0
     ? '<div class="f11 cm" style="padding:12px;text-align:center;color:var(--dim);">Nenhum objetivo ainda.</div>'
-    : data.objetivos.map((o,i) => `
-    <div style="background:var(--card2);border-radius:8px;padding:12px;margin-bottom:10px;border-left:3px solid ${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};">
-      <div class="fx ic jb mb6">
-        <div class="f12 fw6" style="color:var(--text);">🎯 ${o.titulo}</div>
-        <div class="fx gap5">
-          <button onclick="editarObjetivo(${i})" style="background:rgba(0,212,200,.1);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">✏️ Editar</button>
-          <button onclick="excluirObjetivo(${i})" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">🗑</button>
-        </div>
-      </div>
-      <div class="f11 cm mb8">${o.meta}</div>
-      <div class="f10 cdim mb8">Prazo: ${o.prazo}</div>
-      <div class="fx ic jb f10 mb5"><span class="cm">Progresso</span><span style="color:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};">${o.progresso}%</span></div>
-      <div class="prog"><div class="pf" style="width:${o.progresso}%;background:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};"></div></div>
-      <div id="edit-obj-${i}" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
-        <div class="g2 mb8">
-          <div><label class="lbl">Título</label><input id="eot-${i}" value="${o.titulo}"></div>
-          <div><label class="lbl">Prazo</label><input id="eop-${i}" value="${o.prazo}"></div>
-        </div>
-        <div class="mb8"><label class="lbl">Meta / descrição</label><textarea id="eom-${i}" style="height:50px;resize:none;">${o.meta}</textarea></div>
-        <div class="mb10"><label class="lbl">Progresso: <span id="eopr-lbl-${i}">${o.progresso}%</span></label>
-          <input type="range" id="eopr-${i}" min="0" max="100" value="${o.progresso}" oninput="document.getElementById('eopr-lbl-${i}').textContent=this.value+'%'" style="width:100%;accent-color:var(--cyan);">
-        </div>
-        <div class="fx gap6">
-          <button class="btn-p" style="font-size:10px;" onclick="salvarObjetivo(${i})">💾 Salvar</button>
-          <button class="btn" style="font-size:10px;" onclick="document.getElementById('edit-obj-${i}').style.display='none'">✕ Cancelar</button>
-        </div>
-      </div>
-    </div>`).join('');
+    : data.objetivos.map((o,i) => '\n    <div style="background:var(--card2);border-radius:8px;padding:12px;margin-bottom:10px;border-left:3px solid '+(o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)')+';">\n      <div class="fx ic jb mb6">\n        <div class="f12 fw6" style="color:var(--text);">🎯 '+(o.titulo)+'</div>\n        <div class="fx gap5">\n          <button onclick="editarObjetivo('+(i)+')" style="background:rgba(0,212,200,.1);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">✏️ Editar</button>\n          <button onclick="excluirObjetivo('+(i)+')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">🗑</button>\n        </div>\n      </div>\n      <div class="f11 cm mb8">'+(o.meta)+'</div>\n      <div class="f10 cdim mb8">Prazo: '+(o.prazo)+'</div>\n      <div class="fx ic jb f10 mb5"><span class="cm">Progresso</span><span style="color:'+(o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)')+';">'+(o.progresso)+'%</span></div>\n      <div class="prog"><div class="pf" style="width:'+(o.progresso)+'%;background:'+(o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)')+';"></div></div>\n      <div id="edit-obj-'+(i)+'" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">\n        <div class="g2 mb8">\n          <div><label class="lbl">Título</label><input id="eot-'+(i)+'" value="'+(o.titulo)+'"></div>\n          <div><label class="lbl">Prazo</label><input id="eop-'+(i)+'" value="'+(o.prazo)+'"></div>\n        </div>\n        <div class="mb8"><label class="lbl">Meta / descrição</label><textarea id="eom-'+(i)+'" style="height:50px;resize:none;">'+(o.meta)+'</textarea></div>\n        <div class="mb10"><label class="lbl">Progresso: <span id="eopr-lbl-'+(i)+'">'+(o.progresso)+'%</span></label>\n          <input type="range" id="eopr-'+(i)+'" min="0" max="100" value="'+(o.progresso)+'" oninput="document.getElementById(\'eopr-lbl-'+(i)+'\').textContent=this.value+\'%\'" style="width:100%;accent-color:var(--cyan);">\n        </div>\n        <div class="fx gap6">\n          <button class="btn-p" style="font-size:10px;" onclick="salvarObjetivo('+(i)+')">💾 Salvar</button>\n          <button class="btn" style="font-size:10px;" onclick="document.getElementById(\'edit-obj-'+(i)+'\').style.display=\'none\'">✕ Cancelar</button>\n        </div>\n      </div>\n    </div>').join('');
 
-  const notasHtml = (data.notas||[]).map(n => `
-    <div style="background:var(--card2);border-left:2px solid ${n.tipo==='master'?'var(--cyan)':'var(--purple)'};border-radius:0 6px 6px 0;padding:8px 10px;margin-bottom:6px;">
-      <div class="f10 fw6" style="color:${n.tipo==='master'?'var(--cyan)':'var(--purple)'};">${n.autor} · ${n.data}</div>
-      <div class="f11 cm" style="margin-top:3px;">${n.texto}</div>
-    </div>`).join('') || '<div class="f11 cm">Sem anotações ainda.</div>';
+  const notasHtml = (data.notas||[]).map(n => '\n    <div style="background:var(--card2);border-left:2px solid '+(n.tipo==='master'?'var(--cyan)':'var(--purple)')+';border-radius:0 6px 6px 0;padding:8px 10px;margin-bottom:6px;">\n      <div class="f10 fw6" style="color:'+(n.tipo==='master'?'var(--cyan)':'var(--purple)')+';">'+(n.autor)+' · '+(n.data)+'</div>\n      <div class="f11 cm" style="margin-top:3px;">'+(n.texto)+'</div>\n    </div>').join('') || '<div class="f11 cm">Sem anotações ainda.</div>';
 
-  wrap.innerHTML = `
-    <div class="card">
-      <div class="ct">📋 PDI — ${data.nome}</div>
-      <div class="mb10">
-        <div class="fx jb f11 mb5"><span class="cm">Progresso geral</span><span class="cc">${progGeral}%</span></div>
-        <div class="prog"><div class="pf" style="width:${progGeral}%;"></div></div>
-      </div>
-      ${objHtml}
-      <button class="btn" style="width:100%;justify-content:center;margin-top:8px;font-size:11px;" onclick="abrirNovoObjetivo()">➕ Novo objetivo</button>
-
-      <!-- Form novo objetivo -->
-      <div id="form-novo-obj" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
-        <div class="f11 fw6 cc mb8">Novo objetivo</div>
-        <div class="g2 mb8">
-          <div><label class="lbl">Título</label><input id="no-titulo" placeholder="Ex: Dominar SLA"></div>
-          <div><label class="lbl">Prazo</label><input id="no-prazo" placeholder="Ex: 30/06/2025"></div>
-        </div>
-        <div class="mb8"><label class="lbl">Meta / descrição</label><textarea id="no-meta" style="height:50px;resize:none;" placeholder="Descreva o objetivo..."></textarea></div>
-        <div class="mb10"><label class="lbl">Progresso inicial: <span id="no-prog-lbl">0%</span></label>
-          <input type="range" id="no-prog" min="0" max="100" value="0" oninput="document.getElementById('no-prog-lbl').textContent=this.value+'%'" style="width:100%;accent-color:var(--cyan);">
-        </div>
-        <div class="fx gap6">
-          <button class="btn-p" style="font-size:10px;" onclick="adicionarObjetivo()">✓ Adicionar</button>
-          <button class="btn" style="font-size:10px;" onclick="document.getElementById('form-novo-obj').style.display='none'">✕ Cancelar</button>
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="ct">📝 Anotações colaborativas</div>
-      <div class="f10 cm mb8">${isMaster?'Você e '+data.nome+' podem adicionar notas':'Você e Rafa podem adicionar notas'}</div>
-      ${notasHtml}
-      <textarea id="pdi-new-note" placeholder="Adicione uma anotação..." style="height:55px;resize:none;margin-top:8px;margin-bottom:7px;"></textarea>
-      <button class="btn-p" style="font-size:10px;" onclick="savePdiNote()">➕ Adicionar nota</button>
-    </div>`;
+  wrap.innerHTML = '\n    <div class="card">\n      <div class="ct">📋 PDI — '+(data.nome)+'</div>\n      <div class="mb10">\n        <div class="fx jb f11 mb5"><span class="cm">Progresso geral</span><span class="cc">'+(progGeral)+'%</span></div>\n        <div class="prog"><div class="pf" style="width:'+(progGeral)+'%;"></div></div>\n      </div>\n      '+(objHtml)+'\n      <button class="btn" style="width:100%;justify-content:center;margin-top:8px;font-size:11px;" onclick="abrirNovoObjetivo()">➕ Novo objetivo</button>\n\n      <!-- Form novo objetivo -->\n      <div id="form-novo-obj" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">\n        <div class="f11 fw6 cc mb8">Novo objetivo</div>\n        <div class="g2 mb8">\n          <div><label class="lbl">Título</label><input id="no-titulo" placeholder="Ex: Dominar SLA"></div>\n          <div><label class="lbl">Prazo</label><input id="no-prazo" placeholder="Ex: 30/06/2025"></div>\n        </div>\n        <div class="mb8"><label class="lbl">Meta / descrição</label><textarea id="no-meta" style="height:50px;resize:none;" placeholder="Descreva o objetivo..."></textarea></div>\n        <div class="mb10"><label class="lbl">Progresso inicial: <span id="no-prog-lbl">0%</span></label>\n          <input type="range" id="no-prog" min="0" max="100" value="0" oninput="document.getElementById(\'no-prog-lbl\').textContent=this.value+\'%\'" style="width:100%;accent-color:var(--cyan);">\n        </div>\n        <div class="fx gap6">\n          <button class="btn-p" style="font-size:10px;" onclick="adicionarObjetivo()">✓ Adicionar</button>\n          <button class="btn" style="font-size:10px;" onclick="document.getElementById(\'form-novo-obj\').style.display=\'none\'">✕ Cancelar</button>\n        </div>\n      </div>\n    </div>\n    <div class="card">\n      <div class="ct">📝 Anotações colaborativas</div>\n      <div class="f10 cm mb8">'+(isMaster?'Você e '+data.nome+' podem adicionar notas':'Você e Rafa podem adicionar notas')+'</div>\n      '+(notasHtml)+'\n      <textarea id="pdi-new-note" placeholder="Adicione uma anotação..." style="height:55px;resize:none;margin-top:8px;margin-bottom:7px;"></textarea>\n      <button class="btn-p" style="font-size:10px;" onclick="savePdiNote()">➕ Adicionar nota</button>\n    </div>';
 }
 
 function abrirNovoObjetivo() {
@@ -1539,7 +1389,7 @@ function saveMeeting() {
   if (!data || !notas) { alert('Preencha data e anotações.'); return; }
   const [y,m,d2] = data.split('-');
   PDI_DATA[email].reunioes.unshift({
-    data: `${d2}/${m}/${y}`,
+    data: ''+(d2)+'/'+(m)+'/'+(y)+'',
     tipo,
     notas,
     envolvidos: [currentUser.nome.split(' ')[0], 'Rafa']
@@ -1623,18 +1473,7 @@ function showAlarm(msg) {
     'box-shadow:0 12px 40px rgba(0,0,0,.7)', 'font-family:system-ui,sans-serif',
     'animation:slideDown .3s ease'
   ].join(';');
-  popup.innerHTML = `
-    <style>@keyframes slideDown{from{transform:translateX(-50%) translateY(-20px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}</style>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-size:24px;">🔔</span>
-        <span style="font-size:15px;font-weight:700;color:white;">Lembrete</span>
-      </div>
-      <button onclick="this.closest('#alarm-popup').remove()" style="background:rgba(255,255,255,.25);border:none;color:white;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center;">✕</button>
-    </div>
-    <div style="font-size:13px;color:rgba(255,255,255,.95);line-height:1.5;margin-bottom:14px;">${msg}</div>
-    <button onclick="this.closest('#alarm-popup').remove()" style="width:100%;padding:9px;border-radius:8px;border:none;background:white;color:#7c5cfc;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">✓ Entendido</button>
-  `;
+  popup.innerHTML = '\n    <style>@keyframes slideDown{from{transform:translateX(-50%) translateY(-20px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}</style>\n    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">\n      <div style="display:flex;align-items:center;gap:10px;">\n        <span style="font-size:24px;">🔔</span>\n        <span style="font-size:15px;font-weight:700;color:white;">Lembrete</span>\n      </div>\n      <button onclick="this.closest(\'#alarm-popup\').remove()" style="background:rgba(255,255,255,.25);border:none;color:white;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center;">✕</button>\n    </div>\n    <div style="font-size:13px;color:rgba(255,255,255,.95);line-height:1.5;margin-bottom:14px;">'+(msg)+'</div>\n    <button onclick="this.closest(\'#alarm-popup\').remove()" style="width:100%;padding:9px;border-radius:8px;border:none;background:white;color:#7c5cfc;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">✓ Entendido</button>\n  ';
   document.body.appendChild(popup);
   setTimeout(() => { if(popup.parentNode) popup.remove(); }, 30000);
 
@@ -1700,9 +1539,7 @@ let ALARMS = [
 let alarmCheckInterval = null;
 let audioCtx = null;
 
-// initAudio removida
 
-// getAudioCtx removida
 
 function renderAlarms() {
   const wrap = document.getElementById('alarm-list');
@@ -1711,18 +1548,7 @@ function renderAlarms() {
     wrap.innerHTML = '<div class="f11 cm" style="padding:8px;text-align:center;color:var(--dim);">Nenhum lembrete. Clique em "+ Novo lembrete".</div>';
     return;
   }
-  wrap.innerHTML = ALARMS.map((a,i) => `
-    <div style="background:var(--card2);border-radius:7px;padding:8px 10px;display:flex;align-items:center;gap:7px;margin-bottom:5px;">
-      <input type="time" value="${a.hora}" id="alarm-time-${i}"
-        style="width:85px;padding:4px 7px;font-size:12px;background:var(--card3,var(--card));border:1px solid var(--border2);border-radius:5px;color:var(--text);">
-      <input type="text" value="${a.msg}" id="alarm-msg-${i}"
-        style="flex:1;font-size:11px;padding:4px 8px;background:var(--card3,var(--card));border:1px solid var(--border2);border-radius:5px;color:var(--text);"
-        placeholder="Mensagem do lembrete...">
-      <div class="tog ${a.ativo?'on':''}" id="alarm-tog-${i}" onclick="toggleAlarm(${i})" title="${a.ativo?'Ativo':'Inativo'}"></div>
-      <button onclick="saveAlarm(${i})" style="background:rgba(0,212,200,.12);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;white-space:nowrap;font-family:inherit;">💾 Salvar</button>
-      <button onclick="testAlarm(${i})" style="background:rgba(124,92,252,.12);border:1px solid var(--purple);color:#a78bfa;border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;white-space:nowrap;font-family:inherit;">▶ Testar</button>
-      <button onclick="removeAlarm(${i})" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:3px 7px;font-size:11px;cursor:pointer;font-family:inherit;">✕</button>
-    </div>`).join('');
+  wrap.innerHTML = ALARMS.map((a,i) => '\n    <div style="background:var(--card2);border-radius:7px;padding:8px 10px;display:flex;align-items:center;gap:7px;margin-bottom:5px;">\n      <input type="time" value="'+(a.hora)+'" id="alarm-time-'+(i)+'"\n        style="width:85px;padding:4px 7px;font-size:12px;background:var(--card3,var(--card));border:1px solid var(--border2);border-radius:5px;color:var(--text);">\n      <input type="text" value="'+(a.msg)+'" id="alarm-msg-'+(i)+'"\n        style="flex:1;font-size:11px;padding:4px 8px;background:var(--card3,var(--card));border:1px solid var(--border2);border-radius:5px;color:var(--text);"\n        placeholder="Mensagem do lembrete...">\n      <div class="tog '+(a.ativo?'on':'')+'" id="alarm-tog-'+(i)+'" onclick="toggleAlarm('+(i)+')" title="'+(a.ativo?'Ativo':'Inativo')+'"></div>\n      <button onclick="saveAlarm('+(i)+')" style="background:rgba(0,212,200,.12);border:1px solid var(--cyan);color:var(--cyan);border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;white-space:nowrap;font-family:inherit;">💾 Salvar</button>\n      <button onclick="testAlarm('+(i)+')" style="background:rgba(124,92,252,.12);border:1px solid var(--purple);color:#a78bfa;border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;white-space:nowrap;font-family:inherit;">▶ Testar</button>\n      <button onclick="removeAlarm('+(i)+')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:3px 7px;font-size:11px;cursor:pointer;font-family:inherit;">✕</button>\n    </div>').join('');
 }
 
 function addAlarm() {
@@ -1808,13 +1634,13 @@ function scheduleNextMinute() {
   setTimeout(() => { checkAlarms(); scheduleNextMinute(); }, msAteProx);
 }
 
-function renderBannerLembretes() {
+function renderBannerLembretes(){
   var b=document.getElementById('banner-lembretes');if(!b)return;
   var ativos=ALARMS.filter(function(a){return a.ativo;});
   if(!ativos.length){b.style.display='none';return;}
-  b.style.display='flex';b.style.cssText=b.style.cssText+';flex-wrap:wrap;gap:6px;align-items:center;';
-  b.innerHTML='<strong style="margin-right:4px;">Lembretes:</strong>'
-    +ativos.map(function(a){return '<span style="background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);border-radius:20px;padding:1px 10px;font-size:11px;display:inline-block;">'+a.hora+' - '+a.msg+'</span>';}).join('');
+  b.style.display='flex';
+  b.innerHTML='<strong style="margin-right:6px;">Lembretes:</strong>'
+    +ativos.map(function(a){return '<span style="background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);border-radius:20px;padding:1px 10px;font-size:11px;">⏰ '+a.hora+' — '+a.msg+'</span>';}).join('');
 }
 function startAlarmSystem() {
   if(alarmCheckInterval) clearInterval(alarmCheckInterval);
@@ -1832,9 +1658,7 @@ function showToast(msg){
   setTimeout(()=>t.style.opacity='0',2500);
 }
 
-// testAlarm removida
 
-// addAlarm removida
 
 // ── DASHBOARD COMPLETA ──
 function initDashboard() {
@@ -1921,24 +1745,10 @@ function renderDashboard() {
   let html = '';
 
   // ── CABEÇALHO ──
-  html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-    <div>
-      <div class="f13 fw6" style="color:var(--text);">${pessoa.nome}</div>
-      <div class="f10 cm">${periodo.label}</div>
-    </div>
-    <div style="background:rgba(0,212,200,.1);border:1px solid var(--cyan);border-radius:8px;padding:6px 16px;text-align:center;">
-      <div class="f10 cm">Taxa de conclusão</div>
-      <div class="f14 fw6 cc">${taxa}%</div>
-    </div>
-  </div>`;
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">\n    <div>\n      <div class="f13 fw6" style="color:var(--text);">'+(pessoa.nome)+'</div>\n      <div class="f10 cm">'+(periodo.label)+'</div>\n    </div>\n    <div style="background:rgba(0,212,200,.1);border:1px solid var(--cyan);border-radius:8px;padding:6px 16px;text-align:center;">\n      <div class="f10 cm">Taxa de conclusão</div>\n      <div class="f14 fw6 cc">'+(taxa)+'%</div>\n    </div>\n  </div>';
 
   // ── MÉTRICAS RÁPIDAS ──
-  html += `<div class="g4 mb12">
-    <div class="mc"><div class="ml">Total</div><div class="mv cc">${tarefasFiltradas.length}</div><div class="ms">tarefas</div></div>
-    <div class="mc"><div class="ml">Concluídas</div><div class="mv cs">${concluidas.length}</div><div class="ms">${taxa}%</div></div>
-    <div class="mc"><div class="ml">Pendentes</div><div class="mv cw">${pendentes.length}</div><div class="ms">em aberto</div></div>
-    <div class="mc"><div class="ml">Urgentes</div><div class="mv cd">${atrasadas.length}</div><div class="ms">atenção</div></div>
-  </div>`;
+  html += '<div class="g4 mb12">\n    <div class="mc"><div class="ml">Total</div><div class="mv cc">'+(tarefasFiltradas.length)+'</div><div class="ms">tarefas</div></div>\n    <div class="mc"><div class="ml">Concluídas</div><div class="mv cs">'+(concluidas.length)+'</div><div class="ms">'+(taxa)+'%</div></div>\n    <div class="mc"><div class="ml">Pendentes</div><div class="mv cw">'+(pendentes.length)+'</div><div class="ms">em aberto</div></div>\n    <div class="mc"><div class="ml">Urgentes</div><div class="mv cd">'+(atrasadas.length)+'</div><div class="ms">atenção</div></div>\n  </div>';
 
   // ── SEÇÃO TAREFAS ──
   if(showTarefas) {
@@ -1946,46 +1756,24 @@ function renderDashboard() {
     const catBars = topCats.length > 0
       ? topCats.map(([cat,n])=>{
           const pct = Math.round((n/tarefasFiltradas.length)*100);
-          return `<div class="mb8">
-            <div class="fx jb f11 mb5"><span class="cm">${cat||'Sem categoria'}</span><span style="color:var(--text);">${n} tarefa${n!==1?'s':''} (${pct}%)</span></div>
-            <div class="prog"><div class="pf" style="width:${pct}%;background:var(--purple);"></div></div>
-          </div>`;
+          return '<div class="mb8">\n            <div class="fx jb f11 mb5"><span class="cm">'+(cat||'Sem categoria')+'</span><span style="color:var(--text);">'+(n)+' tarefa'+(n!==1?'s':'')+' ('+(pct)+'%)</span></div>\n            <div class="prog"><div class="pf" style="width:'+(pct)+'%;background:var(--purple);"></div></div>\n          </div>';
         }).join('')
       : '<div class="f11 cm">Sem dados no período.</div>';
 
     // Últimas tarefas
     const ultimas = tarefasFiltradas.slice(-5).reverse();
     const ultimasHtml = ultimas.length > 0
-      ? ultimas.map(t=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);">
-          <div style="width:8px;height:8px;border-radius:50%;background:${t.status==='concluida'?'var(--ok)':t.urgencia==='urgente'?'var(--err)':'var(--warn)'};flex-shrink:0;"></div>
-          <div style="flex:1;min-width:0;"><div class="f11 fw5" style="color:var(--text);">${t.titulo}</div><div class="f10 cm">${t.categoria||''} ${t.criado_em?'· '+new Date(t.criado_em).toLocaleDateString('pt-BR'):''}</div></div>
-          <span class="tag ${t.status==='concluida'?'tag-d':t.urgencia==='urgente'?'tag-u':'tag-n'}">${t.status==='concluida'?'✓ Feita':t.urgencia==='urgente'?'Urgente':'Pendente'}</span>
-        </div>`).join('')
+      ? ultimas.map(t=>'<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);">\n          <div style="width:8px;height:8px;border-radius:50%;background:'+(t.status==='concluida'?'var(--ok)':t.urgencia==='urgente'?'var(--err)':'var(--warn)')+';flex-shrink:0;"></div>\n          <div style="flex:1;min-width:0;"><div class="f11 fw5" style="color:var(--text);">'+(t.titulo)+'</div><div class="f10 cm">'+(t.categoria||'')+' '+(t.criado_em?'· '+new Date(t.criado_em).toLocaleDateString('pt-BR'):'')+'</div></div>\n          <span class="tag '+(t.status==='concluida'?'tag-d':t.urgencia==='urgente'?'tag-u':'tag-n')+'">'+(t.status==='concluida'?'✓ Feita':t.urgencia==='urgente'?'Urgente':'Pendente')+'</span>\n        </div>').join('')
       : '<div class="f11 cm">Sem tarefas no período.</div>';
 
-    html += `<div class="g2 gap12 mb12">
-      <div class="card"><div class="ct">📊 Por categoria</div>${catBars}</div>
-      <div class="card"><div class="ct">📋 Últimas tarefas</div>${ultimasHtml}</div>
-    </div>`;
+    html += '<div class="g2 gap12 mb12">\n      <div class="card"><div class="ct">📊 Por categoria</div>'+(catBars)+'</div>\n      <div class="card"><div class="ct">📋 Últimas tarefas</div>'+(ultimasHtml)+'</div>\n    </div>';
   }
 
   // ── SEÇÃO PDI ──
   if(showPdi && (pessoa.tipo==='eu'||pessoa.tipo==='pessoa') && pdiData) {
-    const objsHtml = pdiData.objetivos.map(o=>`
-      <div style="margin-bottom:10px;">
-        <div class="fx jb f11 mb5"><span class="fw5" style="color:var(--text);">🎯 ${o.titulo}</span><span style="color:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};">${o.progresso}%</span></div>
-        <div class="prog"><div class="pf" style="width:${o.progresso}%;background:${o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)'};"></div></div>
-        ${o.prazo?'<div class="f10 cdim mt8">Prazo: '+o.prazo+'</div>':''}
-      </div>`).join('') || '<div class="f11 cm">Sem objetivos no PDI.</div>';
+    const objsHtml = pdiData.objetivos.map(o=>'\n      <div style="margin-bottom:10px;">\n        <div class="fx jb f11 mb5"><span class="fw5" style="color:var(--text);">🎯 '+(o.titulo)+'</span><span style="color:'+(o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)')+';">'+(o.progresso)+'%</span></div>\n        <div class="prog"><div class="pf" style="width:'+(o.progresso)+'%;background:'+(o.progresso>=75?'var(--ok)':o.progresso>=40?'var(--warn)':'var(--err)')+';"></div></div>\n        '+(o.prazo?'<div class="f10 cdim mt8">Prazo: '+o.prazo+'</div>':'')+'\n      </div>').join('') || '<div class="f11 cm">Sem objetivos no PDI.</div>';
 
-    html += `<div class="card mb12">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div class="ct" style="margin-bottom:0;">📋 PDI — ${pdiData.nome}</div>
-        <div style="text-align:right;"><div class="f10 cm">Progresso geral</div><div class="f14 fw6 cc">${pdiProg}%</div></div>
-      </div>
-      <div class="prog mb12" style="height:6px;"><div class="pf" style="width:${pdiProg}%;"></div></div>
-      ${objsHtml}
-    </div>`;
+    html += '<div class="card mb12">\n      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">\n        <div class="ct" style="margin-bottom:0;">📋 PDI — '+(pdiData.nome)+'</div>\n        <div style="text-align:right;"><div class="f10 cm">Progresso geral</div><div class="f14 fw6 cc">'+(pdiProg)+'%</div></div>\n      </div>\n      <div class="prog mb12" style="height:6px;"><div class="pf" style="width:'+(pdiProg)+'%;"></div></div>\n      '+(objsHtml)+'\n    </div>';
   }
 
   // ── SEÇÃO DESEMPENHO DO TIME (só master, visão todos) ──
@@ -1997,36 +1785,10 @@ function renderDashboard() {
       const mp = mt.filter(t=>t.status==='pendente').length;
       const taxa2 = mt.length>0?Math.round((mc/mt.length)*100):0;
       const init = u.nome.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
-      return `<tr>
-        <td style="padding:10px 12px;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white;">${init}</div>
-            <div><div class="f12 fw5" style="color:var(--text);">${u.nome.split(' ')[0]}</div><div class="f10 cm">${u.cargo}</div></div>
-          </div>
-        </td>
-        <td style="padding:10px 12px;text-align:center;font-size:13px;font-weight:700;color:var(--ok);">${mc}</td>
-        <td style="padding:10px 12px;text-align:center;font-size:13px;font-weight:700;color:var(--warn);">${mp}</td>
-        <td style="padding:10px 12px;text-align:center;">
-          <div style="font-size:12px;font-weight:700;color:${taxa2>=75?'var(--ok)':taxa2>=50?'var(--warn)':'var(--err)'};">${taxa2}%</div>
-          <div style="height:4px;background:rgba(255,255,255,.07);border-radius:2px;margin-top:4px;"><div style="height:100%;width:${taxa2}%;border-radius:2px;background:${taxa2>=75?'var(--ok)':taxa2>=50?'var(--warn)':'var(--err)'};"></div></div>
-        </td>
-      </tr>`;
+      return '<tr>\n        <td style="padding:10px 12px;">\n          <div style="display:flex;align-items:center;gap:8px;">\n            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white;">'+(init)+'</div>\n            <div><div class="f12 fw5" style="color:var(--text);">'+(u.nome.split(' ')[0])+'</div><div class="f10 cm">'+(u.cargo)+'</div></div>\n          </div>\n        </td>\n        <td style="padding:10px 12px;text-align:center;font-size:13px;font-weight:700;color:var(--ok);">'+(mc)+'</td>\n        <td style="padding:10px 12px;text-align:center;font-size:13px;font-weight:700;color:var(--warn);">'+(mp)+'</td>\n        <td style="padding:10px 12px;text-align:center;">\n          <div style="font-size:12px;font-weight:700;color:'+(taxa2>=75?'var(--ok)':taxa2>=50?'var(--warn)':'var(--err)')+';">'+(taxa2)+'%</div>\n          <div style="height:4px;background:rgba(255,255,255,.07);border-radius:2px;margin-top:4px;"><div style="height:100%;width:'+(taxa2)+'%;border-radius:2px;background:'+(taxa2>=75?'var(--ok)':taxa2>=50?'var(--warn)':'var(--err)')+';"></div></div>\n        </td>\n      </tr>';
     }).join('');
 
-    html += `<div class="card mb12">
-      <div class="ct">👥 Desempenho do time — ${periodo.label}</div>
-      <table style="width:100%;border-collapse:collapse;">
-        <thead>
-          <tr style="border-bottom:1px solid var(--border);">
-            <th style="padding:8px 12px;text-align:left;font-size:10px;color:var(--dim);text-transform:uppercase;">Colaboradora</th>
-            <th style="padding:8px 12px;text-align:center;font-size:10px;color:var(--dim);text-transform:uppercase;">✅ Feitas</th>
-            <th style="padding:8px 12px;text-align:center;font-size:10px;color:var(--dim);text-transform:uppercase;">⏳ Pendentes</th>
-            <th style="padding:8px 12px;text-align:center;font-size:10px;color:var(--dim);text-transform:uppercase;">Taxa</th>
-          </tr>
-        </thead>
-        <tbody>${timeRows}</tbody>
-      </table>
-    </div>`;
+    html += '<div class="card mb12">\n      <div class="ct">👥 Desempenho do time — '+(periodo.label)+'</div>\n      <table style="width:100%;border-collapse:collapse;">\n        <thead>\n          <tr style="border-bottom:1px solid var(--border);">\n            <th style="padding:8px 12px;text-align:left;font-size:10px;color:var(--dim);text-transform:uppercase;">Colaboradora</th>\n            <th style="padding:8px 12px;text-align:center;font-size:10px;color:var(--dim);text-transform:uppercase;">✅ Feitas</th>\n            <th style="padding:8px 12px;text-align:center;font-size:10px;color:var(--dim);text-transform:uppercase;">⏳ Pendentes</th>\n            <th style="padding:8px 12px;text-align:center;font-size:10px;color:var(--dim);text-transform:uppercase;">Taxa</th>\n          </tr>\n        </thead>\n        <tbody>'+(timeRows)+'</tbody>\n      </table>\n    </div>';
   }
 
   // ── SEÇÃO CANAL CS ──
@@ -2035,13 +1797,7 @@ function renderDashboard() {
       const d = new Date(p.criado_em);
       return d >= periodo.inicio && d <= periodo.fim;
     }).length : 0;
-    html += `<div class="card mb12">
-      <div class="ct">💬 Canal CS — ${periodo.label}</div>
-      <div class="fx ic gap12">
-        <div class="mc" style="flex:1;"><div class="ml">Posts publicados</div><div class="mv cc">${totalPosts}</div></div>
-        <div class="mc" style="flex:1;"><div class="ml">Engajamento</div><div class="mv cp">—</div><div class="ms">em breve</div></div>
-      </div>
-    </div>`;
+    html += '<div class="card mb12">\n      <div class="ct">💬 Canal CS — '+(periodo.label)+'</div>\n      <div class="fx ic gap12">\n        <div class="mc" style="flex:1;"><div class="ml">Posts publicados</div><div class="mv cc">'+(totalPosts)+'</div></div>\n        <div class="mc" style="flex:1;"><div class="ml">Engajamento</div><div class="mv cp">—</div><div class="ms">em breve</div></div>\n      </div>\n    </div>';
   }
 
   // ── MENSAGEM SE TUDO DESMARCADO ──
